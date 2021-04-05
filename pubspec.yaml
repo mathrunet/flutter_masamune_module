@@ -1,0 +1,27 @@
+name: masamune_module
+description: Package in which various functions are modularized.
+version: 0.8.0
+homepage: https://mathru.net
+repository: https://github.com/mathrunet/flutter_masamune_module
+
+environment:
+  sdk: ">=2.12.0-0 <3.0.0"
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  masamune: ^0.8.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  # Masamune
+  masamune_test: ^0.5.0
+  
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter.
+flutter:
