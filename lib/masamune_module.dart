@@ -11,6 +11,6 @@ library masamune_module;
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:masamune/masamune.dart';
 import 'package:share/share.dart';
-
