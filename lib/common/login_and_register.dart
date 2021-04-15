@@ -110,6 +110,7 @@ class LoginModule extends ModuleConfig {
   final Color? formBackgroundColor;
 }
 
+@immutable
 class LoginConfig {
   const LoginConfig({
     this.label,
@@ -123,6 +124,7 @@ class LoginConfig {
   final VoidCallback? onTap;
 }
 
+@immutable
 class RoleConfig {
   const RoleConfig({
     required this.id,
