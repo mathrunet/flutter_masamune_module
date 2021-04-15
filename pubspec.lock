@@ -254,13 +254,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.8.1+21"
+  katana_module:
+    dependency: transitive
+    description:
+      name: katana_module
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.8.0+4"
   katana_routing:
     dependency: transitive
     description:
       name: katana_routing
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.1+12"
+    version: "0.8.1+13"
   loading_animations:
     dependency: transitive
     description:
@@ -281,7 +288,7 @@ packages:
       name: masamune
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.1+20"
+    version: "0.8.1+25"
   masamune_test:
     dependency: "direct dev"
     description:
@@ -316,7 +323,7 @@ packages:
       name: model_notifier
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.1+16"
+    version: "0.8.1+17"
   octo_image:
     dependency: transitive
     description:
@@ -416,7 +423,7 @@ packages:
     source: hosted
     version: "0.26.0"
   share:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: share
       url: "https://pub.dartlang.org"
