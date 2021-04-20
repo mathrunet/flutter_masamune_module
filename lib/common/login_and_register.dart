@@ -32,6 +32,7 @@ class LoginModule extends ModuleConfig {
     this.redirectTo = "/",
     this.formColor,
     this.formBackgroundColor,
+    this.registerForm = const [],
   }) : super(enabled: enabled, title: title);
 
   @override
@@ -108,6 +109,9 @@ class LoginModule extends ModuleConfig {
 
   /// フォームの背景色。
   final Color? formBackgroundColor;
+
+  /// 登録時のフォームデータ。
+  final List<FormConfig> registerForm;
 }
 
 @immutable
@@ -118,22 +122,6 @@ class LoginConfig {
     this.icon,
     this.onTap,
   });
-  final String? label;
-  final IconData? icon;
-  final Color? color;
-  final VoidCallback? onTap;
-}
-
-@immutable
-class RoleConfig {
-  const RoleConfig({
-    required this.id,
-    this.label,
-    this.color,
-    this.icon,
-    this.onTap,
-  });
-  final String id;
   final String? label;
   final IconData? icon;
   final Color? color;
@@ -522,6 +510,7 @@ class Register extends PageHookWidget with UIPageFormMixin {
             color: config.formColor,
             backgroundColor: config.formBackgroundColor,
           ),
+          ...config.registerForm.map((e) => e.build(context, null))
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
