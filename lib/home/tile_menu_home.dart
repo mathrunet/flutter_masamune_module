@@ -6,7 +6,8 @@ class TileMenuHome extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final user = context.adapter!.loadDocument(
-      useProvider(context.adapter!.documentProvider("${config.userPath}/$userId")),
+      useProvider(context.adapter!
+          .documentProvider("${config.userPath}/${context.adapter?.userId}")),
     );
     final name = user.get(config.nameKey, "Unknown".localize());
     final role = config.roles.firstWhereOrNull(
@@ -78,18 +79,18 @@ class TileMenuHome extends HookWidget {
   }
 }
 
-class _TileMenuHomeInformation extends HookWidget {
-  const _TileMenuHomeInformation(this.config);
-  final HomeModule config;
+// class _TileMenuHomeInformation extends HookWidget {
+//   const _TileMenuHomeInformation(this.config);
+//   final HomeModule config;
 
-  @override
-  Widget build(BuildContext context) {
-    final info = context.adapter!.loadCollection(
-      useProvider(context.adapter!.collectionProvider(config.infoPath)),
-    );
+//   @override
+//   Widget build(BuildContext context) {
+//     final info = context.adapter!.loadCollection(
+//       useProvider(context.adapter!.collectionProvider(config.infoPath)),
+//     );
 
-    return Container(
-      color: ,
-    );
-  }
-}
+//     return Container(
+//       color: ,
+//     );
+//   }
+// }

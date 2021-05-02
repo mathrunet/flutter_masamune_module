@@ -15,6 +15,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:masamune/masamune.dart';
 import 'package:sprintf/sprintf.dart';
 import 'package:share/share.dart';
+export 'package:masamune/masamune.dart';
 
 part 'src/form_config.dart';
 part 'src/role_config.dart';
