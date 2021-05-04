@@ -27,9 +27,13 @@ class HomeModule extends ModuleConfig {
     this.contentPadding = const EdgeInsets.all(8),
     this.headerHeight,
     this.userPath = "user",
-    this.infoPath = "info",
+    this.calendar = const HomeCalendarModule(enabled: false),
+    this.info = const HomeInformationModule(enabled: false),
     this.roleKey = "role",
     this.nameKey = "name",
+    this.menu = const [],
+    this.subMenu = const [],
+    this.roleMenu = const {},
   }) : super(enabled: enabled, title: title);
 
   @override
@@ -45,6 +49,21 @@ class HomeModule extends ModuleConfig {
 
   @override
   String? get initialRoute => "/";
+
+  /// お知らせの設定。
+  final HomeInformationModule info;
+
+  /// カレンダーの設定。
+  final HomeCalendarModule calendar;
+
+  /// デフォルトのメニュー。
+  final List<MenuConfig> menu;
+
+  /// 権限ごとのメニュー。
+  final Map<String, List<MenuConfig>> roleMenu;
+
+  /// サブメニュー。
+  final List<MenuConfig> subMenu;
 
   /// 権限。
   final List<RoleConfig> roles;
@@ -82,14 +101,50 @@ class HomeModule extends ModuleConfig {
   /// ユーザーのデータパス。
   final String userPath;
 
-  /// お知らせのデータパス。
-  final String infoPath;
-
   /// 名前のキー。
   final String nameKey;
 
   /// 権限のキー。
   final String roleKey;
+
+  List<MenuConfig> menuByRole(RoleConfig? role) {
+    if (role == null || !roleMenu.containsKey(role.id)) {
+      return menu;
+    }
+    return roleMenu[role.id] ?? [];
+  }
+}
+
+@immutable
+class HomeInformationModule extends ModuleConfig {
+  const HomeInformationModule({
+    bool enabled = true,
+    String? title,
+    this.path = "info",
+    this.icon = Icons.info_rounded,
+  }) : super(enabled: enabled, title: title);
+
+  /// お知らせのデータパス。
+  final String path;
+
+  /// アイコン。
+  final IconData icon;
+}
+
+@immutable
+class HomeCalendarModule extends ModuleConfig {
+  const HomeCalendarModule(
+      {bool enabled = true,
+      String? title,
+      this.path = "event",
+      this.icon = Icons.calendar_today})
+      : super(enabled: enabled, title: title);
+
+  /// お知らせのデータパス。
+  final String path;
+
+  /// アイコン。
+  final IconData icon;
 }
 
 class Home extends PageHookWidget {

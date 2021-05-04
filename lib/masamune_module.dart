@@ -19,6 +19,7 @@ export 'package:masamune/masamune.dart';
 
 part 'src/form_config.dart';
 part 'src/role_config.dart';
+part 'src/menu_config.dart';
 
 part 'common/login_and_register.dart';
 
