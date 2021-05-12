@@ -9,13 +9,6 @@ class HomeModule extends ModuleConfig {
   const HomeModule({
     bool enabled = true,
     String title = "",
-    this.roles = const [
-      RoleConfig(
-        id: "register",
-        label: "Registration",
-        icon: FontAwesomeIcons.userAlt,
-      ),
-    ],
     this.color,
     this.textColor,
     this.homeType = HomeType.tileMenu,
@@ -64,9 +57,6 @@ class HomeModule extends ModuleConfig {
 
   /// サブメニュー。
   final List<MenuConfig> subMenu;
-
-  /// 権限。
-  final List<RoleConfig> roles;
 
   /// ホームのデザインタイプ。
   final HomeType homeType;

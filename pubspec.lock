@@ -152,7 +152,7 @@ packages:
       name: flutter_cache_manager
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.1"
+    version: "3.0.2"
   flutter_hooks:
     dependency: transitive
     description:
@@ -253,14 +253,14 @@ packages:
       name: katana
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.1+21"
+    version: "0.8.1+23"
   katana_module:
     dependency: transitive
     description:
       name: katana_module
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.0+13"
+    version: "0.8.0+21"
   katana_routing:
     dependency: transitive
     description:
@@ -288,14 +288,7 @@ packages:
       name: masamune
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.1+35"
-  masamune_test:
-    dependency: "direct dev"
-    description:
-      name: masamune_test
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.5.0"
+    version: "0.8.1+41"
   matcher:
     dependency: transitive
     description:
@@ -387,6 +380,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.1.0"
+  photo_view:
+    dependency: "direct main"
+    description:
+      name: photo_view
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.11.1"
   platform:
     dependency: transitive
     description:
@@ -428,7 +428,7 @@ packages:
       name: rxdart
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.26.0"
+    version: "0.27.0"
   share:
     dependency: "direct main"
     description:
@@ -496,7 +496,7 @@ packages:
       name: sprintf
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.1.0"
+    version: "6.0.0"
   sqflite:
     dependency: transitive
     description:

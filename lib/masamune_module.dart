@@ -13,15 +13,17 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:masamune/masamune.dart';
+import 'package:photo_view/photo_view.dart';
 import 'package:sprintf/sprintf.dart';
 import 'package:share/share.dart';
 export 'package:masamune/masamune.dart';
 
 part 'src/form_config.dart';
-part 'src/role_config.dart';
 part 'src/menu_config.dart';
 
 part 'common/login_and_register.dart';
 
 part 'home/home.dart';
 part 'home/tile_menu_home.dart';
+
+part 'gallery/gallery.dart';

@@ -10,8 +10,9 @@ class TileMenuHome extends HookWidget {
           .documentProvider("${config.userPath}/${context.adapter?.userId}")),
     );
     final name = user.get(config.nameKey, "Unknown".localize());
-    final role = config.roles.firstWhereOrNull(
-        (item) => item.id == user.get(config.roleKey, "register"));
+    final role = context.roles.firstWhereOrNull(
+      (item) => item.id == user.get(config.roleKey, "registered"),
+    );
 
     return Scaffold(
       body: ListView(
@@ -89,7 +90,7 @@ class TileMenuHome extends HookWidget {
                               ),
                               const Space.width(4),
                               Text(
-                                sprintf("%s san".localize(), [name]),
+                                "%s san".localize().format([name]),
                                 style: const TextStyle(fontSize: 12),
                               ),
                             ],
