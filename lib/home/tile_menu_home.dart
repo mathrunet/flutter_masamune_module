@@ -222,7 +222,7 @@ class _TileMenuHomeInformation extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final info = context.adapter!.loadCollection(
-      useProvider(context.adapter!.collectionProvider(config.info.path)),
+      useProvider(context.adapter!.collectionProvider(config.info.postPath)),
     );
     info.sort((a, b) {
       return b.get("created", DateTime.now().millisecondsSinceEpoch) -
@@ -255,35 +255,43 @@ class _TileMenuHomeInformation extends HookWidget {
                   color:
                       config.textColor ?? context.theme.colorScheme.onPrimary,
                 ),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  color: config.color ?? context.theme.primaryColor,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(dateTime.format("yyyy/MM/dd HH:mm")),
-                          if (dateTime.isToday()) ...[
-                            const Space.width(4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 4, vertical: 2),
-                              color: context.theme.colorScheme.error,
-                              child: Text(
-                                "NEW".localize(),
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: context.theme.colorScheme.onError,
+                child: InkWell(
+                  onTap: () {
+                    context.navigator.pushNamed(
+                      "/info/${item.get("uid", "")}",
+                      arguments: RouteQuery.fullscreen,
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    color: config.color ?? context.theme.primaryColor,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(dateTime.format("yyyy/MM/dd HH:mm")),
+                            if (dateTime.isToday()) ...[
+                              const Space.width(4),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 4, vertical: 2),
+                                color: context.theme.colorScheme.error,
+                                child: Text(
+                                  "NEW".localize(),
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: context.theme.colorScheme.onError,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ]
-                        ],
-                      ),
-                      const Space.height(8),
-                      Text(item.get("name", "--")),
-                    ],
+                            ]
+                          ],
+                        ),
+                        const Space.height(8),
+                        Text(item.get("name", "--")),
+                      ],
+                    ),
                   ),
                 ),
               );

@@ -37,6 +37,8 @@ class HomeModule extends ModuleConfig {
     final route = {
       "/": RouteConfig((_) => Home(this)),
     };
+    route.addAll(info.routeSettings ?? {});
+    route.addAll(calendar.routeSettings ?? {});
     return route;
   }
 
@@ -106,16 +108,31 @@ class HomeModule extends ModuleConfig {
 }
 
 @immutable
-class HomeInformationModule extends ModuleConfig {
+class HomeInformationModule extends PostModule {
   const HomeInformationModule({
     bool enabled = true,
     String? title,
-    this.path = "info",
+    String postPath = "info",
     this.icon = Icons.info_rounded,
-  }) : super(enabled: enabled, title: title);
+  }) : super(
+          enabled: enabled,
+          title: title,
+          postPath: postPath,
+          routePath: "info",
+          editingType: PostEditingType.planeText,
+        );
 
-  /// お知らせのデータパス。
-  final String path;
+  @override
+  Map<String, RouteConfig>? get routeSettings {
+    if (!enabled) {
+      return const {};
+    }
+    final route = {
+      "/info/{post_id}": RouteConfig((_) => _PostView(this)),
+      "/info/{post_id}/edit": RouteConfig((_) => _PostEdit(this)),
+    };
+    return route;
+  }
 
   /// アイコン。
   final IconData icon;
