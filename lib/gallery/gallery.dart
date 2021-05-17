@@ -409,10 +409,12 @@ class _PhotoEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
         ],
       ),
       body: FormBuilder(
+        padding: const EdgeInsets.all(0),
         key: formKey,
         children: [
           FormItemImage(
             height: 200,
+            dense: true,
             controller: useMemoizedTextEditingController(
               inAdd ? "" : image,
             ),
@@ -428,16 +430,21 @@ class _PhotoEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
               context[config.imageKey] = value;
             },
           ),
+          DividHeadline("Title".localize()),
           FormItemTextField(
-            labelText: "Title".localize(),
+            dense: true,
             hintText: "Input %s".localize().format(["Title".localize()]),
             controller: useMemoizedTextEditingController(inAdd ? "" : name),
             onSaved: (value) {
               context[config.nameKey] = value;
             },
           ),
+          DividHeadline("Description".localize()),
           FormItemTextField(
-            labelText: "Description".localize(),
+            dense: true,
+            keyboardType: TextInputType.multiline,
+            minLines: 5,
+            maxLines: 5,
             hintText: "Input %s".localize().format(["Description".localize()]),
             allowEmpty: true,
             controller: useMemoizedTextEditingController(inAdd ? "" : text),
@@ -445,9 +452,11 @@ class _PhotoEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
               context[config.textKey] = value;
             },
           ),
-          if (config.tabConfig.isNotEmpty)
+          if (config.tabConfig.isNotEmpty) ...[
+            DividHeadline("Category".localize()),
             FormItemDropdownField(
-              labelText: "Category".localize(),
+              dense: true,
+              // labelText: "Category".localize(),
               hintText: "Input %s".localize().format(["Category".localize()]),
               controller: useMemoizedTextEditingController(inAdd
                   ? config.tabConfig.first.id
@@ -458,7 +467,9 @@ class _PhotoEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
               onSaved: (value) {
                 context[config.categoryKey] = value;
               },
-            )
+            ),
+          ],
+          const Divid(),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(

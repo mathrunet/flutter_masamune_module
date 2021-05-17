@@ -40,3 +40,5 @@ part 'gallery/gallery.dart';
 part 'information/information.dart';
 
 part 'post/post.dart';
+
+part 'questionnaire/questionnaire.dart';

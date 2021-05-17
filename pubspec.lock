@@ -330,7 +330,7 @@ packages:
       name: katana
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.1+29"
+    version: "0.8.1+31"
   katana_module:
     dependency: transitive
     description:
@@ -365,7 +365,7 @@ packages:
       name: masamune
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.1+45"
+    version: "0.8.1+46"
   matcher:
     dependency: transitive
     description:

@@ -72,8 +72,8 @@ class Post extends PageHookWidget {
     final postWithUser = post.setWhere(
       users,
       test: (o, a) => o.get("user", "") == a.get("uid", ""),
-      apply: (o, a) => o.merge(a),
-      orElse: (o, a) => o,
+      apply: (o, a) => o.merge(a, convertKeys: (key) => "user$key"),
+      orElse: (o) => o,
     );
 
     final user = context.adapter!.loadDocument(
@@ -116,7 +116,7 @@ class Post extends PageHookWidget {
               icon: const Icon(Icons.add),
               onPressed: () {
                 context.navigator.pushNamed(
-                  "/post/edit",
+                  "/${config.routePath}/edit",
                   arguments: RouteQuery.fullscreen,
                 );
               },
@@ -428,17 +428,17 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
               const Divid(),
               Expanded(
                 child: FormItemTextField(
-                    dense: true,
-                    expands: true,
-                    textAlignVertical: TextAlignVertical.top,
-                    keyboardType: TextInputType.multiline,
-                    hintText: "Commenct".localize(),
-                    subColor: context.theme.disabledColor,
-                    controller: useMemoizedTextEditingController(text),
-                    onSaved: (value) {
-                      context[config.textKey] = value;
-                    },
-                  ),
+                  dense: true,
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
+                  keyboardType: TextInputType.multiline,
+                  hintText: "Commenct".localize(),
+                  subColor: context.theme.disabledColor,
+                  controller: useMemoizedTextEditingController(text),
+                  onSaved: (value) {
+                    context[config.textKey] = value;
+                  },
+                ),
               ),
             ],
           ),
