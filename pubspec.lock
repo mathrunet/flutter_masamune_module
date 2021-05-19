@@ -36,6 +36,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.0.0"
+  cached_video_player:
+    dependency: transitive
+    description:
+      name: cached_video_player
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.0-dev.1"
   characters:
     dependency: transitive
     description:
@@ -133,7 +140,7 @@ packages:
       name: file
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "6.1.0"
+    version: "6.1.1"
   file_picker:
     dependency: transitive
     description:
@@ -288,7 +295,7 @@ packages:
       name: image_picker
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.7.5"
+    version: "0.7.5+2"
   image_picker_for_web:
     dependency: transitive
     description:
@@ -365,7 +372,7 @@ packages:
       name: masamune
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.1+46"
+    version: "0.8.1+51"
   matcher:
     dependency: transitive
     description:
@@ -721,13 +728,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.0"
-  video_player:
-    dependency: transitive
-    description:
-      name: video_player
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.1.1"
   video_player_platform_interface:
     dependency: transitive
     description:

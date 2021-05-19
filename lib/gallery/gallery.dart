@@ -93,6 +93,34 @@ class GalleryModule extends ModuleConfig {
   final List<TabConfig> tabConfig;
 }
 
+PlatformMediaType _getPlatformMediaType(String path) {
+  final uri = Uri.tryParse(path);
+  if (uri == null) {
+    return PlatformMediaType.all;
+  }
+  final ext = uri.path.split(".").lastOrNull;
+  if (ext == null) {
+    return PlatformMediaType.all;
+  }
+  switch (ext) {
+    case "mp4":
+    case "ogv":
+    case "webm":
+    case "avi":
+    case "mpeg":
+      return PlatformMediaType.video;
+    case "jpg":
+    case "jpeg":
+    case "png":
+    case "bmp":
+    case "tif":
+    case "tiff":
+    case "gif":
+      return PlatformMediaType.image;
+  }
+  return PlatformMediaType.all;
+}
+
 class Gallery extends PageHookWidget {
   const Gallery(this.config);
   final GalleryModule config;
@@ -134,7 +162,7 @@ class TileWithTabGallery extends PageHookWidget {
               icon: const Icon(Icons.add),
               onPressed: () {
                 context.navigator.pushNamed(
-                  "/gallery/edit",
+                  "/${config.routePath}/edit",
                   arguments: RouteQuery.fullscreen,
                 );
               },
@@ -169,7 +197,7 @@ class TileGallery extends PageHookWidget {
               icon: const Icon(Icons.add),
               onPressed: () {
                 context.navigator.pushNamed(
-                  "/gallery/edit",
+                  "/${config.routePath}/edit",
                   arguments: RouteQuery.fullscreen,
                 );
               },
@@ -211,25 +239,49 @@ class _GridView extends HookWidget {
       children: [
         ...gallery.mapWidget(
           (item) {
-            return InkWell(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkOrAsset.image(
-                      item.get(config.imageKey, ""),
+            final path = item.get(config.imageKey, "");
+            final type = _getPlatformMediaType(path);
+            switch (type) {
+              case PlatformMediaType.video:
+                return InkWell(
+                  child: ColoredBox(
+                    color: context.theme.dividerColor,
+                    child: ClipRRect(
+                      child: Video(
+                        NetworkOrAsset.video(path),
+                        fit: BoxFit.cover,
+                        autoplay: true,
+                        mute: true,
+                        mixWithOthers: true,
+                      ),
                     ),
-                    fit: BoxFit.cover,
                   ),
-                  color: context.theme.disabledColor,
-                ),
-              ),
-              onTap: () {
-                context.navigator.pushNamed(
-                  "/gallery/${item.get("uid", "")}",
-                  arguments: RouteQuery.fullscreen,
+                  onTap: () {
+                    context.navigator.pushNamed(
+                      "/${config.routePath}/${item.get("uid", "")}",
+                      arguments: RouteQuery.fullscreen,
+                    );
+                  },
                 );
-              },
-            );
+              default:
+                return InkWell(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: NetworkOrAsset.image(path),
+                        fit: BoxFit.cover,
+                      ),
+                      color: context.theme.disabledColor,
+                    ),
+                  ),
+                  onTap: () {
+                    context.navigator.pushNamed(
+                      "/${config.routePath}/${item.get("uid", "")}",
+                      arguments: RouteQuery.fullscreen,
+                    );
+                  },
+                );
+            }
           },
         ),
       ],
@@ -260,6 +312,7 @@ class _PhotoDetail extends PageHookWidget {
     final image = item.get(config.imageKey, "");
     final createdTime =
         item.get(config.createdTimeKey, now.millisecondsSinceEpoch);
+    final type = _getPlatformMediaType(image);
 
     return Scaffold(
       appBar: AppBar(
@@ -270,7 +323,7 @@ class _PhotoDetail extends PageHookWidget {
                 icon: const Icon(Icons.edit),
                 onPressed: () {
                   context.navigator.pushNamed(
-                    "/gallery/${context.get("photo_id", "")}/edit",
+                    "/${config.routePath}/${context.get("photo_id", "")}/edit",
                     arguments: RouteQuery.fullscreen,
                   );
                 })
@@ -281,20 +334,39 @@ class _PhotoDetail extends PageHookWidget {
           InkWell(
             onTap: () {
               context.navigator.pushNamed(
-                "/gallery/${context.get("photo_id", "")}/view",
+                "/${config.routePath}/${context.get("photo_id", "")}/view",
                 arguments: RouteQuery.fullscreen,
               );
             },
-            child: Container(
-              height: config.heightOnDetailView,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkOrAsset.image(image),
-                  fit: BoxFit.cover,
-                ),
-                color: context.theme.disabledColor,
-              ),
-            ),
+            child: () {
+              switch (type) {
+                case PlatformMediaType.video:
+                  return Container(
+                    color: context.theme.dividerColor,
+                    height: config.heightOnDetailView,
+                    child: ClipRRect(
+                      child: Video(
+                        NetworkOrAsset.video(image),
+                        fit: BoxFit.cover,
+                        autoplay: true,
+                        mute: true,
+                        mixWithOthers: true,
+                      ),
+                    ),
+                  );
+                default:
+                  return Container(
+                    height: config.heightOnDetailView,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: NetworkOrAsset.image(image),
+                        fit: BoxFit.cover,
+                      ),
+                      color: context.theme.disabledColor,
+                    ),
+                  );
+              }
+            }(),
           ),
           Indent(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
@@ -345,6 +417,7 @@ class _PhotoView extends PageHookWidget {
     );
     final name = item.get(config.nameKey, "");
     final image = item.get(config.imageKey, "");
+    final type = _getPlatformMediaType(image);
 
     return Scaffold(
       appBar: AppBar(
@@ -358,7 +431,21 @@ class _PhotoView extends PageHookWidget {
                 style: const TextStyle(color: Colors.white),
               ),
             )
-          : PhotoView(imageProvider: NetworkOrAsset.image(image)),
+          : () {
+              switch (type) {
+                case PlatformMediaType.video:
+                  return Center(
+                    child: Video(
+                      NetworkOrAsset.video(image),
+                      fit: BoxFit.contain,
+                      controllable: true,
+                      mixWithOthers: true,
+                    ),
+                  );
+                default:
+                  return PhotoView(imageProvider: NetworkOrAsset.image(image));
+              }
+            }(),
     );
   }
 }
@@ -412,7 +499,7 @@ class _PhotoEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
         padding: const EdgeInsets.all(0),
         key: formKey,
         children: [
-          FormItemImage(
+          FormItemMedia(
             height: 200,
             dense: true,
             controller: useMemoizedTextEditingController(
@@ -430,6 +517,7 @@ class _PhotoEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
               context[config.imageKey] = value;
             },
           ),
+          const Space.height(12),
           DividHeadline("Title".localize()),
           FormItemTextField(
             dense: true,
