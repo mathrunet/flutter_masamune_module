@@ -27,7 +27,8 @@ class GalleryModule extends ModuleConfig {
     this.tileSpacing = 1,
     this.tabConfig = const [],
     this.mediaType = PlatformMediaType.all,
-  }) : super(enabled: enabled, title: title);
+    PermissionConfig permission = const PermissionConfig(),
+  }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
   Map<String, RouteConfig>? get routeSettings {
@@ -147,16 +148,15 @@ class TileWithTabGallery extends PageHookWidget {
       useProvider(context.adapter!
           .documentProvider("${config.userPath}/${context.adapter?.userId}")),
     );
-    final role = context.roles.firstWhereOrNull(
-      (item) => item.id == user.get(config.roleKey, "registered"),
-    );
 
     return TabScaffold<TabConfig>(
       title: Text(config.title ?? "Gallery".localize()),
       source: config.tabConfig,
       tabBuilder: (tab) => Text(tab.label),
       viewBuilder: (tab) => _GridView(config, category: tab.id),
-      floatingActionButton: role.containsPermission("edit")
+      floatingActionButton: config.permission.canEdit(
+        user.get(config.roleKey, "registered"),
+      )
           ? FloatingActionButton.extended(
               label: Text("Add".localize()),
               icon: const Icon(Icons.add),
@@ -182,16 +182,15 @@ class TileGallery extends PageHookWidget {
       useProvider(context.adapter!
           .documentProvider("${config.userPath}/${context.adapter?.userId}")),
     );
-    final role = context.roles.firstWhereOrNull(
-      (item) => item.id == user.get(config.roleKey, "registered"),
-    );
 
     return Scaffold(
       appBar: AppBar(
         title: Text(config.title ?? "Gallery".localize()),
       ),
       body: _GridView(config),
-      floatingActionButton: role.containsPermission("edit")
+      floatingActionButton: config.permission.canEdit(
+        user.get(config.roleKey, "registered"),
+      )
           ? FloatingActionButton.extended(
               label: Text("Add".localize()),
               icon: const Icon(Icons.add),
@@ -303,9 +302,6 @@ class _PhotoDetail extends PageHookWidget {
       useProvider(context.adapter!
           .documentProvider("${config.userPath}/${context.adapter?.userId}")),
     );
-    final role = context.roles.firstWhereOrNull(
-      (item) => item.id == user.get(config.roleKey, "registered"),
-    );
     final now = DateTime.now();
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
@@ -318,7 +314,9 @@ class _PhotoDetail extends PageHookWidget {
       appBar: AppBar(
         title: Text(name),
         actions: [
-          if (role.containsPermission("edit"))
+          if (config.permission.canEdit(
+            user.get(config.roleKey, "registered"),
+          ))
             IconButton(
                 icon: const Icon(Icons.edit),
                 onPressed: () {
@@ -457,6 +455,10 @@ class _PhotoEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.adapter!.loadDocument(
+      useProvider(context.adapter!
+          .documentProvider("${config.userPath}/${context.adapter?.userId}")),
+    );
     final item = context.adapter!.loadDocument(
       useProvider(context.adapter!.documentProvider(
           "${config.galleryPath}/${context.get("photo_id", puid)}")),
@@ -473,7 +475,10 @@ class _PhotoEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
               : "Editing %s".localize().format([name]),
         ),
         actions: [
-          if (!inAdd)
+          if (!inAdd &&
+              config.permission.canDelete(
+                user.get(config.roleKey, "registered"),
+              ))
             IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () {

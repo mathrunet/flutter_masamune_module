@@ -14,7 +14,8 @@ class PostModule extends ModuleConfig {
     this.roleKey = "role",
     this.createdTimeKey = "createdTime",
     this.editingType = PostEditingType.planeText,
-  }) : super(enabled: enabled, title: title);
+    PermissionConfig permission = const PermissionConfig(),
+  }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
   Map<String, RouteConfig>? get routeSettings {
@@ -80,9 +81,6 @@ class Post extends PageHookWidget {
       useProvider(context.adapter!
           .documentProvider("${config.userPath}/${context.adapter?.userId}")),
     );
-    final role = context.roles.firstWhereOrNull(
-      (item) => item.id == user.get(config.roleKey, "registered"),
-    );
 
     return Scaffold(
       appBar: AppBar(
@@ -110,7 +108,9 @@ class Post extends PageHookWidget {
           ),
         ],
       ),
-      floatingActionButton: role.containsPermission("edit")
+      floatingActionButton: config.permission.canEdit(
+        user.get(config.roleKey, "registered"),
+      )
           ? FloatingActionButton.extended(
               label: Text("Add".localize()),
               icon: const Icon(Icons.add),
@@ -140,9 +140,6 @@ class _PostView extends PageHookWidget {
       useProvider(context.adapter!
           .documentProvider("${config.userPath}/${context.adapter?.userId}")),
     );
-    final role = context.roles.firstWhereOrNull(
-      (item) => item.id == user.get(config.roleKey, "registered"),
-    );
     final now = DateTime.now();
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
@@ -156,7 +153,9 @@ class _PostView extends PageHookWidget {
     final appBar = AppBar(
       title: Text(name),
       actions: [
-        if (role.containsPermission("edit"))
+        if (config.permission.canEdit(
+          user.get(config.roleKey, "registered"),
+        ))
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
@@ -256,6 +255,10 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
+    final user = context.adapter!.loadDocument(
+      useProvider(context.adapter!
+          .documentProvider("${config.userPath}/${context.adapter?.userId}")),
+    );
     final item = context.adapter!.loadDocument(
       useProvider(context.adapter!.documentProvider(
           "${config.postPath}/${context.get("post_id", puid)}")),
@@ -272,7 +275,10 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
             : "Editing %s".localize().format([name]),
       ),
       actions: [
-        if (!inAdd)
+        if (!inAdd &&
+            config.permission.canDelete(
+              user.get(config.roleKey, "registered"),
+            ))
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () {
@@ -295,7 +301,11 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
       ],
     );
 
-    switch (config.editingType) {
+    final editingType = text.isNotEmpty && !text.startsWith(RegExp(r"^(\[|\{)"))
+        ? PostEditingType.planeText
+        : config.editingType;
+
+    switch (editingType) {
       case PostEditingType.wysiwyg:
         final controller = useMemoized(
           () => text.isEmpty

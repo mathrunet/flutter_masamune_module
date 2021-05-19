@@ -27,7 +27,8 @@ class HomeModule extends ModuleConfig {
     this.menu = const [],
     this.subMenu = const [],
     this.roleMenu = const {},
-  }) : super(enabled: enabled, title: title);
+    PermissionConfig permission = const PermissionConfig(),
+  }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
   Map<String, RouteConfig>? get routeSettings {
@@ -114,12 +115,14 @@ class HomeInformationModule extends PostModule {
     String? title,
     String postPath = "info",
     this.icon = Icons.info_rounded,
+    PermissionConfig permission = const PermissionConfig(),
   }) : super(
           enabled: enabled,
           title: title,
           postPath: postPath,
           routePath: "info",
           editingType: PostEditingType.planeText,
+          permission: permission,
         );
 
   @override
@@ -129,7 +132,7 @@ class HomeInformationModule extends PostModule {
     }
     final route = {
       "/info/{post_id}": RouteConfig((_) => _PostView(this)),
-      "/info/{post_id}/edit": RouteConfig((_) => _PostEdit(this)),
+      // "/info/{post_id}/edit": RouteConfig((_) => _PostEdit(this)),
     };
     return route;
   }
