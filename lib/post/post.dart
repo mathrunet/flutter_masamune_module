@@ -63,23 +63,20 @@ class Post extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final post = context.adapter!.loadCollection(
-      useProvider(context.adapter!.collectionProvider(config.postPath)),
-    );
-    final users = context.adapter!.loadCollection(
-      useProvider(context.adapter!.collectionProvider(
-          "${config.userPath}?key=uid&whereIn=${post.map((e) => e.get("user", "")).distinct()}")),
+    final user = useUserDocumentModel(config.userPath);
+    final post = useCollectionModel(config.postPath);
+    final users = useCollectionModel(
+      CollectionQuery(
+        config.userPath,
+        key: "uid",
+        whereIn: post.map((e) => e.get("user", "")).distinct(),
+      ).value,
     );
     final postWithUser = post.setWhere(
       users,
       test: (o, a) => o.get("user", "") == a.get("uid", ""),
       apply: (o, a) => o.merge(a, convertKeys: (key) => "user$key"),
       orElse: (o) => o,
-    );
-
-    final user = context.adapter!.loadDocument(
-      useProvider(context.adapter!
-          .documentProvider("${config.userPath}/${context.adapter?.userId}")),
     );
 
     return Scaffold(
@@ -109,7 +106,7 @@ class Post extends PageHookWidget {
         ],
       ),
       floatingActionButton: config.permission.canEdit(
-        user.get(config.roleKey, "registered"),
+        user.get(config.roleKey, "")
       )
           ? FloatingActionButton.extended(
               label: Text("Add".localize()),
@@ -132,14 +129,9 @@ class _PostView extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = context.adapter!.loadDocument(
-      useProvider(context.adapter!.documentProvider(
-          "${config.postPath}/${context.get("post_id", "")}")),
-    );
-    final user = context.adapter!.loadDocument(
-      useProvider(context.adapter!
-          .documentProvider("${config.userPath}/${context.adapter?.userId}")),
-    );
+    final user = useUserDocumentModel(config.userPath);
+    final item =
+        useDocumentModel("${config.postPath}/${context.get("post_id", "")}");
     final now = DateTime.now();
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
@@ -154,7 +146,7 @@ class _PostView extends PageHookWidget {
       title: Text(name),
       actions: [
         if (config.permission.canEdit(
-          user.get(config.roleKey, "registered"),
+          user.get(config.roleKey, "")
         ))
           IconButton(
             icon: const Icon(Icons.edit),
@@ -255,14 +247,9 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final user = context.adapter!.loadDocument(
-      useProvider(context.adapter!
-          .documentProvider("${config.userPath}/${context.adapter?.userId}")),
-    );
-    final item = context.adapter!.loadDocument(
-      useProvider(context.adapter!.documentProvider(
-          "${config.postPath}/${context.get("post_id", puid)}")),
-    );
+    final user = useUserDocumentModel(config.userPath);
+    final item =
+        useDocumentModel("${config.postPath}/${context.get("post_id", puid)}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final dateTime =
@@ -277,7 +264,7 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
       actions: [
         if (!inAdd &&
             config.permission.canDelete(
-              user.get(config.roleKey, "registered"),
+              user.get(config.roleKey, "")
             ))
           IconButton(
             icon: const Icon(Icons.delete),

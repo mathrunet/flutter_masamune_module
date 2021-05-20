@@ -29,6 +29,8 @@ export 'package:masamune/masamune.dart';
 part 'src/form_config.dart';
 part 'src/menu_config.dart';
 part 'src/tab_config.dart';
+part 'src/exntensions.dart';
+part 'src/functions.dart';
 
 part 'common/login_and_register.dart';
 

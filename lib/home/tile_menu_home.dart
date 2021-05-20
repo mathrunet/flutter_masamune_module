@@ -5,13 +5,10 @@ class TileMenuHome extends HookWidget {
   final HomeModule config;
   @override
   Widget build(BuildContext context) {
-    final user = context.adapter!.loadDocument(
-      useProvider(context.adapter!
-          .documentProvider("${config.userPath}/${context.adapter?.userId}")),
-    );
+    final user = useUserDocumentModel(config.userPath);
     final name = user.get(config.nameKey, "Unknown".localize());
     final role = context.roles.firstWhereOrNull(
-      (item) => item.id == user.get(config.roleKey, "registered"),
+      (item) => item.id == user.get(config.roleKey, ""),
     );
 
     return Scaffold(
@@ -221,9 +218,7 @@ class _TileMenuHomeInformation extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final info = context.adapter!.loadCollection(
-      useProvider(context.adapter!.collectionProvider(config.info.postPath)),
-    );
+    final info = useCollectionModel(config.info.postPath);
     info.sort((a, b) {
       return b.get("created", DateTime.now().millisecondsSinceEpoch) -
           a.get("created", DateTime.now().millisecondsSinceEpoch);
@@ -309,9 +304,7 @@ class _TileMenuHomeCalendar extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final event = context.adapter!.loadCollection(
-      useProvider(context.adapter!.collectionProvider(config.calendar.path)),
-    );
+    final event = useCollectionModel(config.calendar.path);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

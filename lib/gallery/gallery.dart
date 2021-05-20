@@ -144,10 +144,7 @@ class TileWithTabGallery extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.adapter!.loadDocument(
-      useProvider(context.adapter!
-          .documentProvider("${config.userPath}/${context.adapter?.userId}")),
-    );
+    final user = useUserDocumentModel(config.userPath);
 
     return TabScaffold<TabConfig>(
       title: Text(config.title ?? "Gallery".localize()),
@@ -155,7 +152,7 @@ class TileWithTabGallery extends PageHookWidget {
       tabBuilder: (tab) => Text(tab.label),
       viewBuilder: (tab) => _GridView(config, category: tab.id),
       floatingActionButton: config.permission.canEdit(
-        user.get(config.roleKey, "registered"),
+        user.get(config.roleKey, "")
       )
           ? FloatingActionButton.extended(
               label: Text("Add".localize()),
@@ -178,10 +175,7 @@ class TileGallery extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.adapter!.loadDocument(
-      useProvider(context.adapter!
-          .documentProvider("${config.userPath}/${context.adapter?.userId}")),
-    );
+    final user = useUserDocumentModel(config.userPath);
 
     return Scaffold(
       appBar: AppBar(
@@ -189,7 +183,7 @@ class TileGallery extends PageHookWidget {
       ),
       body: _GridView(config),
       floatingActionButton: config.permission.canEdit(
-        user.get(config.roleKey, "registered"),
+        user.get(config.roleKey, "")
       )
           ? FloatingActionButton.extended(
               label: Text("Add".localize()),
@@ -217,11 +211,7 @@ class _GridView extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gallery = context.adapter!
-        .loadCollection(
-      useProvider(context.adapter!.collectionProvider(path)),
-    )
-        .where(
+    final gallery = useCollectionModel(path).where(
       (item) {
         if (category.isEmpty) {
           return true;
@@ -294,14 +284,10 @@ class _PhotoDetail extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = context.adapter!.loadDocument(
-      useProvider(context.adapter!.documentProvider(
-          "${config.galleryPath}/${context.get("photo_id", "")}")),
-    );
-    final user = context.adapter!.loadDocument(
-      useProvider(context.adapter!
-          .documentProvider("${config.userPath}/${context.adapter?.userId}")),
-    );
+    final user = useUserDocumentModel(config.userPath);
+    final item = useDocumentModel(
+        "${config.galleryPath}/${context.get("photo_id", "")}");
+
     final now = DateTime.now();
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
@@ -315,7 +301,7 @@ class _PhotoDetail extends PageHookWidget {
         title: Text(name),
         actions: [
           if (config.permission.canEdit(
-            user.get(config.roleKey, "registered"),
+            user.get(config.roleKey, "")
           ))
             IconButton(
                 icon: const Icon(Icons.edit),
@@ -409,10 +395,8 @@ class _PhotoView extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = context.adapter!.loadDocument(
-      useProvider(context.adapter!.documentProvider(
-          "${config.galleryPath}/${context.get("photo_id", "")}")),
-    );
+    final item = useDocumentModel(
+        "${config.galleryPath}/${context.get("photo_id", "")}");
     final name = item.get(config.nameKey, "");
     final image = item.get(config.imageKey, "");
     final type = _getPlatformMediaType(image);
@@ -455,14 +439,9 @@ class _PhotoEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.adapter!.loadDocument(
-      useProvider(context.adapter!
-          .documentProvider("${config.userPath}/${context.adapter?.userId}")),
-    );
-    final item = context.adapter!.loadDocument(
-      useProvider(context.adapter!.documentProvider(
-          "${config.galleryPath}/${context.get("photo_id", puid)}")),
-    );
+    final user = useUserDocumentModel(config.userPath);
+    final item = useDocumentModel(
+        "${config.galleryPath}/${context.get("photo_id", "")}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final image = item.get(config.imageKey, "");
@@ -477,7 +456,7 @@ class _PhotoEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
         actions: [
           if (!inAdd &&
               config.permission.canDelete(
-                user.get(config.roleKey, "registered"),
+                user.get(config.roleKey, "")
               ))
             IconButton(
               icon: const Icon(Icons.delete),
