@@ -15,7 +15,7 @@ class GalleryModule extends ModuleConfig {
     this.routePath = "gallery",
     this.galleryPath = "gallery",
     this.userPath = "user",
-    this.imageKey = "image",
+    this.mediaKey = "media",
     this.nameKey = "name",
     this.textKey = "text",
     this.roleKey = "role",
@@ -27,6 +27,7 @@ class GalleryModule extends ModuleConfig {
     this.tileSpacing = 1,
     this.tabConfig = const [],
     this.mediaType = PlatformMediaType.all,
+    this.skipDetailPage = false,
     PermissionConfig permission = const PermissionConfig(),
   }) : super(enabled: enabled, title: title, permission: permission);
 
@@ -37,10 +38,10 @@ class GalleryModule extends ModuleConfig {
     }
     final route = {
       "/$routePath": RouteConfig((_) => Gallery(this)),
-      "/$routePath/edit": RouteConfig((_) => _PhotoEdit(this, inAdd: true)),
-      "/$routePath/{photo_id}": RouteConfig((_) => _PhotoDetail(this)),
-      "/$routePath/{photo_id}/view": RouteConfig((_) => _PhotoView(this)),
-      "/$routePath/{photo_id}/edit": RouteConfig((_) => _PhotoEdit(this)),
+      "/$routePath/edit": RouteConfig((_) => _MediaEdit(this, inAdd: true)),
+      "/$routePath/{media_id}": RouteConfig((_) => _MediaDetail(this)),
+      "/$routePath/{media_id}/view": RouteConfig((_) => _MediaView(this)),
+      "/$routePath/{media_id}/edit": RouteConfig((_) => _MediaEdit(this)),
     };
     return route;
   }
@@ -57,8 +58,8 @@ class GalleryModule extends ModuleConfig {
   /// ユーザーのデータパス。
   final String userPath;
 
-  /// 画像のキー。
-  final String imageKey;
+  /// 画像・映像のキー。
+  final String mediaKey;
 
   /// タイトルのキー。
   final String nameKey;
@@ -92,34 +93,9 @@ class GalleryModule extends ModuleConfig {
 
   /// タブの設定。
   final List<TabConfig> tabConfig;
-}
 
-PlatformMediaType _getPlatformMediaType(String path) {
-  final uri = Uri.tryParse(path);
-  if (uri == null) {
-    return PlatformMediaType.all;
-  }
-  final ext = uri.path.split(".").lastOrNull;
-  if (ext == null) {
-    return PlatformMediaType.all;
-  }
-  switch (ext) {
-    case "mp4":
-    case "ogv":
-    case "webm":
-    case "avi":
-    case "mpeg":
-      return PlatformMediaType.video;
-    case "jpg":
-    case "jpeg":
-    case "png":
-    case "bmp":
-    case "tif":
-    case "tiff":
-    case "gif":
-      return PlatformMediaType.image;
-  }
-  return PlatformMediaType.all;
+  /// 詳細のページは出さずに直接画像を表示する場合は`true`。
+  final bool skipDetailPage;
 }
 
 class Gallery extends PageHookWidget {
@@ -151,20 +127,19 @@ class TileWithTabGallery extends PageHookWidget {
       source: config.tabConfig,
       tabBuilder: (tab) => Text(tab.label),
       viewBuilder: (tab) => _GridView(config, category: tab.id),
-      floatingActionButton: config.permission.canEdit(
-        user.get(config.roleKey, "")
-      )
-          ? FloatingActionButton.extended(
-              label: Text("Add".localize()),
-              icon: const Icon(Icons.add),
-              onPressed: () {
-                context.navigator.pushNamed(
-                  "/${config.routePath}/edit",
-                  arguments: RouteQuery.fullscreen,
-                );
-              },
-            )
-          : null,
+      floatingActionButton:
+          config.permission.canEdit(user.get(config.roleKey, ""))
+              ? FloatingActionButton.extended(
+                  label: Text("Add".localize()),
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    context.navigator.pushNamed(
+                      "/${config.routePath}/edit",
+                      arguments: RouteQuery.fullscreen,
+                    );
+                  },
+                )
+              : null,
     );
   }
 }
@@ -182,20 +157,19 @@ class TileGallery extends PageHookWidget {
         title: Text(config.title ?? "Gallery".localize()),
       ),
       body: _GridView(config),
-      floatingActionButton: config.permission.canEdit(
-        user.get(config.roleKey, "")
-      )
-          ? FloatingActionButton.extended(
-              label: Text("Add".localize()),
-              icon: const Icon(Icons.add),
-              onPressed: () {
-                context.navigator.pushNamed(
-                  "/${config.routePath}/edit",
-                  arguments: RouteQuery.fullscreen,
-                );
-              },
-            )
-          : null,
+      floatingActionButton:
+          config.permission.canEdit(user.get(config.roleKey, ""))
+              ? FloatingActionButton.extended(
+                  label: Text("Add".localize()),
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    context.navigator.pushNamed(
+                      "/${config.routePath}/edit",
+                      arguments: RouteQuery.fullscreen,
+                    );
+                  },
+                )
+              : null,
     );
   }
 }
@@ -228,8 +202,8 @@ class _GridView extends HookWidget {
       children: [
         ...gallery.mapWidget(
           (item) {
-            final path = item.get(config.imageKey, "");
-            final type = _getPlatformMediaType(path);
+            final path = item.get(config.mediaKey, "");
+            final type = getPlatformMediaType(path);
             switch (type) {
               case PlatformMediaType.video:
                 return InkWell(
@@ -247,7 +221,9 @@ class _GridView extends HookWidget {
                   ),
                   onTap: () {
                     context.navigator.pushNamed(
-                      "/${config.routePath}/${item.get("uid", "")}",
+                      config.skipDetailPage
+                          ? "/${config.routePath}/${item.get("uid", "")}/view"
+                          : "/${config.routePath}/${item.get("uid", "")}",
                       arguments: RouteQuery.fullscreen,
                     );
                   },
@@ -265,7 +241,9 @@ class _GridView extends HookWidget {
                   ),
                   onTap: () {
                     context.navigator.pushNamed(
-                      "/${config.routePath}/${item.get("uid", "")}",
+                      config.skipDetailPage
+                          ? "/${config.routePath}/${item.get("uid", "")}/view"
+                          : "/${config.routePath}/${item.get("uid", "")}",
                       arguments: RouteQuery.fullscreen,
                     );
                   },
@@ -278,36 +256,34 @@ class _GridView extends HookWidget {
   }
 }
 
-class _PhotoDetail extends PageHookWidget {
-  const _PhotoDetail(this.config);
+class _MediaDetail extends PageHookWidget {
+  const _MediaDetail(this.config);
   final GalleryModule config;
 
   @override
   Widget build(BuildContext context) {
     final user = useUserDocumentModel(config.userPath);
     final item = useDocumentModel(
-        "${config.galleryPath}/${context.get("photo_id", "")}");
+        "${config.galleryPath}/${context.get("media_id", "")}");
 
     final now = DateTime.now();
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
-    final image = item.get(config.imageKey, "");
+    final media = item.get(config.mediaKey, "");
     final createdTime =
         item.get(config.createdTimeKey, now.millisecondsSinceEpoch);
-    final type = _getPlatformMediaType(image);
+    final type = getPlatformMediaType(media);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(name),
         actions: [
-          if (config.permission.canEdit(
-            user.get(config.roleKey, "")
-          ))
+          if (config.permission.canEdit(user.get(config.roleKey, "")))
             IconButton(
                 icon: const Icon(Icons.edit),
                 onPressed: () {
                   context.navigator.pushNamed(
-                    "/${config.routePath}/${context.get("photo_id", "")}/edit",
+                    "/${config.routePath}/${context.get("media_id", "")}/edit",
                     arguments: RouteQuery.fullscreen,
                   );
                 })
@@ -318,7 +294,7 @@ class _PhotoDetail extends PageHookWidget {
           InkWell(
             onTap: () {
               context.navigator.pushNamed(
-                "/${config.routePath}/${context.get("photo_id", "")}/view",
+                "/${config.routePath}/${context.get("media_id", "")}/view",
                 arguments: RouteQuery.fullscreen,
               );
             },
@@ -330,7 +306,7 @@ class _PhotoDetail extends PageHookWidget {
                     height: config.heightOnDetailView,
                     child: ClipRRect(
                       child: Video(
-                        NetworkOrAsset.video(image),
+                        NetworkOrAsset.video(media),
                         fit: BoxFit.cover,
                         autoplay: true,
                         mute: true,
@@ -343,7 +319,7 @@ class _PhotoDetail extends PageHookWidget {
                     height: config.heightOnDetailView,
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: NetworkOrAsset.image(image),
+                        image: NetworkOrAsset.image(media),
                         fit: BoxFit.cover,
                       ),
                       color: context.theme.disabledColor,
@@ -389,24 +365,37 @@ class _PhotoDetail extends PageHookWidget {
   }
 }
 
-class _PhotoView extends PageHookWidget {
-  const _PhotoView(this.config);
+class _MediaView extends PageHookWidget {
+  const _MediaView(this.config);
   final GalleryModule config;
 
   @override
   Widget build(BuildContext context) {
+    final user = useUserDocumentModel(config.userPath);
     final item = useDocumentModel(
-        "${config.galleryPath}/${context.get("photo_id", "")}");
+        "${config.galleryPath}/${context.get("media_id", "")}");
     final name = item.get(config.nameKey, "");
-    final image = item.get(config.imageKey, "");
-    final type = _getPlatformMediaType(image);
+    final media = item.get(config.mediaKey, "");
+    final type = getPlatformMediaType(media);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(name),
+        actions: [
+          if (config.skipDetailPage &&
+              config.permission.canEdit(user.get(config.roleKey, "")))
+            IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () {
+                  context.navigator.pushNamed(
+                    "/${config.routePath}/${context.get("media_id", "")}/edit",
+                    arguments: RouteQuery.fullscreen,
+                  );
+                })
+        ],
       ),
       backgroundColor: Colors.black,
-      body: image.isEmpty
+      body: media.isEmpty
           ? Center(
               child: Text(
                 "No data.".localize(),
@@ -418,22 +407,22 @@ class _PhotoView extends PageHookWidget {
                 case PlatformMediaType.video:
                   return Center(
                     child: Video(
-                      NetworkOrAsset.video(image),
+                      NetworkOrAsset.video(media),
                       fit: BoxFit.contain,
                       controllable: true,
                       mixWithOthers: true,
                     ),
                   );
                 default:
-                  return PhotoView(imageProvider: NetworkOrAsset.image(image));
+                  return PhotoView(imageProvider: NetworkOrAsset.image(media));
               }
             }(),
     );
   }
 }
 
-class _PhotoEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
-  _PhotoEdit(this.config, {this.inAdd = false});
+class _MediaEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
+  _MediaEdit(this.config, {this.inAdd = false});
   final GalleryModule config;
   final bool inAdd;
 
@@ -441,10 +430,10 @@ class _PhotoEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
   Widget build(BuildContext context) {
     final user = useUserDocumentModel(config.userPath);
     final item = useDocumentModel(
-        "${config.galleryPath}/${context.get("photo_id", "")}");
+        "${config.galleryPath}/${context.get("media_id", "")}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
-    final image = item.get(config.imageKey, "");
+    final media = item.get(config.mediaKey, "");
 
     return Scaffold(
       appBar: AppBar(
@@ -455,9 +444,7 @@ class _PhotoEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
         ),
         actions: [
           if (!inAdd &&
-              config.permission.canDelete(
-                user.get(config.roleKey, "")
-              ))
+              config.permission.canDelete(user.get(config.roleKey, "")))
             IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () {
@@ -487,7 +474,7 @@ class _PhotoEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
             height: 200,
             dense: true,
             controller: useMemoizedTextEditingController(
-              inAdd ? "" : image,
+              inAdd ? "" : media,
             ),
             onTap: (onUpdate) async {
               final media = await context.platform?.mediaDialog(
@@ -498,7 +485,7 @@ class _PhotoEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
               onUpdate(media?.file);
             },
             onSaved: (value) {
-              context[config.imageKey] = value;
+              context[config.mediaKey] = value;
             },
           ),
           const Space.height(12),
@@ -553,8 +540,8 @@ class _PhotoEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
           item[config.nameKey] = context.get(config.nameKey, "");
           item[config.textKey] = context.get(config.textKey, "");
           item[config.categoryKey] = context.get(config.categoryKey, "");
-          item[config.imageKey] = await context.adapter
-              ?.uploadMedia(context.get(config.imageKey, ""))
+          item[config.mediaKey] = await context.adapter
+              ?.uploadMedia(context.get(config.mediaKey, ""))
               .showIndicator(context);
           await context.adapter?.saveDocument(item).showIndicator(context);
           context.navigator.pop();

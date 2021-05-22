@@ -105,20 +105,19 @@ class Post extends PageHookWidget {
           ),
         ],
       ),
-      floatingActionButton: config.permission.canEdit(
-        user.get(config.roleKey, "")
-      )
-          ? FloatingActionButton.extended(
-              label: Text("Add".localize()),
-              icon: const Icon(Icons.add),
-              onPressed: () {
-                context.navigator.pushNamed(
-                  "/${config.routePath}/edit",
-                  arguments: RouteQuery.fullscreen,
-                );
-              },
-            )
-          : null,
+      floatingActionButton:
+          config.permission.canEdit(user.get(config.roleKey, ""))
+              ? FloatingActionButton.extended(
+                  label: Text("Add".localize()),
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    context.navigator.pushNamed(
+                      "/${config.routePath}/edit",
+                      arguments: RouteQuery.fullscreen,
+                    );
+                  },
+                )
+              : null,
     );
   }
 }
@@ -145,9 +144,7 @@ class _PostView extends PageHookWidget {
     final appBar = AppBar(
       title: Text(name),
       actions: [
-        if (config.permission.canEdit(
-          user.get(config.roleKey, "")
-        ))
+        if (config.permission.canEdit(user.get(config.roleKey, "")))
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
@@ -262,10 +259,7 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
             : "Editing %s".localize().format([name]),
       ),
       actions: [
-        if (!inAdd &&
-            config.permission.canDelete(
-              user.get(config.roleKey, "")
-            ))
+        if (!inAdd && config.permission.canDelete(user.get(config.roleKey, "")))
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () {

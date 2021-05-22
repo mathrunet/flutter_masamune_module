@@ -15,9 +15,9 @@ extension _QuenstionFormTypeExtension on _QuenstionFormType {
   String get name {
     switch (this) {
       case _QuenstionFormType.select:
-        return "Selection form".localize();
+        return "Choices".localize();
       default:
-        return "Text form".localize();
+        return "Text".localize();
     }
   }
 }
@@ -377,6 +377,9 @@ class _QuestionnaireQuestionEdit extends PageHookWidget
     final type = item.get(config.typeKey, "");
     final required = item.get(config.requiredKey, false);
     final view = useState(type);
+    final selection = item.get(config.selectKey, {});
+    final selectionTextEditingControllers =
+        useMemoizedTextEditingControllerMap(selection);
 
     return Scaffold(
       appBar: AppBar(
@@ -456,8 +459,48 @@ class _QuestionnaireQuestionEdit extends PageHookWidget
             },
           ),
           if (view.value == "select") ...[
+            DividHeadline("Choices".localize()),
+            AppendableBuilder(
+              initialValues: selection.keys.cast<String>(),
+              builder: (context, id, onAdd, onRemove) {
+                return AppendableBuilderItem(
+                  onPressed: () {
+                    onRemove(id);
+                  },
+                  child: FormItemTextField(
+                    dense: true,
+                    hintText:
+                        "Input %s".localize().format(["Choices".localize()]),
+                    keyboardType: TextInputType.text,
+                    controller: selectionTextEditingControllers[id],
+                    onSaved: (value) {
+                      final select = context.get(config.selectKey, {});
+                      select[id] = value;
+                      context[config.selectKey] = select;
+                    },
+                  ),
+                );
+              },
+              child: (context, children, onAdd, onRemove) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ...children,
+                    IconButton(
+                      icon: const Icon(
+                        Icons.add,
+                      ),
+                      onPressed: () {
+                        onAdd.call();
+                      },
+                    ),
+                  ],
+                );
+              },
+            )
           ],
           const Divid(),
+          const Space.height(100),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(

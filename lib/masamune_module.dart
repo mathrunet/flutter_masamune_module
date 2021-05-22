@@ -37,7 +37,8 @@ part 'common/login_and_register.dart';
 part 'home/home.dart';
 part 'home/tile_menu_home.dart';
 
-part 'gallery/gallery.dart';
+part 'media/gallery.dart';
+part 'media/single_media.dart';
 
 part 'post/post.dart';
 
