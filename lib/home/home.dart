@@ -18,7 +18,7 @@ class HomeModule extends ModuleConfig {
     this.titleAlignment = Alignment.center,
     this.titlePadding = const EdgeInsets.all(12),
     this.contentPadding = const EdgeInsets.all(8),
-    this.headerHeight,
+    this.headerHeight = 90,
     this.userPath = "user",
     this.calendar = const HomeCalendarModule(enabled: false),
     this.info = const HomeInformationModule(enabled: false),
@@ -89,7 +89,7 @@ class HomeModule extends ModuleConfig {
   final EdgeInsetsGeometry contentPadding;
 
   /// ヘッダーの高さ。
-  final double? headerHeight;
+  final double headerHeight;
 
   /// ユーザーのデータパス。
   final String userPath;

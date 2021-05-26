@@ -12,201 +12,215 @@ class TileMenuHome extends HookWidget {
     );
 
     return Scaffold(
-      body: ListView(
-        padding: const EdgeInsets.all(8),
-        children: [
-          SizedBox(
-            height: config.headerHeight,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: DefaultTextStyle(
-                    style: TextStyle(
-                      color: config.textColor ??
-                          context.theme.colorScheme.onPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    child: Container(
-                      height: 85,
-                      alignment: config.titleAlignment,
-                      padding: config.titlePadding,
-                      decoration: BoxDecoration(
-                        image: config.featureImage != null
-                            ? DecorationImage(
-                                image: config.featureImage!,
-                                fit: config.featureImageFit,
-                              )
-                            : null,
-                        color: config.color ?? context.theme.primaryColor,
-                      ),
-                      child: Text(
-                        config.title ?? "",
-                        style: config.titleTextStyle,
-                      ),
-                    ),
-                  ),
-                ),
-                const Space.width(4),
-                Expanded(
-                  flex: 1,
-                  child: DefaultTextStyle(
-                    style: TextStyle(
-                      color: config.textColor ??
-                          context.theme.colorScheme.onPrimary,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Container(
-                          color: config.color ?? context.theme.primaryColor,
-                          padding: config.contentPadding,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  if (role?.icon != null) ...[
-                                    Icon(
-                                      role?.icon,
-                                      color: config.textColor ??
-                                          context.theme.colorScheme.onPrimary,
-                                      size: 10,
-                                    ),
-                                    const Space.width(4),
-                                  ],
-                                  Text(
-                                    role?.label ?? "",
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const Space.width(4),
-                              Text(
-                                "%s san".localize().format([name]),
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ],
-                          ),
+      body: PlatformScrollbar(
+        child: ListView(
+          padding: const EdgeInsets.all(8),
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: SizedBox(
+                height: config.headerHeight,
+                width: isMobile(context)
+                    ? null
+                    : () {
+                        return context.mediaQuery.size.width / 2;
+                      }(),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: DefaultTextStyle(
+                        style: TextStyle(
+                          color: config.textColor ??
+                              context.theme.colorScheme.onPrimary,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const Space.height(4),
-                        InkWell(
-                          child: ColoredBox(
+                        child: Container(
+                          alignment: config.titleAlignment,
+                          padding: config.titlePadding,
+                          decoration: BoxDecoration(
+                            image: config.featureImage != null
+                                ? DecorationImage(
+                                    image: config.featureImage!,
+                                    fit: config.featureImageFit,
+                                  )
+                                : null,
                             color: config.color ?? context.theme.primaryColor,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
-                              child: Text(
-                                "MyPage".localize(),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
+                          ),
+                          child: Text(
+                            config.title ?? "",
+                            style: config.titleTextStyle,
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                )
-              ],
-            ),
-          ),
-          const Space.height(8),
-          if (config.info.enabled) ...[
-            _TileMenuHomeInformation(config),
-            const Space.height(8),
-          ],
-          if (config.calendar.enabled) ...[
-            _TileMenuHomeCalendar(config),
-            const Space.height(8),
-          ],
-          _TileMenuHomeHeadline(
-            "Menu".localize(),
-            icon: Icons.menu,
-            color: config.textColor ?? context.theme.colorScheme.onPrimary,
-            backgroundColor:
-                config.color ?? context.theme.primaryColor.lighten(0.15),
-          ),
-          const Space.height(4),
-          Grid(
-            crossAxisCount: 3,
-            crossAxisSpacing: 4,
-            mainAxisSpacing: 4,
-            children: [
-              ...config.menuByRole(role).mapAndRemoveEmpty((item) {
-                return InkWell(
-                  onTap: item.path.isEmpty
-                      ? null
-                      : () {
-                          context.open(item.path!);
-                        },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    color: config.color ?? context.theme.primaryColor,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Icon(
-                          item.icon ?? Icons.info,
-                          size: 64,
+                    const Space.width(4),
+                    Expanded(
+                      flex: 1,
+                      child: DefaultTextStyle(
+                        style: TextStyle(
                           color: config.textColor ??
                               context.theme.colorScheme.onPrimary,
                         ),
-                        const Space.height(8),
-                        Text(
-                          item.name,
-                          style: TextStyle(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: Container(
+                                alignment: Alignment.centerLeft,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 0),
+                                color:
+                                    config.color ?? context.theme.primaryColor,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        if (role?.icon != null) ...[
+                                          Icon(
+                                            role?.icon,
+                                            color: config.textColor ??
+                                                context.theme.colorScheme
+                                                    .onPrimary,
+                                            size: 15,
+                                          ),
+                                          const Space.width(4),
+                                        ],
+                                        Text(
+                                          role?.label ?? "",
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const Space.width(4),
+                                    Text(
+                                      "%s san".localize().format([name]),
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const Space.height(4),
+                            ClickableBox(
+                              color: config.color ?? context.theme.primaryColor,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
+                                child: Text(
+                                  "MyPage".localize(),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+            const Space.height(8),
+            if (config.info.enabled) ...[
+              _TileMenuHomeInformation(config),
+              const Space.height(8),
+            ],
+            if (config.calendar.enabled) ...[
+              _TileMenuHomeCalendar(config),
+              const Space.height(8),
+            ],
+            _TileMenuHomeHeadline(
+              "Menu".localize(),
+              icon: Icons.menu,
+              color: config.textColor ?? context.theme.colorScheme.onPrimary,
+              backgroundColor:
+                  config.color ?? context.theme.primaryColor.lighten(0.15),
+            ),
+            const Space.height(4),
+            Grid(
+              crossAxisCount: isMobile(context) ? 3 : 6,
+              crossAxisSpacing: 4,
+              mainAxisSpacing: 4,
+              children: [
+                ...config.menuByRole(role).mapAndRemoveEmpty((item) {
+                  return ClickableBox(
+                    color: config.color ?? context.theme.primaryColor,
+                    onTap: item.path.isEmpty
+                        ? null
+                        : () {
+                            context.open(item.path!);
+                          },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(
+                            item.icon ?? Icons.info,
+                            size: isMobile(context) ? 64 : 78,
                             color: config.textColor ??
                                 context.theme.colorScheme.onPrimary,
-                            fontWeight: FontWeight.bold,
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
-            ],
-          ),
-          const Space.height(8),
-          Grid(
-            crossAxisCount: 2,
-            crossAxisSpacing: 4,
-            mainAxisSpacing: 4,
-            childAspectRatio: 3,
-            children: [
-              ...config.subMenu.mapAndRemoveEmpty((item) {
-                return InkWell(
-                  onTap: item.path.isEmpty
-                      ? null
-                      : () {
-                          context.open(item.path!);
-                        },
-                  child: Container(
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.all(8),
-                    color: config.color ?? context.theme.primaryColor,
-                    child: Text(
-                      item.name,
-                      style: TextStyle(
-                        color: config.textColor ??
-                            context.theme.colorScheme.onPrimary,
-                        fontWeight: FontWeight.bold,
+                          const Space.height(8),
+                          Text(
+                            item.name,
+                            style: TextStyle(
+                                color: config.textColor ??
+                                    context.theme.colorScheme.onPrimary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: isMobile(context) ? null : 15),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                );
-              }),
-            ],
-          )
-        ],
+                  );
+                }),
+              ],
+            ),
+            const Space.height(8),
+            Grid(
+              crossAxisCount: isMobile(context) ? 2 : 4,
+              crossAxisSpacing: 4,
+              mainAxisSpacing: 4,
+              childAspectRatio: 3,
+              children: [
+                ...config.subMenu.mapAndRemoveEmpty((item) {
+                  return ClickableBox(
+                    color: config.color ?? context.theme.primaryColor,
+                    onTap: item.path.isEmpty
+                        ? null
+                        : () {
+                            context.open(item.path!);
+                          },
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.all(8),
+                      child: Text(
+                        item.name,
+                        style: TextStyle(
+                          color: config.textColor ??
+                              context.theme.colorScheme.onPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            )
+          ],
+        ),
       ),
     );
   }
@@ -236,7 +250,7 @@ class _TileMenuHomeInformation extends HookWidget {
         ),
         const Space.height(4),
         Grid(
-          crossAxisCount: 2,
+          crossAxisCount: isMobile(context) ? 2 : 4,
           mainAxisSpacing: 4,
           crossAxisSpacing: 4,
           childAspectRatio: 2,
@@ -250,7 +264,8 @@ class _TileMenuHomeInformation extends HookWidget {
                   color:
                       config.textColor ?? context.theme.colorScheme.onPrimary,
                 ),
-                child: InkWell(
+                child: ClickableBox(
+                  color: config.color ?? context.theme.primaryColor,
                   onTap: () {
                     context.navigator.pushNamed(
                       "/info/${item.get("uid", "")}",
@@ -259,7 +274,6 @@ class _TileMenuHomeInformation extends HookWidget {
                   },
                   child: Container(
                     padding: const EdgeInsets.all(8),
-                    color: config.color ?? context.theme.primaryColor,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

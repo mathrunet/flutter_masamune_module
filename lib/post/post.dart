@@ -333,6 +333,12 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
               QuillToolbar.basic(
                 controller: controller,
                 toolbarIconSize: 24,
+                onImagePickCallback: (file) async {
+                  if (file.path.isEmpty || !file.existsSync()) {
+                    return "";
+                  }
+                  return await context.adapter!.uploadMedia(file.path);
+                },
               ),
               Expanded(
                 child: QuillEditor(

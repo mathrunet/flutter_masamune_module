@@ -21,8 +21,10 @@ class GalleryModule extends ModuleConfig {
     this.roleKey = "role",
     this.categoryKey = "category",
     this.createdTimeKey = "createdTime",
-    this.crossAxisCount = 4,
-    this.childAspectRatio = 0.5625,
+    this.crossAxisCountForMobile = 4,
+    this.crossAxisCountForDesktop = 6,
+    this.childAspectRatioForMobile = 0.5625,
+    this.childAspectRatioForDesktop = 1,
     this.heightOnDetailView = 200,
     this.tileSpacing = 1,
     this.tabConfig = const [],
@@ -38,6 +40,8 @@ class GalleryModule extends ModuleConfig {
     }
     final route = {
       "/$routePath": RouteConfig((_) => Gallery(this)),
+      "/$routePath/tab/{tab_id}": RouteConfig(
+          (context) => _GridView(this, category: context.get("tab_id", ""))),
       "/$routePath/edit": RouteConfig((_) => _MediaEdit(this, inAdd: true)),
       "/$routePath/{media_id}": RouteConfig((_) => _MediaDetail(this)),
       "/$routePath/{media_id}/view": RouteConfig((_) => _MediaView(this)),
@@ -77,10 +81,12 @@ class GalleryModule extends ModuleConfig {
   final String createdTimeKey;
 
   /// タイルの横方向の要素数。
-  final int crossAxisCount;
+  final int crossAxisCountForMobile;
+  final int crossAxisCountForDesktop;
 
   /// タイルのアスペクト比。
-  final double childAspectRatio;
+  final double childAspectRatioForMobile;
+  final double childAspectRatioForDesktop;
 
   /// タイルのスペース。
   final double tileSpacing;
@@ -122,24 +128,106 @@ class TileWithTabGallery extends PageHookWidget {
   Widget build(BuildContext context) {
     final user = useUserDocumentModel(config.userPath);
 
-    return TabScaffold<TabConfig>(
-      title: Text(config.title ?? "Gallery".localize()),
-      source: config.tabConfig,
-      tabBuilder: (tab) => Text(tab.label),
-      viewBuilder: (tab) => _GridView(config, category: tab.id),
-      floatingActionButton:
-          config.permission.canEdit(user.get(config.roleKey, ""))
-              ? FloatingActionButton.extended(
-                  label: Text("Add".localize()),
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    context.navigator.pushNamed(
-                      "/${config.routePath}/edit",
-                      arguments: RouteQuery.fullscreen,
-                    );
-                  },
-                )
-              : null,
+    return PlatformBuilder(
+      mobile: TabScaffold<TabConfig>(
+        title: Text(config.title ?? "Gallery".localize()),
+        automaticallyImplyLeading: isMobile(context),
+        centerTitle: isMobile(context),
+        source: config.tabConfig,
+        tabBuilder: (tab) => Text(tab.label),
+        viewBuilder: (tab) => _GridView(config, category: tab.id),
+        floatingActionButton:
+            config.permission.canEdit(user.get(config.roleKey, ""))
+                ? FloatingActionButton.extended(
+                    label: Text("Add".localize()),
+                    icon: const Icon(Icons.add),
+                    onPressed: () {
+                      context.navigator.pushNamed(
+                        "/${config.routePath}/edit",
+                        arguments: RouteQuery.fullscreen,
+                      );
+                    },
+                  )
+                : null,
+      ),
+      desktop: () {
+        final controller = useNavigatorController(
+          "/${config.routePath}/tab/${config.tabConfig.firstOrNull?.id}",
+        );
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(config.title ?? "Gallery".localize()),
+            automaticallyImplyLeading: isMobile(context),
+            centerTitle: isMobile(context),
+          ),
+          body: Row(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                      right: BorderSide(
+                          color: context.theme.dividerColor.withOpacity(0.25))),
+                ),
+                width: 200,
+                child: Scrollbar(
+                  child: ListView(
+                    children: [
+                      ...config.tabConfig.map(
+                        (e) => ListTile(
+                          title: Text(
+                            e.label,
+                            style: TextStyle(
+                              color: controller.route?.name?.endsWith(e.id) ??
+                                      false
+                                  ? context.theme.colorScheme.onPrimary
+                                  : null,
+                              fontWeight:
+                                  controller.route?.name?.endsWith(e.id) ??
+                                          false
+                                      ? FontWeight.bold
+                                      : null,
+                            ),
+                          ),
+                          tileColor:
+                              controller.route?.name?.endsWith(e.id) ?? false
+                                  ? context.theme.primaryColor.withOpacity(0.8)
+                                  : null,
+                          onTap: () {
+                            if (controller.route?.name?.endsWith(e.id) ??
+                                false) {
+                              return;
+                            }
+                            controller.pushReplacementNamed(
+                                "/${config.routePath}/tab/${e.id}");
+                          },
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 6,
+                child: InlinePageBuilder(controller: controller),
+              ),
+            ],
+          ),
+          floatingActionButton:
+              config.permission.canEdit(user.get(config.roleKey, ""))
+                  ? FloatingActionButton.extended(
+                      label: Text("Add".localize()),
+                      icon: const Icon(Icons.add),
+                      onPressed: () {
+                        context.rootNavigator.pushNamed(
+                          "/${config.routePath}/edit",
+                          arguments: RouteQuery.fullscreen,
+                        );
+                      },
+                    )
+                  : null,
+        );
+      }(),
     );
   }
 }
@@ -194,64 +282,76 @@ class _GridView extends HookWidget {
       },
     );
 
-    return GridView.count(
-      crossAxisCount: config.crossAxisCount,
-      childAspectRatio: config.childAspectRatio,
-      mainAxisSpacing: config.tileSpacing,
-      crossAxisSpacing: config.tileSpacing,
-      children: [
-        ...gallery.mapWidget(
-          (item) {
-            final path = item.get(config.mediaKey, "");
-            final type = getPlatformMediaType(path);
-            switch (type) {
-              case PlatformMediaType.video:
-                return InkWell(
-                  child: ColoredBox(
+    return PlatformScrollbar(
+      child: GridView.count(
+        crossAxisCount: isMobile(context)
+            ? config.crossAxisCountForMobile
+            : config.crossAxisCountForDesktop,
+        childAspectRatio: isMobile(context)
+            ? config.childAspectRatioForMobile
+            : config.childAspectRatioForDesktop,
+        mainAxisSpacing: config.tileSpacing,
+        crossAxisSpacing: config.tileSpacing,
+        children: [
+          ...gallery.mapWidget(
+            (item) {
+              final path = item.get(config.mediaKey, "");
+              final type = getPlatformMediaType(path);
+              switch (type) {
+                case PlatformMediaType.video:
+                  return Container(
                     color: context.theme.dividerColor,
                     child: ClipRRect(
-                      child: Video(
-                        NetworkOrAsset.video(path),
+                      child: ClickableBox.video(
+                        video: NetworkOrAsset.video(path),
                         fit: BoxFit.cover,
-                        autoplay: true,
-                        mute: true,
-                        mixWithOthers: true,
+                        onTap: () {
+                          if (isMobile(context)) {
+                            context.rootNavigator.pushNamed(
+                              config.skipDetailPage
+                                  ? "/${config.routePath}/${item.get("uid", "")}/view"
+                                  : "/${config.routePath}/${item.get("uid", "")}",
+                              arguments: RouteQuery.fullscreen,
+                            );
+                          } else {
+                            context.rootNavigator.pushNamed(
+                              config.skipDetailPage
+                                  ? "/${config.routePath}/${item.get("uid", "")}/view"
+                                  : "/${config.routePath}/${item.get("uid", "")}",
+                              arguments: RouteQuery.modal,
+                            );
+                          }
+                        },
                       ),
                     ),
-                  ),
-                  onTap: () {
-                    context.navigator.pushNamed(
-                      config.skipDetailPage
-                          ? "/${config.routePath}/${item.get("uid", "")}/view"
-                          : "/${config.routePath}/${item.get("uid", "")}",
-                      arguments: RouteQuery.fullscreen,
-                    );
-                  },
-                );
-              default:
-                return InkWell(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkOrAsset.image(path),
-                        fit: BoxFit.cover,
-                      ),
-                      color: context.theme.disabledColor,
-                    ),
-                  ),
-                  onTap: () {
-                    context.navigator.pushNamed(
-                      config.skipDetailPage
-                          ? "/${config.routePath}/${item.get("uid", "")}/view"
-                          : "/${config.routePath}/${item.get("uid", "")}",
-                      arguments: RouteQuery.fullscreen,
-                    );
-                  },
-                );
-            }
-          },
-        ),
-      ],
+                  );
+                default:
+                  return ClickableBox.image(
+                    image: NetworkOrAsset.image(path),
+                    fit: BoxFit.cover,
+                    onTap: () {
+                      if (isMobile(context)) {
+                        context.rootNavigator.pushNamed(
+                          config.skipDetailPage
+                              ? "/${config.routePath}/${item.get("uid", "")}/view"
+                              : "/${config.routePath}/${item.get("uid", "")}",
+                          arguments: RouteQuery.fullscreen,
+                        );
+                      } else {
+                        context.rootNavigator.pushNamed(
+                          config.skipDetailPage
+                              ? "/${config.routePath}/${item.get("uid", "")}/view"
+                              : "/${config.routePath}/${item.get("uid", "")}",
+                          arguments: RouteQuery.modal,
+                        );
+                      }
+                    },
+                  );
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 }
@@ -378,45 +478,50 @@ class _MediaView extends PageHookWidget {
     final media = item.get(config.mediaKey, "");
     final type = getPlatformMediaType(media);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(name),
-        actions: [
-          if (config.skipDetailPage &&
-              config.permission.canEdit(user.get(config.roleKey, "")))
-            IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () {
-                  context.navigator.pushNamed(
-                    "/${config.routePath}/${context.get("media_id", "")}/edit",
-                    arguments: RouteQuery.fullscreen,
-                  );
-                })
-        ],
+    return PlatformModalView(
+      widthRatio: 0.8,
+      heightRatio: 0.8,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(name),
+          actions: [
+            if (config.skipDetailPage &&
+                config.permission.canEdit(user.get(config.roleKey, "")))
+              IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () {
+                    context.navigator.pushNamed(
+                      "/${config.routePath}/${context.get("media_id", "")}/edit",
+                      arguments: RouteQuery.fullscreen,
+                    );
+                  })
+          ],
+        ),
+        backgroundColor: Colors.black,
+        body: media.isEmpty
+            ? Center(
+                child: Text(
+                  "No data.".localize(),
+                  style: const TextStyle(color: Colors.white),
+                ),
+              )
+            : () {
+                switch (type) {
+                  case PlatformMediaType.video:
+                    return Center(
+                      child: Video(
+                        NetworkOrAsset.video(media),
+                        fit: BoxFit.contain,
+                        controllable: true,
+                        mixWithOthers: true,
+                      ),
+                    );
+                  default:
+                    return PhotoView(
+                        imageProvider: NetworkOrAsset.image(media));
+                }
+              }(),
       ),
-      backgroundColor: Colors.black,
-      body: media.isEmpty
-          ? Center(
-              child: Text(
-                "No data.".localize(),
-                style: const TextStyle(color: Colors.white),
-              ),
-            )
-          : () {
-              switch (type) {
-                case PlatformMediaType.video:
-                  return Center(
-                    child: Video(
-                      NetworkOrAsset.video(media),
-                      fit: BoxFit.contain,
-                      controllable: true,
-                      mixWithOthers: true,
-                    ),
-                  );
-                default:
-                  return PhotoView(imageProvider: NetworkOrAsset.image(media));
-              }
-            }(),
     );
   }
 }
@@ -430,7 +535,7 @@ class _MediaEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
   Widget build(BuildContext context) {
     final user = useUserDocumentModel(config.userPath);
     final item = useDocumentModel(
-        "${config.galleryPath}/${context.get("media_id", "")}");
+        "${config.galleryPath}/${context.get("media_id", puid)}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final media = item.get(config.mediaKey, "");
