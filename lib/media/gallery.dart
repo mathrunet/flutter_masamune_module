@@ -131,8 +131,6 @@ class TileWithTabGallery extends PageHookWidget {
     return PlatformBuilder(
       mobile: TabScaffold<TabConfig>(
         title: Text(config.title ?? "Gallery".localize()),
-        automaticallyImplyLeading: context.isMobile,
-        centerTitle: context.isMobile,
         source: config.tabConfig,
         tabBuilder: (tab) => Text(tab.label),
         viewBuilder: (tab) => _GridView(config, category: tab.id),
@@ -262,7 +260,7 @@ class _GridView extends HookWidget {
 
     return PlatformScrollbar(
       child: GridView.count(
-        crossAxisCount: context.isMobile
+        crossAxisCount: context.isMobileOrSmall
             ? config.crossAxisCountForMobile
             : config.crossAxisCountForDesktop,
         childAspectRatio: context.isMobile

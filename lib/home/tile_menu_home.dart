@@ -20,7 +20,7 @@ class TileMenuHome extends HookWidget {
               alignment: Alignment.centerLeft,
               child: SizedBox(
                 height: config.headerHeight,
-                width: context.isMobile
+                width: context.isMobileOrSmall
                     ? null
                     : () {
                         return context.mediaQuery.size.width / 2;
@@ -148,7 +148,7 @@ class TileMenuHome extends HookWidget {
             ),
             const Space.height(4),
             Grid(
-              crossAxisCount: context.isMobile ? 3 : 6,
+              crossAxisCount: context.isMobileOrSmall ? 3 : 6,
               crossAxisSpacing: 4,
               mainAxisSpacing: 4,
               children: [
@@ -168,7 +168,7 @@ class TileMenuHome extends HookWidget {
                         children: [
                           Icon(
                             item.icon ?? Icons.info,
-                            size: context.isMobile ? 64 : 78,
+                            size: context.isMobileOrSmall ? 64 : 78,
                             color: config.textColor ??
                                 context.theme.textColorOnPrimary,
                           ),
@@ -179,7 +179,7 @@ class TileMenuHome extends HookWidget {
                                 color: config.textColor ??
                                     context.theme.textColorOnPrimary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: context.isMobile ? null : 15),
+                                fontSize: context.isMobileOrSmall ? null : 15),
                           ),
                         ],
                       ),
@@ -190,7 +190,7 @@ class TileMenuHome extends HookWidget {
             ),
             const Space.height(8),
             Grid(
-              crossAxisCount: context.isMobile ? 2 : 4,
+              crossAxisCount: context.isMobileOrSmall ? 2 : 4,
               crossAxisSpacing: 4,
               mainAxisSpacing: 4,
               childAspectRatio: 3,
@@ -250,7 +250,7 @@ class _TileMenuHomeInformation extends HookWidget {
         ),
         const Space.height(4),
         Grid(
-          crossAxisCount: context.isMobile ? 2 : 4,
+          crossAxisCount: context.isMobileOrSmall ? 2 : 4,
           mainAxisSpacing: 4,
           crossAxisSpacing: 4,
           childAspectRatio: 2,
