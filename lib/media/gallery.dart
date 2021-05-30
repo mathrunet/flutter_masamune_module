@@ -131,8 +131,8 @@ class TileWithTabGallery extends PageHookWidget {
     return PlatformBuilder(
       mobile: TabScaffold<TabConfig>(
         title: Text(config.title ?? "Gallery".localize()),
-        automaticallyImplyLeading: isMobile(context),
-        centerTitle: isMobile(context),
+        automaticallyImplyLeading: context.isMobile,
+        centerTitle: context.isMobile,
         source: config.tabConfig,
         tabBuilder: (tab) => Text(tab.label),
         viewBuilder: (tab) => _GridView(config, category: tab.id),
@@ -144,7 +144,7 @@ class TileWithTabGallery extends PageHookWidget {
                     onPressed: () {
                       context.navigator.pushNamed(
                         "/${config.routePath}/edit",
-                        arguments: RouteQuery.fullscreen,
+                        arguments: RouteQuery.fullscreenOrModal,
                       );
                     },
                   )
@@ -154,64 +154,42 @@ class TileWithTabGallery extends PageHookWidget {
         final controller = useNavigatorController(
           "/${config.routePath}/tab/${config.tabConfig.firstOrNull?.id}",
         );
+        final tabId = controller.route?.name?.last();
 
         return Scaffold(
-          appBar: AppBar(
+          appBar: PlatformAppBar(
             title: Text(config.title ?? "Gallery".localize()),
-            automaticallyImplyLeading: isMobile(context),
-            centerTitle: isMobile(context),
           ),
-          body: Row(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                      right: BorderSide(
-                          color: context.theme.dividerColor.withOpacity(0.25))),
-                ),
-                width: 200,
-                child: Scrollbar(
-                  child: ListView(
-                    children: [
-                      ...config.tabConfig.map(
-                        (e) => ListTile(
-                          title: Text(
-                            e.label,
-                            style: TextStyle(
-                              color: controller.route?.name?.endsWith(e.id) ??
-                                      false
-                                  ? context.theme.colorScheme.onPrimary
-                                  : null,
-                              fontWeight:
-                                  controller.route?.name?.endsWith(e.id) ??
-                                          false
-                                      ? FontWeight.bold
-                                      : null,
-                            ),
-                          ),
-                          tileColor:
-                              controller.route?.name?.endsWith(e.id) ?? false
-                                  ? context.theme.primaryColor.withOpacity(0.8)
-                                  : null,
-                          onTap: () {
-                            if (controller.route?.name?.endsWith(e.id) ??
-                                false) {
-                              return;
-                            }
-                            controller.pushReplacementNamed(
-                                "/${config.routePath}/tab/${e.id}");
-                          },
+          body: BlogContainer(
+            leftBar: Scrollbar(
+              child: ListView(
+                children: [
+                  ...config.tabConfig.map(
+                    (e) => ListTile(
+                      title: Text(
+                        e.label,
+                        style: TextStyle(
+                          color: tabId == e.id
+                              ? context.theme.textColorOnPrimary
+                              : null,
+                          fontWeight: tabId == e.id ? FontWeight.bold : null,
                         ),
-                      )
-                    ],
+                      ),
+                      tileColor: tabId == e.id
+                          ? context.theme.primaryColor.withOpacity(0.8)
+                          : null,
+                      onTap: tabId == e.id
+                          ? null
+                          : () {
+                              controller.navigator.pushReplacementNamed(
+                                  "/${config.routePath}/tab/${e.id}");
+                            },
+                    ),
                   ),
-                ),
+                ],
               ),
-              Expanded(
-                flex: 6,
-                child: InlinePageBuilder(controller: controller),
-              ),
-            ],
+            ),
+            child: InlinePageBuilder(controller: controller),
           ),
           floatingActionButton:
               config.permission.canEdit(user.get(config.roleKey, ""))
@@ -221,7 +199,7 @@ class TileWithTabGallery extends PageHookWidget {
                       onPressed: () {
                         context.rootNavigator.pushNamed(
                           "/${config.routePath}/edit",
-                          arguments: RouteQuery.fullscreen,
+                          arguments: RouteQuery.fullscreenOrModal,
                         );
                       },
                     )
@@ -241,7 +219,7 @@ class TileGallery extends PageHookWidget {
     final user = useUserDocumentModel(config.userPath);
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: PlatformAppBar(
         title: Text(config.title ?? "Gallery".localize()),
       ),
       body: _GridView(config),
@@ -284,10 +262,10 @@ class _GridView extends HookWidget {
 
     return PlatformScrollbar(
       child: GridView.count(
-        crossAxisCount: isMobile(context)
+        crossAxisCount: context.isMobile
             ? config.crossAxisCountForMobile
             : config.crossAxisCountForDesktop,
-        childAspectRatio: isMobile(context)
+        childAspectRatio: context.isMobile
             ? config.childAspectRatioForMobile
             : config.childAspectRatioForDesktop,
         mainAxisSpacing: config.tileSpacing,
@@ -306,21 +284,12 @@ class _GridView extends HookWidget {
                         video: NetworkOrAsset.video(path),
                         fit: BoxFit.cover,
                         onTap: () {
-                          if (isMobile(context)) {
-                            context.rootNavigator.pushNamed(
-                              config.skipDetailPage
-                                  ? "/${config.routePath}/${item.get("uid", "")}/view"
-                                  : "/${config.routePath}/${item.get("uid", "")}",
-                              arguments: RouteQuery.fullscreen,
-                            );
-                          } else {
-                            context.rootNavigator.pushNamed(
-                              config.skipDetailPage
-                                  ? "/${config.routePath}/${item.get("uid", "")}/view"
-                                  : "/${config.routePath}/${item.get("uid", "")}",
-                              arguments: RouteQuery.modal,
-                            );
-                          }
+                          context.rootNavigator.pushNamed(
+                            config.skipDetailPage
+                                ? "/${config.routePath}/${item.get("uid", "")}/view"
+                                : "/${config.routePath}/${item.get("uid", "")}",
+                            arguments: RouteQuery.fullscreenOrModal,
+                          );
                         },
                       ),
                     ),
@@ -330,21 +299,12 @@ class _GridView extends HookWidget {
                     image: NetworkOrAsset.image(path),
                     fit: BoxFit.cover,
                     onTap: () {
-                      if (isMobile(context)) {
-                        context.rootNavigator.pushNamed(
-                          config.skipDetailPage
-                              ? "/${config.routePath}/${item.get("uid", "")}/view"
-                              : "/${config.routePath}/${item.get("uid", "")}",
-                          arguments: RouteQuery.fullscreen,
-                        );
-                      } else {
-                        context.rootNavigator.pushNamed(
-                          config.skipDetailPage
-                              ? "/${config.routePath}/${item.get("uid", "")}/view"
-                              : "/${config.routePath}/${item.get("uid", "")}",
-                          arguments: RouteQuery.modal,
-                        );
-                      }
+                      context.rootNavigator.pushNamed(
+                        config.skipDetailPage
+                            ? "/${config.routePath}/${item.get("uid", "")}/view"
+                            : "/${config.routePath}/${item.get("uid", "")}",
+                        arguments: RouteQuery.fullscreenOrModal,
+                      );
                     },
                   );
               }
@@ -384,82 +344,84 @@ class _MediaDetail extends PageHookWidget {
                 onPressed: () {
                   context.navigator.pushNamed(
                     "/${config.routePath}/${context.get("media_id", "")}/edit",
-                    arguments: RouteQuery.fullscreen,
+                    arguments: RouteQuery.fullscreenOrModal,
                   );
                 })
         ],
       ),
-      body: ListView(
-        children: [
-          InkWell(
-            onTap: () {
-              context.navigator.pushNamed(
-                "/${config.routePath}/${context.get("media_id", "")}/view",
-                arguments: RouteQuery.fullscreen,
-              );
-            },
-            child: () {
-              switch (type) {
-                case PlatformMediaType.video:
-                  return Container(
-                    color: context.theme.dividerColor,
-                    height: config.heightOnDetailView,
-                    child: ClipRRect(
-                      child: Video(
-                        NetworkOrAsset.video(media),
-                        fit: BoxFit.cover,
-                        autoplay: true,
-                        mute: true,
-                        mixWithOthers: true,
+      body: PlatformScrollbar(
+        child: ListView(
+          children: [
+            InkWell(
+              onTap: () {
+                context.navigator.pushNamed(
+                  "/${config.routePath}/${context.get("media_id", "")}/view",
+                  arguments: RouteQuery.fullscreenOrModal,
+                );
+              },
+              child: () {
+                switch (type) {
+                  case PlatformMediaType.video:
+                    return Container(
+                      color: context.theme.dividerColor,
+                      height: config.heightOnDetailView,
+                      child: ClipRRect(
+                        child: Video(
+                          NetworkOrAsset.video(media),
+                          fit: BoxFit.cover,
+                          autoplay: true,
+                          mute: true,
+                          mixWithOthers: true,
+                        ),
+                      ),
+                    );
+                  default:
+                    return Container(
+                      height: config.heightOnDetailView,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: NetworkOrAsset.image(media),
+                          fit: BoxFit.cover,
+                        ),
+                        color: context.theme.disabledColor,
+                      ),
+                    );
+                }
+              }(),
+            ),
+            Indent(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  );
-                default:
-                  return Container(
-                    height: config.heightOnDetailView,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkOrAsset.image(media),
-                        fit: BoxFit.cover,
-                      ),
-                      color: context.theme.disabledColor,
-                    ),
-                  );
-              }
-            }(),
-          ),
-          Indent(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const Space.height(12),
-              if (text.isNotEmpty) ...[
-                Text(text),
-                const Space.height(12),
-              ],
-              Text(
-                DateTime.fromMillisecondsSinceEpoch(createdTime)
-                    .format("yyyy/MM/dd HH:mm"),
-                style: TextStyle(
-                  color: context.theme.disabledColor,
-                  fontSize: 12,
+                  ],
                 ),
-              ),
-            ],
-          ),
-          const Divid(),
-        ],
+                const Space.height(12),
+                if (text.isNotEmpty) ...[
+                  Text(text),
+                  const Space.height(12),
+                ],
+                Text(
+                  DateTime.fromMillisecondsSinceEpoch(createdTime)
+                      .format("yyyy/MM/dd HH:mm"),
+                  style: TextStyle(
+                    color: context.theme.disabledColor,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+            const Divid(),
+          ],
+        ),
       ),
     );
   }
@@ -492,7 +454,7 @@ class _MediaView extends PageHookWidget {
                   onPressed: () {
                     context.navigator.pushNamed(
                       "/${config.routePath}/${context.get("media_id", "")}/edit",
-                      arguments: RouteQuery.fullscreen,
+                      arguments: RouteQuery.fullscreenOrModal,
                     );
                   })
           ],
@@ -518,7 +480,8 @@ class _MediaView extends PageHookWidget {
                     );
                   default:
                     return PhotoView(
-                        imageProvider: NetworkOrAsset.image(media));
+                      imageProvider: NetworkOrAsset.image(media),
+                    );
                 }
               }(),
       ),
@@ -540,119 +503,130 @@ class _MediaEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
     final text = item.get(config.textKey, "");
     final media = item.get(config.mediaKey, "");
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          inAdd
-              ? "A new entry".localize()
-              : "Editing %s".localize().format([name]),
-        ),
-        actions: [
-          if (!inAdd &&
-              config.permission.canDelete(user.get(config.roleKey, "")))
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () {
-                UIConfirm.show(
-                  context,
-                  title: "Confirmation".localize(),
-                  text: "You can't undo it after deleting it. May I delete it?"
-                      .localize(),
-                  submitText: "Yes".localize(),
-                  cacnelText: "No".localize(),
-                  onSubmit: () async {
-                    await context.adapter
-                        ?.deleteDocument(item)
-                        .showIndicator(context);
-                    context.navigator.pop();
-                  },
-                );
-              },
-            ),
-        ],
-      ),
-      body: FormBuilder(
-        padding: const EdgeInsets.all(0),
-        key: formKey,
-        children: [
-          FormItemMedia(
-            height: 200,
-            dense: true,
-            controller: useMemoizedTextEditingController(
-              inAdd ? "" : media,
-            ),
-            onTap: (onUpdate) async {
-              final media = await context.platform?.mediaDialog(
-                context,
-                title: "Please select your media".localize(),
-                type: config.mediaType,
-              );
-              onUpdate(media?.file);
-            },
-            onSaved: (value) {
-              context[config.mediaKey] = value;
-            },
+    return PlatformModalView(
+      widthRatio: 0.8,
+      heightRatio: 0.8,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            inAdd
+                ? "A new entry".localize()
+                : "Editing %s".localize().format([name]),
           ),
-          const Space.height(12),
-          DividHeadline("Title".localize()),
-          FormItemTextField(
-            dense: true,
-            hintText: "Input %s".localize().format(["Title".localize()]),
-            controller: useMemoizedTextEditingController(inAdd ? "" : name),
-            onSaved: (value) {
-              context[config.nameKey] = value;
-            },
-          ),
-          DividHeadline("Description".localize()),
-          FormItemTextField(
-            dense: true,
-            keyboardType: TextInputType.multiline,
-            minLines: 5,
-            maxLines: 5,
-            hintText: "Input %s".localize().format(["Description".localize()]),
-            allowEmpty: true,
-            controller: useMemoizedTextEditingController(inAdd ? "" : text),
-            onSaved: (value) {
-              context[config.textKey] = value;
-            },
-          ),
-          if (config.tabConfig.isNotEmpty) ...[
-            DividHeadline("Category".localize()),
-            FormItemDropdownField(
-              dense: true,
-              // labelText: "Category".localize(),
-              hintText: "Input %s".localize().format(["Category".localize()]),
-              controller: useMemoizedTextEditingController(inAdd
-                  ? config.tabConfig.first.id
-                  : item.get(config.categoryKey, config.tabConfig.first.id)),
-              items: <String, String>{
-                for (final tab in config.tabConfig) tab.id: tab.label
-              },
-              onSaved: (value) {
-                context[config.categoryKey] = value;
-              },
-            ),
+          actions: [
+            if (!inAdd &&
+                config.permission.canDelete(user.get(config.roleKey, "")))
+              IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () {
+                  UIConfirm.show(
+                    context,
+                    title: "Confirmation".localize(),
+                    text:
+                        "You can't undo it after deleting it. May I delete it?"
+                            .localize(),
+                    submitText: "Yes".localize(),
+                    cacnelText: "No".localize(),
+                    onSubmit: () async {
+                      await context.adapter
+                          ?.deleteDocument(item)
+                          .showIndicator(context);
+                      context.navigator.pop();
+                    },
+                  );
+                },
+              ),
           ],
-          const Divid(),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          if (!validate(context)) {
-            return;
-          }
+        ),
+        body: PlatformScrollbar(
+          child: FormBuilder(
+            padding: const EdgeInsets.all(0),
+            key: formKey,
+            children: [
+              FormItemMedia(
+                height: 200,
+                dense: true,
+                controller: useMemoizedTextEditingController(
+                  inAdd ? "" : media,
+                ),
+                onTap: (onUpdate) async {
+                  final media = await context.platform?.mediaDialog(
+                    context,
+                    title: "Please select your media".localize(),
+                    type: config.mediaType,
+                  );
+                  onUpdate(media?.file);
+                },
+                onSaved: (value) {
+                  context[config.mediaKey] = value;
+                },
+              ),
+              const Space.height(12),
+              DividHeadline("Title".localize()),
+              FormItemTextField(
+                dense: true,
+                hintText: "Input %s".localize().format(["Title".localize()]),
+                controller: useMemoizedTextEditingController(inAdd ? "" : name),
+                onSaved: (value) {
+                  context[config.nameKey] = value;
+                },
+              ),
+              DividHeadline("Description".localize()),
+              FormItemTextField(
+                dense: true,
+                keyboardType: TextInputType.multiline,
+                minLines: 5,
+                maxLines: 5,
+                hintText:
+                    "Input %s".localize().format(["Description".localize()]),
+                allowEmpty: true,
+                controller: useMemoizedTextEditingController(inAdd ? "" : text),
+                onSaved: (value) {
+                  context[config.textKey] = value;
+                },
+              ),
+              if (config.tabConfig.isNotEmpty) ...[
+                DividHeadline("Category".localize()),
+                FormItemDropdownField(
+                  dense: true,
+                  // labelText: "Category".localize(),
+                  hintText:
+                      "Input %s".localize().format(["Category".localize()]),
+                  controller: useMemoizedTextEditingController(inAdd
+                      ? config.tabConfig.first.id
+                      : item.get(
+                          config.categoryKey, config.tabConfig.first.id)),
+                  items: <String, String>{
+                    for (final tab in config.tabConfig) tab.id: tab.label
+                  },
+                  onSaved: (value) {
+                    context[config.categoryKey] = value;
+                  },
+                ),
+              ],
+              const Divid(),
+              const Space.height(100),
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () async {
+            if (!validate(context)) {
+              return;
+            }
 
-          item[config.nameKey] = context.get(config.nameKey, "");
-          item[config.textKey] = context.get(config.textKey, "");
-          item[config.categoryKey] = context.get(config.categoryKey, "");
-          item[config.mediaKey] = await context.adapter
-              ?.uploadMedia(context.get(config.mediaKey, ""))
-              .showIndicator(context);
-          await context.adapter?.saveDocument(item).showIndicator(context);
-          context.navigator.pop();
-        },
-        label: Text("Submit".localize()),
-        icon: const Icon(Icons.check),
+            item[config.nameKey] = context.get(config.nameKey, "");
+            item[config.textKey] = context.get(config.textKey, "");
+            item[config.categoryKey] = context.get(config.categoryKey, "");
+            item[config.mediaKey] = await context.adapter
+                ?.uploadMedia(context.get(config.mediaKey, ""))
+                .showIndicator(context);
+            await context.adapter?.saveDocument(item).showIndicator(context);
+            context.navigator.pop();
+          },
+          label: Text("Submit".localize()),
+          icon: const Icon(Icons.check),
+        ),
       ),
     );
   }

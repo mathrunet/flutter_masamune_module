@@ -20,7 +20,7 @@ class TileMenuHome extends HookWidget {
               alignment: Alignment.centerLeft,
               child: SizedBox(
                 height: config.headerHeight,
-                width: isMobile(context)
+                width: context.isMobile
                     ? null
                     : () {
                         return context.mediaQuery.size.width / 2;
@@ -33,7 +33,7 @@ class TileMenuHome extends HookWidget {
                       child: DefaultTextStyle(
                         style: TextStyle(
                           color: config.textColor ??
-                              context.theme.colorScheme.onPrimary,
+                              context.theme.textColorOnPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                         child: Container(
@@ -61,7 +61,7 @@ class TileMenuHome extends HookWidget {
                       child: DefaultTextStyle(
                         style: TextStyle(
                           color: config.textColor ??
-                              context.theme.colorScheme.onPrimary,
+                              context.theme.textColorOnPrimary,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -142,13 +142,13 @@ class TileMenuHome extends HookWidget {
             _TileMenuHomeHeadline(
               "Menu".localize(),
               icon: Icons.menu,
-              color: config.textColor ?? context.theme.colorScheme.onPrimary,
+              color: config.textColor ?? context.theme.textColorOnPrimary,
               backgroundColor:
                   config.color ?? context.theme.primaryColor.lighten(0.15),
             ),
             const Space.height(4),
             Grid(
-              crossAxisCount: isMobile(context) ? 3 : 6,
+              crossAxisCount: context.isMobile ? 3 : 6,
               crossAxisSpacing: 4,
               mainAxisSpacing: 4,
               children: [
@@ -168,18 +168,18 @@ class TileMenuHome extends HookWidget {
                         children: [
                           Icon(
                             item.icon ?? Icons.info,
-                            size: isMobile(context) ? 64 : 78,
+                            size: context.isMobile ? 64 : 78,
                             color: config.textColor ??
-                                context.theme.colorScheme.onPrimary,
+                                context.theme.textColorOnPrimary,
                           ),
                           const Space.height(8),
                           Text(
                             item.name,
                             style: TextStyle(
                                 color: config.textColor ??
-                                    context.theme.colorScheme.onPrimary,
+                                    context.theme.textColorOnPrimary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: isMobile(context) ? null : 15),
+                                fontSize: context.isMobile ? null : 15),
                           ),
                         ],
                       ),
@@ -190,7 +190,7 @@ class TileMenuHome extends HookWidget {
             ),
             const Space.height(8),
             Grid(
-              crossAxisCount: isMobile(context) ? 2 : 4,
+              crossAxisCount: context.isMobile ? 2 : 4,
               crossAxisSpacing: 4,
               mainAxisSpacing: 4,
               childAspectRatio: 3,
@@ -210,7 +210,7 @@ class TileMenuHome extends HookWidget {
                         item.name,
                         style: TextStyle(
                           color: config.textColor ??
-                              context.theme.colorScheme.onPrimary,
+                              context.theme.textColorOnPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -244,13 +244,13 @@ class _TileMenuHomeInformation extends HookWidget {
         _TileMenuHomeHeadline(
           config.info.title ?? "Information".localize(),
           icon: config.info.icon,
-          color: config.textColor ?? context.theme.colorScheme.onPrimary,
+          color: config.textColor ?? context.theme.textColorOnPrimary,
           backgroundColor:
               config.color ?? context.theme.primaryColor.lighten(0.15),
         ),
         const Space.height(4),
         Grid(
-          crossAxisCount: isMobile(context) ? 2 : 4,
+          crossAxisCount: context.isMobile ? 2 : 4,
           mainAxisSpacing: 4,
           crossAxisSpacing: 4,
           childAspectRatio: 2,
@@ -261,15 +261,14 @@ class _TileMenuHomeInformation extends HookWidget {
               );
               return DefaultTextStyle(
                 style: TextStyle(
-                  color:
-                      config.textColor ?? context.theme.colorScheme.onPrimary,
+                  color: config.textColor ?? context.theme.textColorOnPrimary,
                 ),
                 child: ClickableBox(
                   color: config.color ?? context.theme.primaryColor,
                   onTap: () {
                     context.navigator.pushNamed(
                       "/info/${item.get("uid", "")}",
-                      arguments: RouteQuery.fullscreen,
+                      arguments: RouteQuery.fullscreenOrModal,
                     );
                   },
                   child: Container(
@@ -326,7 +325,7 @@ class _TileMenuHomeCalendar extends HookWidget {
         _TileMenuHomeHeadline(
           config.calendar.title ?? "Calendar".localize(),
           icon: config.calendar.icon,
-          color: config.textColor ?? context.theme.colorScheme.onPrimary,
+          color: config.textColor ?? context.theme.textColorOnPrimary,
           backgroundColor:
               config.color ?? context.theme.primaryColor.lighten(0.15),
         ),
@@ -364,14 +363,14 @@ class _TileMenuHomeHeadline extends StatelessWidget {
             Icon(
               icon,
               size: 16,
-              color: color ?? context.theme.colorScheme.onPrimary,
+              color: color ?? context.theme.textColorOnPrimary,
             ),
             const Space.width(12),
           ],
           Text(
             label,
             style: TextStyle(
-              color: color ?? context.theme.colorScheme.onPrimary,
+              color: color ?? context.theme.textColorOnPrimary,
               fontWeight: FontWeight.bold,
               fontSize: 14,
             ),

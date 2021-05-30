@@ -409,8 +409,7 @@ class Login extends PageHookWidget with UIPageFormMixin {
               child: Text(
                 "Click here if you forget your password".localize(),
                 style: TextStyle(
-                  color: config.formColor ??
-                      context.theme.colorScheme.onBackground,
+                  color: config.formColor ?? context.theme.textColor,
                   decoration: TextDecoration.underline,
                 ),
               ),

@@ -80,7 +80,7 @@ class SingleMedia extends PageHookWidget {
     final type = getPlatformMediaType(media);
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: PlatformAppBar(
         title: Text(
           name.isNotEmpty
               ? name
@@ -99,7 +99,7 @@ class SingleMedia extends PageHookWidget {
                 onPressed: () {
                   context.navigator.pushNamed(
                     "/${config.routePath}/edit",
-                    arguments: RouteQuery.fullscreen,
+                    arguments: RouteQuery.fullscreenOrModal,
                   );
                 })
         ],
@@ -144,62 +144,68 @@ class _SingleMediaEdit extends PageHookWidget
     final name = item.get(config.nameKey, "");
     final media = item.get(config.mediaKey, "");
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Editing %s".localize().format([
-            if (name.isEmpty) "Media".localize() else name,
-          ]),
+    return PlatformModalView(
+      widthRatio: 0.8,
+      heightRatio: 0.8,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            "Editing %s".localize().format([
+              if (name.isEmpty) "Media".localize() else name,
+            ]),
+          ),
         ),
-      ),
-      body: FormBuilder(
-        padding: const EdgeInsets.all(0),
-        key: formKey,
-        children: [
-          FormItemMedia(
-            height: 200,
-            dense: true,
-            controller: useMemoizedTextEditingController(media),
-            onTap: (onUpdate) async {
-              final media = await context.platform?.mediaDialog(
-                context,
-                title: "Please select your media".localize(),
-                type: config.mediaType,
-              );
-              onUpdate(media?.file);
-            },
-            onSaved: (value) {
-              context[config.mediaKey] = value;
-            },
+        body: PlatformScrollbar(
+          child: FormBuilder(
+            padding: const EdgeInsets.all(0),
+            key: formKey,
+            children: [
+              FormItemMedia(
+                height: 200,
+                dense: true,
+                controller: useMemoizedTextEditingController(media),
+                onTap: (onUpdate) async {
+                  final media = await context.platform?.mediaDialog(
+                    context,
+                    title: "Please select your media".localize(),
+                    type: config.mediaType,
+                  );
+                  onUpdate(media?.file);
+                },
+                onSaved: (value) {
+                  context[config.mediaKey] = value;
+                },
+              ),
+              const Space.height(12),
+              DividHeadline("Title".localize()),
+              FormItemTextField(
+                dense: true,
+                hintText: "Input %s".localize().format(["Title".localize()]),
+                controller: useMemoizedTextEditingController(name),
+                onSaved: (value) {
+                  context[config.nameKey] = value;
+                },
+              ),
+              const Divid(),
+            ],
           ),
-          const Space.height(12),
-          DividHeadline("Title".localize()),
-          FormItemTextField(
-            dense: true,
-            hintText: "Input %s".localize().format(["Title".localize()]),
-            controller: useMemoizedTextEditingController(name),
-            onSaved: (value) {
-              context[config.nameKey] = value;
-            },
-          ),
-          const Divid(),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          if (!validate(context)) {
-            return;
-          }
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () async {
+            if (!validate(context)) {
+              return;
+            }
 
-          item[config.nameKey] = context.get(config.nameKey, "");
-          item[config.mediaKey] = await context.adapter
-              ?.uploadMedia(context.get(config.mediaKey, ""))
-              .showIndicator(context);
-          await context.adapter?.saveDocument(item).showIndicator(context);
-          context.navigator.pop();
-        },
-        label: Text("Submit".localize()),
-        icon: const Icon(Icons.check),
+            item[config.nameKey] = context.get(config.nameKey, "");
+            item[config.mediaKey] = await context.adapter
+                ?.uploadMedia(context.get(config.mediaKey, ""))
+                .showIndicator(context);
+            await context.adapter?.saveDocument(item).showIndicator(context);
+            context.navigator.pop();
+          },
+          label: Text("Submit".localize()),
+          icon: const Icon(Icons.check),
+        ),
       ),
     );
   }
