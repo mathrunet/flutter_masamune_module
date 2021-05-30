@@ -9,12 +9,12 @@ class SingleMediaModule extends ModuleConfig {
     this.routePath = "media",
     this.mediaPath = "app/media",
     this.userPath = "user",
-    this.mediaKey = "media",
-    this.nameKey = "name",
-    this.textKey = "text",
-    this.roleKey = "role",
-    this.categoryKey = "category",
-    this.createdTimeKey = "createdTime",
+    this.mediaKey = Const.media,
+    this.nameKey = Const.name,
+    this.textKey = Const.text,
+    this.roleKey = Const.role,
+    this.categoryKey = Const.category,
+    this.createdTimeKey = Const.createdTime,
     this.mediaType = PlatformMediaType.all,
     PermissionConfig permission = const PermissionConfig(),
   }) : super(enabled: enabled, title: title, permission: permission);
@@ -138,9 +138,7 @@ class _SingleMediaEdit extends PageHookWidget
 
   @override
   Widget build(BuildContext context) {
-    final user = useUserDocumentModel(config.userPath);
     final item = useDocumentModel(config.mediaPath);
-    final uid = item.get("uid", puid);
     final name = item.get(config.nameKey, "");
     final media = item.get(config.mediaKey, "");
 

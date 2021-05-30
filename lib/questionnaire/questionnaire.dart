@@ -1,12 +1,23 @@
 part of masamune_module;
 
-enum _QuenstionFormType { text, select }
+enum _QuenstionFormType { text, selection }
+
+extension _StringExtension on String {
+  _QuenstionFormType get quenstionFormType {
+    for (final type in _QuenstionFormType.values) {
+      if (type.text == this) {
+        return type;
+      }
+    }
+    return _QuenstionFormType.text;
+  }
+}
 
 extension _QuenstionFormTypeExtension on _QuenstionFormType {
   String get text {
     switch (this) {
-      case _QuenstionFormType.select:
-        return "select";
+      case _QuenstionFormType.selection:
+        return "selection";
       default:
         return "text";
     }
@@ -14,7 +25,7 @@ extension _QuenstionFormTypeExtension on _QuenstionFormType {
 
   String get name {
     switch (this) {
-      case _QuenstionFormType.select:
+      case _QuenstionFormType.selection:
         return "Choices".localize();
       default:
         return "Text".localize();
@@ -30,15 +41,15 @@ class QuestionnaireModule extends ModuleConfig {
     this.questionPath = "question",
     this.answerPath = "answer",
     this.userPath = "user",
-    this.nameKey = "name",
-    this.textKey = "text",
-    this.requiredKey = "required",
-    this.typeKey = "type",
-    this.roleKey = "role",
-    this.selectKey = "select",
-    this.createdTimeKey = "createdTime",
-    this.endTimeKey = "endTime",
-    this.answerKey = "answer",
+    this.nameKey = Const.name,
+    this.textKey = Const.text,
+    this.requiredKey = Const.required,
+    this.typeKey = Const.type,
+    this.roleKey = Const.role,
+    this.selectionKey = Const.selection,
+    this.createdTimeKey = Const.createdTime,
+    this.endTimeKey = Const.endTime,
+    this.answerKey = Const.answer,
     PermissionConfig permission = const PermissionConfig(),
   }) : super(enabled: enabled, title: title, permission: permission);
 
@@ -101,7 +112,7 @@ class QuestionnaireModule extends ModuleConfig {
   final String requiredKey;
 
   /// 選択項目のキー。
-  final String selectKey;
+  final String selectionKey;
 
   /// 答えのキー。
   final String answerKey;
@@ -119,7 +130,7 @@ class Questionnaire extends PageHookWidget {
     final now = DateTime.now();
     final question = useCollectionModel(config.questionPath);
     final questionWithAnswer = question.map((e) {
-      final uid = e.get("uid", "");
+      final uid = e.get(Const.uid, "");
       if (uid.isEmpty) {
         return e;
       }
@@ -148,7 +159,7 @@ class Questionnaire extends PageHookWidget {
                 ),
                 onTap: () {
                   context.navigator.pushNamed(
-                    "${config.routePath}/${item.get("uid", "")}",
+                    "${config.routePath}/${item.get(Const.uid, "")}",
                     arguments: RouteQuery.fullscreen,
                   );
                 },
@@ -175,7 +186,7 @@ class Questionnaire extends PageHookWidget {
       ),
       desktop: () {
         final controller = useNavigatorController(
-            "${config.routePath}/${questionWithAnswer.firstOrNull.get("uid", "empty")}");
+            "${config.routePath}/${questionWithAnswer.firstOrNull.get(Const.uid, "empty")}");
         final tabId = controller.route?.name?.last();
 
         return Scaffold(
@@ -191,15 +202,15 @@ class Questionnaire extends PageHookWidget {
                       title: Text(
                         item.get(config.nameKey, ""),
                         style: TextStyle(
-                          color: tabId == item.get("uid", "")
+                          color: tabId == item.get(Const.uid, "")
                               ? context.theme.textColorOnPrimary
                               : null,
-                          fontWeight: tabId == item.get("uid", "")
+                          fontWeight: tabId == item.get(Const.uid, "")
                               ? FontWeight.bold
                               : null,
                         ),
                       ),
-                      tileColor: tabId == item.get("uid", "")
+                      tileColor: tabId == item.get(Const.uid, "")
                           ? context.theme.primaryColor.withOpacity(0.8)
                           : null,
                       subtitle: Text(
@@ -208,24 +219,24 @@ class Questionnaire extends PageHookWidget {
                               now.millisecondsSinceEpoch),
                         ).format("yyyy/MM/dd HH:mm"),
                         style: TextStyle(
-                          color: tabId == item.get("uid", "")
+                          color: tabId == item.get(Const.uid, "")
                               ? context.theme.textColorOnPrimary
                               : null,
-                          fontWeight: tabId == item.get("uid", "")
+                          fontWeight: tabId == item.get(Const.uid, "")
                               ? FontWeight.bold
                               : null,
                         ),
                       ),
-                      onTap: tabId == item.get("uid", "")
+                      onTap: tabId == item.get(Const.uid, "")
                           ? null
                           : () {
                               controller.navigator.pushReplacementNamed(
-                                "${config.routePath}/${item.get("uid", "")}",
+                                "${config.routePath}/${item.get(Const.uid, "")}",
                               );
                             },
                       trailing: item.get("answered", false)
                           ? Icon(Icons.check_circle,
-                              color: tabId == item.get("uid", "")
+                              color: tabId == item.get(Const.uid, "")
                                   ? context.theme.textColorOnPrimary
                                   : Colors.green)
                           : null,
@@ -286,13 +297,13 @@ class _QuestionnaireAanswer extends PageHookWidget {
     );
     final users = useCollectionModel(
       CollectionQuery(config.userPath,
-              key: "uid",
-              whereIn: answers.map((e) => e.get("user", "")).toList())
+              key: Const.uid,
+              whereIn: answers.map((e) => e.get(Const.user, "")).toList())
           .value,
     );
     final answersWithUsers = answers.setWhere(
       users,
-      test: (o, a) => o.get("user", "") == a.get("uid", ""),
+      test: (o, a) => o.get(Const.user, "") == a.get(Const.uid, ""),
       apply: (o, a) => o.merge(
         a,
         convertKeys: (key) => "user$key",
@@ -358,7 +369,7 @@ class _QuestionnaireAanswer extends PageHookWidget {
                 ),
                 onTap: () {
                   context.rootNavigator.pushNamed(
-                    "/${config.routePath}/${context.get("question_id", "")}/answer/${item.get("uid", "")}",
+                    "/${config.routePath}/${context.get("question_id", "")}/answer/${item.get(Const.uid, "")}",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
                 },
@@ -378,16 +389,13 @@ class _QuestionnaireAanswerView extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     int i = 0;
-    final now = DateTime.now();
-    final question = useDocumentModel(
-        "${config.questionPath}/${context.get("question_id", "")}");
     final questions = useCollectionModel(
         "${config.questionPath}/${context.get("question_id", "")}/${config.questionPath}");
     final answer = useDocumentModel(
       "${config.questionPath}/${context.get("question_id", "")}/${config.answerPath}/${context.get("answer_id", "")}",
     );
     final user =
-        useDocumentModel("${config.userPath}/${answer.get("user", "")}");
+        useDocumentModel("${config.userPath}/${answer.get(Const.user, "")}");
 
     return PlatformModalView(
       widthRatio: 0.8,
@@ -428,7 +436,6 @@ class _QuestionnaireViewEdit extends PageHookWidget with UIPageFormMixin {
   @override
   Widget build(BuildContext context) {
     int i = 0;
-    final now = DateTime.now();
     final user = useUserDocumentModel(config.userPath);
     final question = useDocumentModel(
         "${config.questionPath}/${context.get("question_id", "")}");
@@ -539,14 +546,14 @@ class _QuestionnaireListTile extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final uid = question.get("uid", "");
-    final type = question.get(config.typeKey, "");
+    final uid = question.get(Const.uid, "");
+    final type = question.get(config.typeKey, "").quenstionFormType;
     final name = question.get(config.nameKey, "");
     final required = question.get(config.requiredKey, false);
     final answers = answer.get(config.answerKey, {});
     switch (type) {
-      case "select":
-        final select = question.get(config.selectKey, {});
+      case _QuenstionFormType.selection:
+        final select = question.get(config.selectionKey, {});
 
         return InkWell(
           onTap: canEdit && !onlyView
@@ -666,15 +673,14 @@ class _QuestionnaireQuestionEdit extends PageHookWidget
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
     final item = useDocumentModel(
         "${config.questionPath}/${context.get("question_id", "")}/${config.questionPath}/${context.get("item_id", puid)}");
     final user = useUserDocumentModel(config.userPath);
     final name = item.get(config.nameKey, "");
-    final type = item.get(config.typeKey, "text");
+    final type = item.get(config.typeKey, Const.text);
     final required = item.get(config.requiredKey, false);
     final view = useState(type);
-    final selection = item.get(config.selectKey, {});
+    final selection = item.get(config.selectionKey, {});
     final selectionTextEditingControllers =
         useMemoizedTextEditingControllerMap(selection);
 
@@ -754,13 +760,13 @@ class _QuestionnaireQuestionEdit extends PageHookWidget
               },
               controller: useMemoizedTextEditingController(type),
               onChanged: (value) {
-                view.value = value ?? "text";
+                view.value = value ?? Const.text;
               },
               onSaved: (value) {
                 context[config.typeKey] = value;
               },
             ),
-            if (view.value == "select") ...[
+            if (view.value == _QuenstionFormType.selection.text) ...[
               DividHeadline("Choices".localize()),
               AppendableBuilder(
                 initialValues: selection.keys.cast<String>(),
@@ -776,9 +782,9 @@ class _QuestionnaireQuestionEdit extends PageHookWidget
                       keyboardType: TextInputType.text,
                       controller: selectionTextEditingControllers[id],
                       onSaved: (value) {
-                        final select = context.get(config.selectKey, {});
+                        final select = context.get(config.selectionKey, {});
                         select[id] = value;
-                        context[config.selectKey] = select;
+                        context[config.selectionKey] = select;
                       },
                     ),
                   );
@@ -811,12 +817,12 @@ class _QuestionnaireQuestionEdit extends PageHookWidget
               return;
             }
 
-            final type = context.get(config.typeKey, "text");
+            final type = context.get(config.typeKey, Const.text);
             item[config.nameKey] = context.get(config.nameKey, "");
             item[config.requiredKey] = context.get(config.requiredKey, false);
-            item[config.typeKey] = context.get(config.typeKey, "text");
-            if (type == "select") {
-              item[config.selectKey] = context.get(config.selectKey, {});
+            item[config.typeKey] = context.get(config.typeKey, Const.text);
+            if (type == _QuenstionFormType.selection.text) {
+              item[config.selectionKey] = context.get(config.selectionKey, {});
             }
             await context.adapter?.saveDocument(item).showIndicator(context);
             context.navigator.pop();
@@ -837,7 +843,6 @@ class _QuestionnaireEdit extends PageHookWidget
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
     final item = useDocumentModel(
         "${config.questionPath}/${context.get("question_id", puid)}");
     final user = useUserDocumentModel(config.userPath);

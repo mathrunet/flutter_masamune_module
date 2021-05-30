@@ -9,10 +9,10 @@ class PostModule extends ModuleConfig {
     this.routePath = "post",
     this.postPath = "post",
     this.userPath = "user",
-    this.nameKey = "name",
-    this.textKey = "text",
-    this.roleKey = "role",
-    this.createdTimeKey = "createdTime",
+    this.nameKey = Const.name,
+    this.textKey = Const.text,
+    this.roleKey = Const.role,
+    this.createdTimeKey = Const.createdTime,
     this.editingType = PostEditingType.planeText,
     PermissionConfig permission = const PermissionConfig(),
   }) : super(enabled: enabled, title: title, permission: permission);
@@ -25,7 +25,7 @@ class PostModule extends ModuleConfig {
     final route = {
       "/$routePath": RouteConfig((_) => Post(this)),
       "/$routePath/edit": RouteConfig((_) => _PostEdit(this, inAdd: true)),
-      "/$routePath/empty": RouteConfig((_) => EmptyPage()),
+      "/$routePath/empty": RouteConfig((_) => const EmptyPage()),
       "/$routePath/{post_id}": RouteConfig((_) => _PostView(this)),
       "/$routePath/{post_id}/edit": RouteConfig((_) => _PostEdit(this)),
     };
@@ -69,13 +69,13 @@ class Post extends PageHookWidget {
     final users = useCollectionModel(
       CollectionQuery(
         config.userPath,
-        key: "uid",
-        whereIn: post.map((e) => e.get("user", "")).distinct(),
+        key: Const.uid,
+        whereIn: post.map((e) => e.get(Const.user, "")).distinct(),
       ).value,
     );
     final postWithUser = post.setWhere(
       users,
-      test: (o, a) => o.get("user", "") == a.get("uid", ""),
+      test: (o, a) => o.get(Const.user, "") == a.get(Const.uid, ""),
       apply: (o, a) => o.merge(a, convertKeys: (key) => "user$key"),
       orElse: (o) => o,
     );
@@ -99,7 +99,7 @@ class Post extends PageHookWidget {
                   ),
                   onTap: () {
                     context.navigator.pushNamed(
-                      "/${config.routePath}/${item.get("uid", "")}",
+                      "/${config.routePath}/${item.get(Const.uid, "")}",
                       arguments: RouteQuery.fullscreen,
                     );
                   },
@@ -124,7 +124,7 @@ class Post extends PageHookWidget {
       ),
       desktop: () {
         final controller = useNavigatorController(
-            "/${config.routePath}/${postWithUser.firstOrNull.get("uid", "empty")}");
+            "/${config.routePath}/${postWithUser.firstOrNull.get(Const.uid, "empty")}");
         final tabId = controller.route?.name?.last();
 
         return Scaffold(
@@ -141,15 +141,15 @@ class Post extends PageHookWidget {
                         title: Text(
                           item.get(config.nameKey, ""),
                           style: TextStyle(
-                            color: tabId == item.get("uid", "")
+                            color: tabId == item.get(Const.uid, "")
                                 ? context.theme.textColorOnPrimary
                                 : null,
-                            fontWeight: tabId == item.get("uid", "")
+                            fontWeight: tabId == item.get(Const.uid, "")
                                 ? FontWeight.bold
                                 : null,
                           ),
                         ),
-                        tileColor: tabId == item.get("uid", "")
+                        tileColor: tabId == item.get(Const.uid, "")
                             ? context.theme.primaryColor.withOpacity(0.8)
                             : null,
                         subtitle: Text(
@@ -158,19 +158,19 @@ class Post extends PageHookWidget {
                                 now.millisecondsSinceEpoch),
                           ).format("yyyy/MM/dd HH:mm"),
                           style: TextStyle(
-                            color: tabId == item.get("uid", "")
+                            color: tabId == item.get(Const.uid, "")
                                 ? context.theme.textColorOnPrimary
                                 : null,
-                            fontWeight: tabId == item.get("uid", "")
+                            fontWeight: tabId == item.get(Const.uid, "")
                                 ? FontWeight.bold
                                 : null,
                           ),
                         ),
-                        onTap: tabId == item.get("uid", "")
+                        onTap: tabId == item.get(Const.uid, "")
                             ? null
                             : () {
                                 controller.navigator.pushReplacementNamed(
-                                  "/${config.routePath}/${item.get("uid", "")}",
+                                  "/${config.routePath}/${item.get(Const.uid, "")}",
                                 );
                               },
                       );

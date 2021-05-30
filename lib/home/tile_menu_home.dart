@@ -267,7 +267,7 @@ class _TileMenuHomeInformation extends HookWidget {
                   color: config.color ?? context.theme.primaryColor,
                   onTap: () {
                     context.navigator.pushNamed(
-                      "/info/${item.get("uid", "")}",
+                      "/info/${item.get(Const.uid, "")}",
                       arguments: RouteQuery.fullscreenOrModal,
                     );
                   },
@@ -297,7 +297,7 @@ class _TileMenuHomeInformation extends HookWidget {
                           ],
                         ),
                         const Space.height(8),
-                        Text(item.get("name", "--")),
+                        Text(item.get(Const.name, "--")),
                       ],
                     ),
                   ),

@@ -15,12 +15,12 @@ class GalleryModule extends ModuleConfig {
     this.routePath = "gallery",
     this.galleryPath = "gallery",
     this.userPath = "user",
-    this.mediaKey = "media",
-    this.nameKey = "name",
-    this.textKey = "text",
-    this.roleKey = "role",
-    this.categoryKey = "category",
-    this.createdTimeKey = "createdTime",
+    this.mediaKey = Const.media,
+    this.nameKey = Const.name,
+    this.textKey = Const.text,
+    this.roleKey = Const.role,
+    this.categoryKey = Const.category,
+    this.createdTimeKey = Const.createdTime,
     this.crossAxisCountForMobile = 4,
     this.crossAxisCountForDesktop = 6,
     this.childAspectRatioForMobile = 0.5625,
@@ -286,8 +286,8 @@ class _GridView extends HookWidget {
                         onTap: () {
                           context.rootNavigator.pushNamed(
                             config.skipDetailPage
-                                ? "/${config.routePath}/${item.get("uid", "")}/view"
-                                : "/${config.routePath}/${item.get("uid", "")}",
+                                ? "/${config.routePath}/${item.get(Const.uid, "")}/view"
+                                : "/${config.routePath}/${item.get(Const.uid, "")}",
                             arguments: RouteQuery.fullscreenOrModal,
                           );
                         },
@@ -301,8 +301,8 @@ class _GridView extends HookWidget {
                     onTap: () {
                       context.rootNavigator.pushNamed(
                         config.skipDetailPage
-                            ? "/${config.routePath}/${item.get("uid", "")}/view"
-                            : "/${config.routePath}/${item.get("uid", "")}",
+                            ? "/${config.routePath}/${item.get(Const.uid, "")}/view"
+                            : "/${config.routePath}/${item.get(Const.uid, "")}",
                         arguments: RouteQuery.fullscreenOrModal,
                       );
                     },

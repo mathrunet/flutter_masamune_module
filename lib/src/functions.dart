@@ -16,7 +16,7 @@ DynamicCollectionModel useCollectionModel(String path) {
   );
 }
 
-DynamicDocumentModel useUserDocumentModel([String userPath = "user"]) {
+DynamicDocumentModel useUserDocumentModel([String userPath = Const.user]) {
   final context = useContext();
 
   return context.adapter!.loadDocument(
