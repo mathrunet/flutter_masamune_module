@@ -147,8 +147,8 @@ class TileMenuHome extends HookWidget {
                   config.color ?? context.theme.primaryColor.lighten(0.15),
             ),
             const Space.height(4),
-            Grid(
-              crossAxisCount: context.isMobileOrSmall ? 3 : 6,
+            Grid.extent(
+              maxCrossAxisExtent: 200,
               crossAxisSpacing: 4,
               mainAxisSpacing: 4,
               children: [
@@ -189,8 +189,8 @@ class TileMenuHome extends HookWidget {
               ],
             ),
             const Space.height(8),
-            Grid(
-              crossAxisCount: context.isMobileOrSmall ? 2 : 4,
+            Grid.extent(
+              maxCrossAxisExtent: 400,
               crossAxisSpacing: 4,
               mainAxisSpacing: 4,
               childAspectRatio: 3,
@@ -249,8 +249,8 @@ class _TileMenuHomeInformation extends HookWidget {
               config.color ?? context.theme.primaryColor.lighten(0.15),
         ),
         const Space.height(4),
-        Grid(
-          crossAxisCount: context.isMobileOrSmall ? 2 : 4,
+        Grid.extent(
+          maxCrossAxisExtent: 300,
           mainAxisSpacing: 4,
           crossAxisSpacing: 4,
           childAspectRatio: 2,

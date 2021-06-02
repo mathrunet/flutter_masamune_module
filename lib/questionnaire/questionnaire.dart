@@ -134,7 +134,7 @@ class Questionnaire extends PageHookWidget {
       if (uid.isEmpty) {
         return e;
       }
-      final doc = useDocumentModel(
+      final doc = context.readDocumentModel(
         "${config.questionPath}/$uid/${config.answerPath}/${context.adapter?.userId}",
       );
       if (doc.isNotEmpty) {
@@ -144,126 +144,66 @@ class Questionnaire extends PageHookWidget {
     });
     final user = useUserDocumentModel(config.userPath);
 
-    return PlatformBuilder(
-      mobile: Scaffold(
-        appBar: AppBar(title: Text(config.title ?? "Questionnaire".localize())),
-        body: ListView(
-          children: [
-            ...questionWithAnswer.mapAndRemoveEmpty((item) {
-              return ListTile(
-                title: Text(item.get(config.nameKey, "")),
-                subtitle: Text(
-                  DateTime.fromMillisecondsSinceEpoch(
-                    item.get(config.createdTimeKey, now.millisecondsSinceEpoch),
-                  ).format("yyyy/MM/dd HH:mm"),
-                ),
-                onTap: () {
-                  context.navigator.pushNamed(
-                    "${config.routePath}/${item.get(Const.uid, "")}",
-                    arguments: RouteQuery.fullscreen,
-                  );
-                },
-                trailing: item.get("answered", false)
-                    ? const Icon(Icons.check_circle, color: Colors.green)
-                    : null,
-              );
-            })
-          ],
-        ),
-        floatingActionButton:
-            config.permission.canEdit(user.get(config.roleKey, ""))
-                ? FloatingActionButton.extended(
-                    label: Text("Add".localize()),
-                    icon: const Icon(Icons.add),
-                    onPressed: () {
-                      context.rootNavigator.pushNamed(
-                        "/${config.routePath}/edit",
-                        arguments: RouteQuery.fullscreenOrModal,
-                      );
-                    },
-                  )
-                : null,
+    return Scaffold(
+      appBar: PlatformAppBar(
+        title: Text(config.title ?? "Questionnaire".localize()),
       ),
-      desktop: () {
-        final controller = useNavigatorController(
-            "${config.routePath}/${questionWithAnswer.firstOrNull.get(Const.uid, "empty")}");
-        final tabId = controller.route?.name?.last();
-
-        return Scaffold(
-          appBar: PlatformAppBar(
-            title: Text(config.title ?? "Questionnaire".localize()),
-          ),
-          body: BlogContainer(
-            leftBar: PlatformScrollbar(
-              child: ListView(
-                children: [
-                  ...questionWithAnswer.mapAndRemoveEmpty((item) {
-                    return ListTile(
-                      title: Text(
-                        item.get(config.nameKey, ""),
-                        style: TextStyle(
-                          color: tabId == item.get(Const.uid, "")
-                              ? context.theme.textColorOnPrimary
-                              : null,
-                          fontWeight: tabId == item.get(Const.uid, "")
-                              ? FontWeight.bold
-                              : null,
-                        ),
-                      ),
-                      tileColor: tabId == item.get(Const.uid, "")
-                          ? context.theme.primaryColor.withOpacity(0.8)
-                          : null,
-                      subtitle: Text(
-                        DateTime.fromMillisecondsSinceEpoch(
-                          item.get(config.createdTimeKey,
-                              now.millisecondsSinceEpoch),
-                        ).format("yyyy/MM/dd HH:mm"),
-                        style: TextStyle(
-                          color: tabId == item.get(Const.uid, "")
-                              ? context.theme.textColorOnPrimary
-                              : null,
-                          fontWeight: tabId == item.get(Const.uid, "")
-                              ? FontWeight.bold
-                              : null,
-                        ),
-                      ),
-                      onTap: tabId == item.get(Const.uid, "")
-                          ? null
-                          : () {
-                              controller.navigator.pushReplacementNamed(
-                                "${config.routePath}/${item.get(Const.uid, "")}",
-                              );
-                            },
-                      trailing: item.get("answered", false)
-                          ? Icon(Icons.check_circle,
-                              color: tabId == item.get(Const.uid, "")
-                                  ? context.theme.textColorOnPrimary
-                                  : Colors.green)
-                          : null,
+      body: PlatformAppLayout(
+        initialPath:
+            "${config.routePath}/${questionWithAnswer.firstOrNull.get(Const.uid, "empty")}",
+        builder: (context, isMobile, controller, routeId) {
+          return ListBuilder<Map<String, dynamic>>(
+            source: questionWithAnswer.toList(),
+            builder: (context, item) {
+              return [
+                ListItem(
+                  selected: routeId == item.get(Const.uid, ""),
+                  selectedColor: context.theme.textColorOnPrimary,
+                  iconColor: Colors.green,
+                  selectedTileColor:
+                      context.theme.primaryColor.withOpacity(0.8),
+                  disabledTapOnSelected: true,
+                  title: Text(item.get(config.nameKey, "")),
+                  subtitle: Text(
+                    DateTime.fromMillisecondsSinceEpoch(
+                      item.get(
+                          config.createdTimeKey, now.millisecondsSinceEpoch),
+                    ).format("yyyy/MM/dd HH:mm"),
+                  ),
+                  onTap: () {
+                    if (isMobile) {
+                      context.navigator.pushNamed(
+                        "${config.routePath}/${item.get(Const.uid, "")}",
+                        arguments: RouteQuery.fullscreen,
+                      );
+                    } else {
+                      controller?.navigator.pushReplacementNamed(
+                        "${config.routePath}/${item.get(Const.uid, "")}",
+                      );
+                    }
+                  },
+                  trailing: item.get("answered", false)
+                      ? const Icon(Icons.check_circle)
+                      : null,
+                ),
+              ];
+            },
+          );
+        },
+      ),
+      floatingActionButton:
+          config.permission.canEdit(user.get(config.roleKey, ""))
+              ? FloatingActionButton.extended(
+                  label: Text("Add".localize()),
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    context.rootNavigator.pushNamed(
+                      "/${config.routePath}/edit",
+                      arguments: RouteQuery.fullscreenOrModal,
                     );
-                  })
-                ],
-              ),
-            ),
-            child: InlinePageBuilder(
-              controller: controller,
-            ),
-          ),
-          floatingActionButton:
-              config.permission.canEdit(user.get(config.roleKey, ""))
-                  ? FloatingActionButton.extended(
-                      label: Text("Add".localize()),
-                      icon: const Icon(Icons.add),
-                      onPressed: () {
-                        context.rootNavigator.pushNamed(
-                          "/${config.routePath}/edit",
-                          arguments: RouteQuery.fullscreenOrModal,
-                        );
-                      },
-                    )
-                  : null,
-        );
-      }(),
+                  },
+                )
+              : null,
     );
   }
 }
@@ -306,7 +246,7 @@ class _QuestionnaireAanswer extends PageHookWidget {
       test: (o, a) => o.get(Const.user, "") == a.get(Const.uid, ""),
       apply: (o, a) => o.merge(
         a,
-        convertKeys: (key) => "user$key",
+        convertKeys: (key) => "${Const.user}$key",
       ),
       orElse: (o) => o,
     );
@@ -339,8 +279,9 @@ class _QuestionnaireAanswer extends PageHookWidget {
         ],
       ),
       body: PlatformScrollbar(
-        child: ListView(
-          children: [
+        child: ListBuilder<Map<String, dynamic>>(
+          source: answersWithUsers.toList(),
+          top: [
             if (text.isNotEmpty)
               MessageBox(
                 text,
@@ -359,9 +300,11 @@ class _QuestionnaireAanswer extends PageHookWidget {
             DividHeadline(
               "List of %s answers".localize().format([name]),
             ),
-            ...answersWithUsers.mapAndRemoveEmpty((item) {
-              return ListTile(
-                title: Text(item.get("username", "")),
+          ],
+          builder: (context, item) {
+            return [
+              ListItem(
+                title: Text(item.get("${Const.user}${config.nameKey}", "")),
                 subtitle: Text(
                   DateTime.fromMillisecondsSinceEpoch(item.get(
                           config.createdTimeKey, now.millisecondsSinceEpoch))
@@ -373,9 +316,9 @@ class _QuestionnaireAanswer extends PageHookWidget {
                     arguments: RouteQuery.fullscreenOrModal,
                   );
                 },
-              );
-            }),
-          ],
+              ),
+            ];
+          },
         ),
       ),
     );
@@ -407,21 +350,22 @@ class _QuestionnaireAanswerView extends PageHookWidget {
           ),
         ),
         body: PlatformScrollbar(
-          child: ListView(
-            children: [
-              const Space.height(12),
-              ...questions.mapAndRemoveEmpty((item) {
-                i++;
-                return _QuestionnaireListTile(
+          child: ListBuilder<DynamicDocumentModel>(
+            padding: const EdgeInsets.only(top: 12),
+            source: questions,
+            builder: (contex, item) {
+              i++;
+              return [
+                _QuestionnaireListTile(
                   config,
                   index: i,
                   question: item,
                   answer: answer,
                   canEdit: true,
                   onlyView: true,
-                );
-              }),
-            ],
+                ),
+              ];
+            },
           ),
         ),
       ),

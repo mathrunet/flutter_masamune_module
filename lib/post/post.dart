@@ -76,20 +76,28 @@ class Post extends PageHookWidget {
     final postWithUser = post.setWhere(
       users,
       test: (o, a) => o.get(Const.user, "") == a.get(Const.uid, ""),
-      apply: (o, a) => o.merge(a, convertKeys: (key) => "user$key"),
+      apply: (o, a) => o.merge(a, convertKeys: (key) => "${Const.user}$key"),
       orElse: (o) => o,
     );
 
-    return PlatformBuilder(
-      mobile: Scaffold(
-        appBar: AppBar(
-          title: Text(config.title ?? "Post".localize()),
-        ),
-        body: ListView(
-          children: [
-            ...postWithUser.mapAndRemoveEmpty(
-              (item) {
-                return ListTile(
+    return Scaffold(
+      appBar: PlatformAppBar(
+        title: Text(config.title ?? "Post".localize()),
+      ),
+      body: PlatformAppLayout(
+        initialPath:
+            "/${config.routePath}/${postWithUser.firstOrNull.get(Const.uid, "empty")}",
+        builder: (context, isMobile, controller, routeId) {
+          return ListBuilder<Map<String, dynamic>>(
+            source: postWithUser.toList(),
+            builder: (context, item) {
+              return [
+                ListItem(
+                  selected: routeId ==
+                      item.get(Const.uid, ""),
+                  selectedColor: context.theme.textColorOnPrimary,
+                  selectedTileColor:
+                      context.theme.primaryColor.withOpacity(0.8),
                   title: Text(item.get(config.nameKey, "")),
                   subtitle: Text(
                     DateTime.fromMillisecondsSinceEpoch(
@@ -98,104 +106,36 @@ class Post extends PageHookWidget {
                     ).format("yyyy/MM/dd HH:mm"),
                   ),
                   onTap: () {
+                    if (isMobile) {
+                      context.navigator.pushNamed(
+                        "/${config.routePath}/${item.get(Const.uid, "")}",
+                        arguments: RouteQuery.fullscreen,
+                      );
+                    } else {
+                      controller?.navigator.pushReplacementNamed(
+                        "/${config.routePath}/${item.get(Const.uid, "")}",
+                      );
+                    }
+                  },
+                ),
+              ];
+            },
+          );
+        },
+      ),
+      floatingActionButton:
+          config.permission.canEdit(user.get(config.roleKey, ""))
+              ? FloatingActionButton.extended(
+                  label: Text("Add".localize()),
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
                     context.navigator.pushNamed(
-                      "/${config.routePath}/${item.get(Const.uid, "")}",
-                      arguments: RouteQuery.fullscreen,
+                      "/${config.routePath}/edit",
+                      arguments: RouteQuery.fullscreenOrModal,
                     );
                   },
-                );
-              },
-            ),
-          ],
-        ),
-        floatingActionButton:
-            config.permission.canEdit(user.get(config.roleKey, ""))
-                ? FloatingActionButton.extended(
-                    label: Text("Add".localize()),
-                    icon: const Icon(Icons.add),
-                    onPressed: () {
-                      context.navigator.pushNamed(
-                        "/${config.routePath}/edit",
-                        arguments: RouteQuery.fullscreenOrModal,
-                      );
-                    },
-                  )
-                : null,
-      ),
-      desktop: () {
-        final controller = useNavigatorController(
-            "/${config.routePath}/${postWithUser.firstOrNull.get(Const.uid, "empty")}");
-        final tabId = controller.route?.name?.last();
-
-        return Scaffold(
-          appBar: PlatformAppBar(
-            title: Text(config.title ?? "Post".localize()),
-          ),
-          body: BlogContainer(
-            leftBar: Scrollbar(
-              child: ListView(
-                children: [
-                  ...postWithUser.mapAndRemoveEmpty(
-                    (item) {
-                      return ListTile(
-                        title: Text(
-                          item.get(config.nameKey, ""),
-                          style: TextStyle(
-                            color: tabId == item.get(Const.uid, "")
-                                ? context.theme.textColorOnPrimary
-                                : null,
-                            fontWeight: tabId == item.get(Const.uid, "")
-                                ? FontWeight.bold
-                                : null,
-                          ),
-                        ),
-                        tileColor: tabId == item.get(Const.uid, "")
-                            ? context.theme.primaryColor.withOpacity(0.8)
-                            : null,
-                        subtitle: Text(
-                          DateTime.fromMillisecondsSinceEpoch(
-                            item.get(config.createdTimeKey,
-                                now.millisecondsSinceEpoch),
-                          ).format("yyyy/MM/dd HH:mm"),
-                          style: TextStyle(
-                            color: tabId == item.get(Const.uid, "")
-                                ? context.theme.textColorOnPrimary
-                                : null,
-                            fontWeight: tabId == item.get(Const.uid, "")
-                                ? FontWeight.bold
-                                : null,
-                          ),
-                        ),
-                        onTap: tabId == item.get(Const.uid, "")
-                            ? null
-                            : () {
-                                controller.navigator.pushReplacementNamed(
-                                  "/${config.routePath}/${item.get(Const.uid, "")}",
-                                );
-                              },
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            child: InlinePageBuilder(controller: controller),
-          ),
-          floatingActionButton:
-              config.permission.canEdit(user.get(config.roleKey, ""))
-                  ? FloatingActionButton.extended(
-                      label: Text("Add".localize()),
-                      icon: const Icon(Icons.add),
-                      onPressed: () {
-                        context.navigator.pushNamed(
-                          "/${config.routePath}/edit",
-                          arguments: RouteQuery.fullscreenOrModal,
-                        );
-                      },
-                    )
-                  : null,
-        );
-      }(),
+                )
+              : null,
     );
   }
 }

@@ -21,8 +21,8 @@ class GalleryModule extends ModuleConfig {
     this.roleKey = Const.role,
     this.categoryKey = Const.category,
     this.createdTimeKey = Const.createdTime,
-    this.crossAxisCountForMobile = 4,
-    this.crossAxisCountForDesktop = 6,
+    this.maxCrossAxisExtentForMobile = 200,
+    this.maxCrossAxisExtentForDesktop = 200,
     this.childAspectRatioForMobile = 0.5625,
     this.childAspectRatioForDesktop = 1,
     this.heightOnDetailView = 200,
@@ -80,9 +80,9 @@ class GalleryModule extends ModuleConfig {
   /// 作成日のキー。
   final String createdTimeKey;
 
-  /// タイルの横方向の要素数。
-  final int crossAxisCountForMobile;
-  final int crossAxisCountForDesktop;
+  /// タイルの横方向のサイズ。
+  final double maxCrossAxisExtentForMobile;
+  final double maxCrossAxisExtentForDesktop;
 
   /// タイルのアスペクト比。
   final double childAspectRatioForMobile;
@@ -158,33 +158,26 @@ class TileWithTabGallery extends PageHookWidget {
           appBar: PlatformAppBar(
             title: Text(config.title ?? "Gallery".localize()),
           ),
-          body: BlogContainer(
+          body: CMSLayout(
             leftBar: Scrollbar(
-              child: ListView(
-                children: [
-                  ...config.tabConfig.map(
-                    (e) => ListTile(
-                      title: Text(
-                        e.label,
-                        style: TextStyle(
-                          color: tabId == e.id
-                              ? context.theme.textColorOnPrimary
-                              : null,
-                          fontWeight: tabId == e.id ? FontWeight.bold : null,
-                        ),
-                      ),
-                      tileColor: tabId == e.id
-                          ? context.theme.primaryColor.withOpacity(0.8)
-                          : null,
-                      onTap: tabId == e.id
-                          ? null
-                          : () {
-                              controller.navigator.pushReplacementNamed(
-                                  "/${config.routePath}/tab/${e.id}");
-                            },
+              child: ListBuilder<TabConfig>(
+                source: config.tabConfig,
+                builder: (context, item) {
+                  return [
+                    ListItem(
+                      selected: tabId == item.id,
+                      disabledTapOnSelected: true,
+                      selectedColor: context.theme.textColorOnPrimary,
+                      selectedTileColor:
+                          context.theme.primaryColor.withOpacity(0.8),
+                      title: Text(item.label),
+                      onTap: () {
+                        controller.navigator.pushReplacementNamed(
+                            "/${config.routePath}/tab/${item.id}");
+                      },
                     ),
-                  ),
-                ],
+                  ];
+                },
               ),
             ),
             child: InlinePageBuilder(controller: controller),
@@ -259,42 +252,26 @@ class _GridView extends HookWidget {
     );
 
     return PlatformScrollbar(
-      child: GridView.count(
-        crossAxisCount: context.isMobileOrSmall
-            ? config.crossAxisCountForMobile
-            : config.crossAxisCountForDesktop,
+      child: GridBuilder<DynamicDocumentModel>.extent(
+        maxCrossAxisExtent: context.isMobile
+            ? config.maxCrossAxisExtentForMobile
+            : config.maxCrossAxisExtentForDesktop,
         childAspectRatio: context.isMobile
             ? config.childAspectRatioForMobile
             : config.childAspectRatioForDesktop,
         mainAxisSpacing: config.tileSpacing,
         crossAxisSpacing: config.tileSpacing,
-        children: [
-          ...gallery.mapWidget(
-            (item) {
-              final path = item.get(config.mediaKey, "");
-              final type = getPlatformMediaType(path);
-              switch (type) {
-                case PlatformMediaType.video:
-                  return Container(
-                    color: context.theme.dividerColor,
-                    child: ClipRRect(
-                      child: ClickableBox.video(
-                        video: NetworkOrAsset.video(path),
-                        fit: BoxFit.cover,
-                        onTap: () {
-                          context.rootNavigator.pushNamed(
-                            config.skipDetailPage
-                                ? "/${config.routePath}/${item.get(Const.uid, "")}/view"
-                                : "/${config.routePath}/${item.get(Const.uid, "")}",
-                            arguments: RouteQuery.fullscreenOrModal,
-                          );
-                        },
-                      ),
-                    ),
-                  );
-                default:
-                  return ClickableBox.image(
-                    image: NetworkOrAsset.image(path),
+        source: gallery.toList(),
+        builder: (context, item) {
+          final path = item.get(config.mediaKey, "");
+          final type = getPlatformMediaType(path);
+          switch (type) {
+            case PlatformMediaType.video:
+              return Container(
+                color: context.theme.dividerColor,
+                child: ClipRRect(
+                  child: ClickableBox.video(
+                    video: NetworkOrAsset.video(path),
                     fit: BoxFit.cover,
                     onTap: () {
                       context.rootNavigator.pushNamed(
@@ -304,11 +281,24 @@ class _GridView extends HookWidget {
                         arguments: RouteQuery.fullscreenOrModal,
                       );
                     },
+                  ),
+                ),
+              );
+            default:
+              return ClickableBox.image(
+                image: NetworkOrAsset.image(path),
+                fit: BoxFit.cover,
+                onTap: () {
+                  context.rootNavigator.pushNamed(
+                    config.skipDetailPage
+                        ? "/${config.routePath}/${item.get(Const.uid, "")}/view"
+                        : "/${config.routePath}/${item.get(Const.uid, "")}",
+                    arguments: RouteQuery.fullscreenOrModal,
                   );
-              }
-            },
-          ),
-        ],
+                },
+              );
+          }
+        },
       ),
     );
   }

@@ -44,4 +44,6 @@ part 'media/single_media.dart';
 
 part 'post/post.dart';
 
+part 'chat/chat.dart';
+
 part 'questionnaire/questionnaire.dart';
