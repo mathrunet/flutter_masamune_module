@@ -17,7 +17,10 @@ class LoginModule extends ModuleConfig {
     this.backgroundColor,
     this.appBarColorOnSliverList,
     this.appBarHeightOnSliverList,
+    this.buttonColor,
+    this.buttonBackgroundColor,
     this.featureImage,
+    this.featureImageSize,
     this.featureImageFit = BoxFit.cover,
     this.titleTextStyle,
     this.titleAlignment = Alignment.bottomLeft,
@@ -82,6 +85,15 @@ class LoginModule extends ModuleConfig {
 
   /// フィーチャー画像の配置。
   final BoxFit featureImageFit;
+
+  /// フィーチャー画像のサイズ。
+  final Size? featureImageSize;
+
+  /// ボタンの前景色。
+  final Color? buttonColor;
+
+  /// ボタンの背景色。
+  final Color? buttonBackgroundColor;
 
   /// タイトルのテキストスタイル。
   final TextStyle? titleTextStyle;
@@ -149,14 +161,23 @@ class Landing extends PageHookWidget {
             mainAxisSize: MainAxisSize.max,
             children: [
               Expanded(
-                flex: 1,
+                flex: 2,
                 child: Center(
-                  child: config.featureImage != null
-                      ? Image(
-                          image: config.featureImage!,
-                          fit: config.featureImageFit,
-                        )
-                      : Align(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      if (config.featureImage != null)
+                        SizedBox(
+                          width: config.featureImageSize?.width,
+                          height: config.featureImageSize?.height,
+                          child: Image(
+                            image: config.featureImage!,
+                            fit: config.featureImageFit,
+                          ),
+                        ),
+                      if (config.title.isNotEmpty)
+                        Align(
                           alignment: config.titleAlignment,
                           child: Padding(
                             padding: config.titlePadding,
@@ -165,6 +186,7 @@ class Landing extends PageHookWidget {
                                 fontSize: 56,
                                 fontFamily: "Mplus",
                                 fontWeight: FontWeight.w700,
+                                color: Colors.white,
                               ),
                               child: Text(
                                 config.title ?? "",
@@ -173,6 +195,8 @@ class Landing extends PageHookWidget {
                             ),
                           ),
                         ),
+                    ],
+                  ),
                 ),
               ),
               Flexible(
@@ -186,8 +210,10 @@ class Landing extends PageHookWidget {
                       for (final role in config.roles)
                         FormItemSubmit(
                           role.label?.localize() ?? "Registration".localize(),
-                          backgroundColor:
-                              role.color ?? context.theme.accentColor,
+                          color: config.buttonColor,
+                          backgroundColor: config.buttonBackgroundColor ??
+                              role.color ??
+                              context.theme.accentColor,
                           icon: role.icon,
                           onPressed: () {
                             if (role.onTap != null) {
@@ -208,7 +234,9 @@ class Landing extends PageHookWidget {
                         FormItemSubmit(
                           config.guestLogin!.label?.localize() ??
                               "Guest login".localize(),
-                          backgroundColor: config.guestLogin!.color ??
+                          color: config.buttonColor,
+                          backgroundColor: config.buttonBackgroundColor ??
+                              config.guestLogin!.color ??
                               context.theme.primaryColor,
                           icon: config.guestLogin!.icon,
                           onPressed: () async {
@@ -224,8 +252,10 @@ class Landing extends PageHookWidget {
                         ),
                       FormItemSubmit(
                         config.login.label?.localize() ?? "Login".localize(),
-                        backgroundColor:
-                            config.login.color ?? context.theme.primaryColor,
+                        color: config.buttonColor,
+                        backgroundColor: config.buttonBackgroundColor ??
+                            config.login.color ??
+                            context.theme.primaryColor,
                         icon: config.login.icon,
                         onPressed: () {
                           if (config.login.onTap != null) {
@@ -261,9 +291,13 @@ class Landing extends PageHookWidget {
                     fit: StackFit.expand,
                     children: [
                       if (config.featureImage != null)
-                        Image(
-                          image: config.featureImage!,
-                          fit: config.featureImageFit,
+                        SizedBox(
+                          width: config.featureImageSize?.width,
+                          height: config.featureImageSize?.height,
+                          child: Image(
+                            image: config.featureImage!,
+                            fit: config.featureImageFit,
+                          ),
                         ),
                       Align(
                         alignment: config.titleAlignment,
@@ -296,8 +330,10 @@ class Landing extends PageHookWidget {
                       for (final role in config.roles)
                         FormItemSubmit(
                           role.label?.localize() ?? "Registration".localize(),
-                          backgroundColor:
-                              role.color ?? context.theme.accentColor,
+                          color: config.buttonColor,
+                          backgroundColor: config.buttonBackgroundColor ??
+                              role.color ??
+                              context.theme.accentColor,
                           icon: role.icon,
                           onPressed: () {
                             if (role.onTap != null) {
@@ -318,7 +354,9 @@ class Landing extends PageHookWidget {
                         FormItemSubmit(
                           config.guestLogin!.label?.localize() ??
                               "Guest login".localize(),
-                          backgroundColor: config.guestLogin!.color ??
+                          color: config.buttonColor,
+                          backgroundColor: config.buttonBackgroundColor ??
+                              config.guestLogin!.color ??
                               context.theme.primaryColor,
                           icon: config.guestLogin!.icon,
                           onPressed: () async {
@@ -334,8 +372,10 @@ class Landing extends PageHookWidget {
                         ),
                       FormItemSubmit(
                         config.login.label?.localize() ?? "Login".localize(),
-                        backgroundColor:
-                            config.login.color ?? context.theme.primaryColor,
+                        color: config.buttonColor,
+                        backgroundColor: config.buttonBackgroundColor ??
+                            config.login.color ??
+                            context.theme.primaryColor,
                         icon: config.login.icon,
                         onPressed: () {
                           if (config.login.onTap != null) {

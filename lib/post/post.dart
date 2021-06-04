@@ -88,7 +88,7 @@ class Post extends PageHookWidget {
         initialPath:
             "/${config.routePath}/${postWithUser.firstOrNull.get(Const.uid, "empty")}",
         builder: (context, isMobile, controller, routeId) {
-          return ListBuilder<Map<String, dynamic>>(
+          return ListBuilder<DynamicMap>(
             source: postWithUser.toList(),
             builder: (context, item) {
               return [

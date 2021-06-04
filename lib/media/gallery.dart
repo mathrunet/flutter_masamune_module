@@ -543,7 +543,7 @@ class _MediaEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
                     title: "Please select your media".localize(),
                     type: config.mediaType,
                   );
-                  onUpdate(media?.file);
+                  onUpdate(media?.path);
                 },
                 onSaved: (value) {
                   context[config.mediaKey] = value;

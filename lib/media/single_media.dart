@@ -168,7 +168,7 @@ class _SingleMediaEdit extends PageHookWidget
                     title: "Please select your media".localize(),
                     type: config.mediaType,
                   );
-                  onUpdate(media?.file);
+                  onUpdate(media?.path);
                 },
                 onSaved: (value) {
                   context[config.mediaKey] = value;

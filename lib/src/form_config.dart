@@ -49,7 +49,7 @@ class FormConfig {
 
   final bool obscureText;
 
-  Widget build(BuildContext context, Map<String, dynamic>? input) {
+  Widget build(BuildContext context, DynamicMap? input) {
     switch (formType) {
       case FormType.submit:
         return FormItemSubmit(

@@ -152,7 +152,7 @@ class Questionnaire extends PageHookWidget {
         initialPath:
             "${config.routePath}/${questionWithAnswer.firstOrNull.get(Const.uid, "empty")}",
         builder: (context, isMobile, controller, routeId) {
-          return ListBuilder<Map<String, dynamic>>(
+          return ListBuilder<DynamicMap>(
             source: questionWithAnswer.toList(),
             builder: (context, item) {
               return [
@@ -279,7 +279,7 @@ class _QuestionnaireAanswer extends PageHookWidget {
         ],
       ),
       body: PlatformScrollbar(
-        child: ListBuilder<Map<String, dynamic>>(
+        child: ListBuilder<DynamicMap>(
           source: answersWithUsers.toList(),
           top: [
             if (text.isNotEmpty)

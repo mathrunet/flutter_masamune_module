@@ -1,5 +1,18 @@
 part of masamune_module;
 
+enum ChatType { direct, group }
+
+extension ChatTypeExtensions on ChatType {
+  String get text {
+    switch (this) {
+      case ChatType.group:
+        return "group";
+      default:
+        return "direct";
+    }
+  }
+}
+
 class ChatModule extends ModuleConfig {
   const ChatModule({
     bool enabled = true,
@@ -7,9 +20,11 @@ class ChatModule extends ModuleConfig {
     this.routePath = "chat",
     this.chatPath = "chat",
     this.userPath = "user",
+    this.mediaType = PlatformMediaType.all,
     this.nameKey = Const.name,
     this.textKey = Const.text,
     this.roleKey = Const.role,
+    this.typeKey = Const.type,
     this.memberKey = Const.member,
     this.mediaKey = Const.media,
     this.createdTimeKey = Const.createdTime,
@@ -25,6 +40,8 @@ class ChatModule extends ModuleConfig {
     final route = {
       "/$routePath": RouteConfig((_) => Chat(this)),
       "/$routePath/{chat_id}": RouteConfig((_) => ChatTimeline(this)),
+      "/$routePath/{chat_id}/media/{timeline_id}":
+          RouteConfig((_) => _ChatMediaView(this)),
       "/$routePath/{chat_id}/edit": RouteConfig((_) => _ChatEdit(this)),
     };
     return route;
@@ -48,6 +65,9 @@ class ChatModule extends ModuleConfig {
   /// テキストのキー。
   final String textKey;
 
+  /// チャットタイプのキー。
+  final String typeKey;
+
   /// 権限のキー。
   final String roleKey;
 
@@ -59,6 +79,9 @@ class ChatModule extends ModuleConfig {
 
   /// メディアのキー。
   final String mediaKey;
+
+  /// 対応するメディアタイプ。
+  final PlatformMediaType mediaType;
 }
 
 class Chat extends PageHookWidget {
@@ -210,7 +233,16 @@ class ChatTimeline extends PageHookWidget {
       appBar: PlatformInlineAppBar(
         title: Text(name.isEmpty ? title : name),
         actions: [
-          if (config.permission.canEdit(user.get(config.roleKey, "")))
+          if (config.permission.canEdit(user.get(config.roleKey, ""))) ...[
+            if (chat.get(config.typeKey, "") == ChatType.group.text)
+              IconButton(
+                  onPressed: () {
+                    context.rootNavigator.pushNamed(
+                      "/${config.routePath}/${context.get("chat_id", "")}/member",
+                      arguments: RouteQuery.fullscreenOrModal,
+                    );
+                  },
+                  icon: const Icon(Icons.people_alt)),
             IconButton(
               onPressed: () {
                 context.rootNavigator.pushNamed(
@@ -219,10 +251,11 @@ class ChatTimeline extends PageHookWidget {
                 );
               },
               icon: const Icon(Icons.settings),
-            )
+            ),
+          ]
         ],
       ),
-      body: ListBuilder<Map<String, dynamic>>(
+      body: ListBuilder<DynamicMap>(
         padding: const EdgeInsets.fromLTRB(8, 12, 8, 64),
         reverse: true,
         source: timlineWithUser.toList(),
@@ -252,20 +285,11 @@ class ChatTimeline extends PageHookWidget {
                     ),
                     const Space.width(4),
                     Flexible(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        decoration: DefaultBoxDecoration(
-                          width: 0,
-                          backgroundColor: context.theme.primaryColor,
-                        ),
-                        child: Text(
-                          item.get(config.textKey, ""),
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: context.theme.colorScheme.onPrimary,
-                          ),
-                        ),
+                      child: _ChatTimelineItem(
+                        config,
+                        data: item,
+                        color: context.theme.colorScheme.onPrimary,
+                        backgroundColor: context.theme.primaryColor,
                       ),
                     ),
                   ],
@@ -293,20 +317,11 @@ class ChatTimeline extends PageHookWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Flexible(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 8),
-                              decoration: DefaultBoxDecoration(
-                                width: 0,
-                                backgroundColor: context.theme.accentColor,
-                              ),
-                              child: Text(
-                                item.get(config.textKey, ""),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: context.theme.colorScheme.onSecondary,
-                                ),
-                              ),
+                            child: _ChatTimelineItem(
+                              config,
+                              data: item,
+                              color: context.theme.colorScheme.onSecondary,
+                              backgroundColor: context.theme.accentColor,
                             ),
                           ),
                           const Space.width(4),
@@ -336,10 +351,11 @@ class ChatTimeline extends PageHookWidget {
       bottomSheet: Container(
         padding: const EdgeInsets.all(0),
         decoration: BoxDecoration(
-            color: context.theme.backgroundColor,
-            border: Border(
-                top: BorderSide(
-                    color: Theme.of(context).dividerColor, width: 1))),
+          color: context.theme.backgroundColor,
+          border: Border(
+            top: BorderSide(color: context.theme.dividerColor, width: 1),
+          ),
+        ),
         child: Stack(
           children: [
             FormItemTextField(
@@ -352,7 +368,7 @@ class ChatTimeline extends PageHookWidget {
               minLines: 1,
               textAlignVertical: TextAlignVertical.top,
               textAlign: TextAlign.start,
-              contentPadding: const EdgeInsets.fromLTRB(12, 0, 48, 0),
+              contentPadding: const EdgeInsets.fromLTRB(56, 0, 56, 0),
               onSubmitted: (value) {
                 if (value.isEmpty) {
                   return;
@@ -404,9 +420,169 @@ class ChatTimeline extends PageHookWidget {
                   color: context.theme.disabledColor,
                 ),
               ),
+            ),
+            Positioned(
+              left: 10,
+              top: 0,
+              bottom: 0,
+              child: IconButton(
+                onPressed: () async {
+                  final media = await context.platform?.mediaDialog(
+                    context,
+                    title: "Please select your media".localize(),
+                    type: config.mediaType,
+                  );
+                  if (media?.path == null) {
+                    return;
+                  }
+
+                  final url = await context.adapter
+                      ?.uploadMedia(media?.path)
+                      .showIndicator(context);
+                  if (url.isEmpty) {
+                    return;
+                  }
+
+                  final doc = context.adapter?.createDocument(timeline);
+                  if (doc == null) {
+                    return;
+                  }
+                  doc[Const.user] = userId;
+                  doc[config.mediaKey] = url;
+                  chat[config.modifiedTimeKey] = doc[config.createdTimeKey] =
+                      DateTime.now().millisecondsSinceEpoch;
+                  context.adapter?.saveDocument(doc);
+                  context.adapter?.saveDocument(chat);
+                  focusNode.requestFocus();
+                },
+                padding: const EdgeInsets.all(0),
+                visualDensity: VisualDensity.compact,
+                icon: Icon(
+                  Icons.add_photo_alternate,
+                  size: 25,
+                  color: context.theme.disabledColor,
+                ),
+              ),
             )
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ChatTimelineItem extends StatelessWidget {
+  const _ChatTimelineItem(
+    this.config, {
+    required this.data,
+    this.color,
+    this.backgroundColor,
+  });
+  final ChatModule config;
+
+  final DynamicMap data;
+  final Color? color;
+  final Color? backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final media = data.get(config.mediaKey, "");
+    if (media.isNotEmpty) {
+      final type = getPlatformMediaType(media);
+      switch (type) {
+        case PlatformMediaType.video:
+          return ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 150),
+            child: InkWell(
+              onTap: () {
+                context.rootNavigator.pushNamed(
+                  "/${config.routePath}/${context.get("chat_id", "")}/media/${data.get(Const.uid, "")}",
+                  arguments: RouteQuery.fullscreenOrModal,
+                );
+              },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8.0),
+                child: Video(NetworkOrAsset.video(media)),
+              ),
+            ),
+          );
+        default:
+          return ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 150),
+            child: InkWell(
+              onTap: () {
+                context.rootNavigator.pushNamed(
+                  "/${config.routePath}/${context.get("chat_id", "")}/media/${data.get(Const.uid, "")}",
+                  arguments: RouteQuery.fullscreenOrModal,
+                );
+              },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8.0),
+                child: Image(image: NetworkOrAsset.image(media)),
+              ),
+            ),
+          );
+      }
+    } else {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: DefaultBoxDecoration(
+          width: 0,
+          backgroundColor: backgroundColor,
+        ),
+        child: Text(
+          data.get(config.textKey, ""),
+          style: TextStyle(
+            fontSize: 16,
+            color: color,
+          ),
+        ),
+      );
+    }
+  }
+}
+
+class _ChatMediaView extends PageHookWidget {
+  const _ChatMediaView(this.config);
+  final ChatModule config;
+
+  @override
+  Widget build(BuildContext context) {
+    final item = useDocumentModel(
+        "${config.chatPath}/${context.get("chat_id", "")}/${config.chatPath}/${context.get("timeline_id", "")}");
+    final media = item.get(config.mediaKey, "");
+    final type = getPlatformMediaType(media);
+
+    return PlatformModalView(
+      widthRatio: 0.8,
+      heightRatio: 0.8,
+      child: Scaffold(
+        appBar: AppBar(),
+        backgroundColor: Colors.black,
+        body: media.isEmpty
+            ? Center(
+                child: Text(
+                  "No data.".localize(),
+                  style: const TextStyle(color: Colors.white),
+                ),
+              )
+            : () {
+                switch (type) {
+                  case PlatformMediaType.video:
+                    return Center(
+                      child: Video(
+                        NetworkOrAsset.video(media),
+                        fit: BoxFit.contain,
+                        controllable: true,
+                        mixWithOthers: true,
+                      ),
+                    );
+                  default:
+                    return PhotoView(
+                      imageProvider: NetworkOrAsset.image(media),
+                    );
+                }
+              }(),
       ),
     );
   }

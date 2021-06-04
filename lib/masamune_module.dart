@@ -10,7 +10,6 @@ library masamune_module;
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/diagnostics.dart';
