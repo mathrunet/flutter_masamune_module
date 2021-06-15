@@ -1,4 +1,4 @@
-part of masamune_module;
+part of 'home.dart';
 
 class TileMenuHome extends HookWidget {
   const TileMenuHome(this.config);
@@ -40,9 +40,10 @@ class TileMenuHome extends HookWidget {
                           alignment: config.titleAlignment,
                           padding: config.titlePadding,
                           decoration: BoxDecoration(
-                            image: config.featureImage != null
+                            image: config.featureImage.isNotEmpty
                                 ? DecorationImage(
-                                    image: config.featureImage!,
+                                    image: NetworkOrAsset.image(
+                                        config.featureImage!),
                                     fit: config.featureImageFit,
                                   )
                                 : null,

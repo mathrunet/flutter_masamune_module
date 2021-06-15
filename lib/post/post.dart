@@ -1,8 +1,21 @@
-part of masamune_module;
+import 'dart:convert';
+
+import 'package:flutter_quill/models/documents/document.dart';
+import 'package:flutter_quill/widgets/controller.dart';
+import 'package:flutter_quill/widgets/default_styles.dart';
+import 'package:flutter_quill/widgets/editor.dart';
+import 'package:flutter_quill/widgets/toolbar.dart';
+import 'package:masamune/masamune.dart';
+import 'package:masamune_module/masamune_module.dart';
+import 'package:tuple/tuple.dart';
+
+part "post.m.dart";
 
 enum PostEditingType { planeText, wysiwyg }
 
-class PostModule extends ModuleConfig {
+@module
+@immutable
+class PostModule extends PageModule {
   const PostModule({
     bool enabled = true,
     String? title = "",
@@ -14,7 +27,7 @@ class PostModule extends ModuleConfig {
     this.roleKey = Const.role,
     this.createdTimeKey = Const.createdTime,
     this.editingType = PostEditingType.planeText,
-    PermissionConfig permission = const PermissionConfig(),
+    Permission permission = const Permission(),
   }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
@@ -26,7 +39,7 @@ class PostModule extends ModuleConfig {
       "/$routePath": RouteConfig((_) => Post(this)),
       "/$routePath/edit": RouteConfig((_) => _PostEdit(this, inAdd: true)),
       "/$routePath/empty": RouteConfig((_) => const EmptyPage()),
-      "/$routePath/{post_id}": RouteConfig((_) => _PostView(this)),
+      "/$routePath/{post_id}": RouteConfig((_) => PostView(this)),
       "/$routePath/{post_id}/edit": RouteConfig((_) => _PostEdit(this)),
     };
     return route;
@@ -55,6 +68,12 @@ class PostModule extends ModuleConfig {
 
   /// エディターのタイプ。
   final PostEditingType editingType;
+
+  @override
+  PostModule? fromMap(DynamicMap map) => _$PostModuleFromMap(map, this);
+
+  @override
+  DynamicMap toMap() => _$PostModuleToMap(this);
 }
 
 class Post extends PageHookWidget {
@@ -93,8 +112,7 @@ class Post extends PageHookWidget {
             builder: (context, item) {
               return [
                 ListItem(
-                  selected: routeId ==
-                      item.get(Const.uid, ""),
+                  selected: routeId == item.get(Const.uid, ""),
                   selectedColor: context.theme.textColorOnPrimary,
                   selectedTileColor:
                       context.theme.primaryColor.withOpacity(0.8),
@@ -140,8 +158,8 @@ class Post extends PageHookWidget {
   }
 }
 
-class _PostView extends PageHookWidget {
-  const _PostView(this.config);
+class PostView extends PageHookWidget {
+  const PostView(this.config);
   final PostModule config;
 
   @override
@@ -311,7 +329,7 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
                 submitText: "Yes".localize(),
                 cacnelText: "No".localize(),
                 onSubmit: () async {
-                  await context.adapter
+                  await context.model
                       ?.deleteDocument(item)
                       .showIndicator(context);
                   context.navigator.pop();
@@ -382,7 +400,7 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
                       if (file.path.isEmpty || !file.existsSync()) {
                         return "";
                       }
-                      return await context.adapter!.uploadMedia(file.path);
+                      return await context.model!.uploadMedia(file.path);
                     },
                   ),
                   Expanded(
@@ -421,7 +439,7 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
                       jsonEncode(controller.document.toDelta().toJson());
                   item[config.createdTimeKey] = context.get(
                       config.createdTimeKey, now.millisecondsSinceEpoch);
-                  await context.adapter
+                  await context.model
                       ?.saveDocument(item)
                       .showIndicator(context);
                   context.navigator.pop();
@@ -503,7 +521,7 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
                   item[config.textKey] = context.get(config.textKey, "");
                   item[config.createdTimeKey] = context.get(
                       config.createdTimeKey, now.millisecondsSinceEpoch);
-                  await context.adapter
+                  await context.model
                       ?.saveDocument(item)
                       .showIndicator(context);
                   context.navigator.pop();

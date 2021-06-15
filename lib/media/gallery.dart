@@ -1,4 +1,8 @@
-part of masamune_module;
+import 'package:masamune/masamune.dart';
+import 'package:masamune_module/masamune_module.dart';
+import 'package:photo_view/photo_view.dart';
+
+part "gallery.m.dart";
 
 enum GalleryType {
   detail,
@@ -6,8 +10,9 @@ enum GalleryType {
   tileWithTab,
 }
 
+@module
 @immutable
-class GalleryModule extends ModuleConfig {
+class GalleryModule extends PageModule {
   const GalleryModule({
     bool enabled = true,
     String title = "",
@@ -30,7 +35,7 @@ class GalleryModule extends ModuleConfig {
     this.tabConfig = const [],
     this.mediaType = PlatformMediaType.all,
     this.skipDetailPage = false,
-    PermissionConfig permission = const PermissionConfig(),
+    Permission permission = const Permission(),
   }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
@@ -102,6 +107,12 @@ class GalleryModule extends ModuleConfig {
 
   /// 詳細のページは出さずに直接画像を表示する場合は`true`。
   final bool skipDetailPage;
+
+  @override
+  GalleryModule? fromMap(DynamicMap map) => _$GalleryModuleFromMap(map, this);
+
+  @override
+  DynamicMap toMap() => _$GalleryModuleToMap(this);
 }
 
 class Gallery extends PageHookWidget {
@@ -516,7 +527,7 @@ class _MediaEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
                     submitText: "Yes".localize(),
                     cacnelText: "No".localize(),
                     onSubmit: () async {
-                      await context.adapter
+                      await context.model
                           ?.deleteDocument(item)
                           .showIndicator(context);
                       context.navigator.pop();
@@ -606,10 +617,10 @@ class _MediaEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
             item[config.nameKey] = context.get(config.nameKey, "");
             item[config.textKey] = context.get(config.textKey, "");
             item[config.categoryKey] = context.get(config.categoryKey, "");
-            item[config.mediaKey] = await context.adapter
+            item[config.mediaKey] = await context.model
                 ?.uploadMedia(context.get(config.mediaKey, ""))
                 .showIndicator(context);
-            await context.adapter?.saveDocument(item).showIndicator(context);
+            await context.model?.saveDocument(item).showIndicator(context);
             context.navigator.pop();
           },
           label: Text("Submit".localize()),

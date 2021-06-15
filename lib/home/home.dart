@@ -1,14 +1,21 @@
-part of masamune_module;
+import 'package:masamune/masamune.dart';
+import 'package:masamune_module/masamune_module.dart';
+
+import 'package:masamune_module/post/post.dart';
+
+part 'tile_menu_home.dart';
+part 'home.m.dart';
 
 enum HomeType {
   tileMenu,
 }
 
+@module
 @immutable
-class HomeModule extends ModuleConfig {
+class HomeModule extends PageModule {
   const HomeModule({
     bool enabled = true,
-    String title = "",
+    String? title = "",
     this.color,
     this.textColor,
     this.homeType = HomeType.tileMenu,
@@ -27,7 +34,7 @@ class HomeModule extends ModuleConfig {
     this.menu = const [],
     this.subMenu = const [],
     this.roleMenu = const {},
-    PermissionConfig permission = const PermissionConfig(),
+    Permission permission = const Permission(),
   }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
@@ -42,9 +49,6 @@ class HomeModule extends ModuleConfig {
     route.addAll(calendar.routeSettings ?? {});
     return route;
   }
-
-  @override
-  String? get initialRoute => "/";
 
   /// お知らせの設定。
   final HomeInformationModule info;
@@ -71,7 +75,7 @@ class HomeModule extends ModuleConfig {
   final Color? color;
 
   /// フィーチャー画像。
-  final ImageProvider? featureImage;
+  final String? featureImage;
 
   /// フィーチャー画像の配置。
   final BoxFit featureImageFit;
@@ -106,8 +110,15 @@ class HomeModule extends ModuleConfig {
     }
     return roleMenu[role.id] ?? [];
   }
+
+  @override
+  HomeModule? fromMap(DynamicMap map) => _$HomeModuleFromMap(map, this);
+
+  @override
+  DynamicMap toMap() => _$HomeModuleToMap(this);
 }
 
+@module
 @immutable
 class HomeInformationModule extends PostModule {
   const HomeInformationModule({
@@ -115,7 +126,7 @@ class HomeInformationModule extends PostModule {
     String? title,
     String postPath = "info",
     this.icon = Icons.info_rounded,
-    PermissionConfig permission = const PermissionConfig(),
+    Permission permission = const Permission(),
   }) : super(
           enabled: enabled,
           title: title,
@@ -131,7 +142,7 @@ class HomeInformationModule extends PostModule {
       return const {};
     }
     final route = {
-      "/info/{post_id}": RouteConfig((_) => _PostView(this)),
+      "/info/{post_id}": RouteConfig((_) => PostView(this)),
       // "/info/{post_id}/edit": RouteConfig((_) => _PostEdit(this)),
     };
     return route;
@@ -139,10 +150,18 @@ class HomeInformationModule extends PostModule {
 
   /// アイコン。
   final IconData icon;
+
+  @override
+  HomeInformationModule? fromMap(DynamicMap map) =>
+      _$HomeInformationModuleFromMap(map, this);
+
+  @override
+  DynamicMap toMap() => _$HomeInformationModuleToMap(this);
 }
 
+@module
 @immutable
-class HomeCalendarModule extends ModuleConfig {
+class HomeCalendarModule extends PageModule {
   const HomeCalendarModule(
       {bool enabled = true,
       String? title,
@@ -155,6 +174,13 @@ class HomeCalendarModule extends ModuleConfig {
 
   /// アイコン。
   final IconData icon;
+
+  @override
+  HomeCalendarModule? fromMap(DynamicMap map) =>
+      _$HomeCalendarModuleFromMap(map, this);
+
+  @override
+  DynamicMap toMap() => _$HomeCalendarModuleToMap(this);
 }
 
 class Home extends PageHookWidget {

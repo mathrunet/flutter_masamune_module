@@ -1,4 +1,8 @@
-part of masamune_module;
+import 'package:masamune/masamune.dart';
+import 'package:masamune_module/masamune_module.dart';
+import 'package:photo_view/photo_view.dart';
+
+part 'chat.m.dart';
 
 enum ChatType { direct, group }
 
@@ -13,7 +17,9 @@ extension ChatTypeExtensions on ChatType {
   }
 }
 
-class ChatModule extends ModuleConfig {
+@module
+@immutable
+class ChatModule extends PageModule {
   const ChatModule({
     bool enabled = true,
     String? title = "",
@@ -29,7 +35,7 @@ class ChatModule extends ModuleConfig {
     this.mediaKey = Const.media,
     this.createdTimeKey = Const.createdTime,
     this.modifiedTimeKey = Const.modifiedTime,
-    PermissionConfig permission = const PermissionConfig(),
+    Permission permission = const Permission(),
   }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
@@ -82,6 +88,12 @@ class ChatModule extends ModuleConfig {
 
   /// 対応するメディアタイプ。
   final PlatformMediaType mediaType;
+
+  @override
+  ChatModule? fromMap(DynamicMap map) => _$ChatModuleFromMap(map, this);
+
+  @override
+  DynamicMap toMap() => _$ChatModuleToMap(this);
 }
 
 class Chat extends PageHookWidget {
@@ -180,7 +192,7 @@ class ChatTimeline extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final userId = context.adapter?.userId;
+    final userId = context.model?.userId;
     final user = useUserDocumentModel();
     final chat =
         useDocumentModel("${config.chatPath}/${context.get("chat_id", "")}");
@@ -374,7 +386,7 @@ class ChatTimeline extends PageHookWidget {
                   return;
                 }
 
-                final doc = context.adapter?.createDocument(timeline);
+                final doc = context.model?.createDocument(timeline);
                 if (doc == null) {
                   return;
                 }
@@ -382,8 +394,8 @@ class ChatTimeline extends PageHookWidget {
                 doc[config.textKey] = value;
                 chat[config.modifiedTimeKey] = doc[config.createdTimeKey] =
                     DateTime.now().millisecondsSinceEpoch;
-                context.adapter?.saveDocument(doc);
-                context.adapter?.saveDocument(chat);
+                context.model?.saveDocument(doc);
+                context.model?.saveDocument(chat);
                 textEditingController.text = "";
                 focusNode.requestFocus();
               },
@@ -399,7 +411,7 @@ class ChatTimeline extends PageHookWidget {
                     return;
                   }
 
-                  final doc = context.adapter?.createDocument(timeline);
+                  final doc = context.model?.createDocument(timeline);
                   if (doc == null) {
                     return;
                   }
@@ -407,8 +419,8 @@ class ChatTimeline extends PageHookWidget {
                   doc[config.textKey] = value;
                   chat[config.modifiedTimeKey] = doc[config.createdTimeKey] =
                       DateTime.now().millisecondsSinceEpoch;
-                  context.adapter?.saveDocument(doc);
-                  context.adapter?.saveDocument(chat);
+                  context.model?.saveDocument(doc);
+                  context.model?.saveDocument(chat);
                   textEditingController.text = "";
                   focusNode.requestFocus();
                 },
@@ -436,14 +448,14 @@ class ChatTimeline extends PageHookWidget {
                     return;
                   }
 
-                  final url = await context.adapter
+                  final url = await context.model
                       ?.uploadMedia(media?.path)
                       .showIndicator(context);
                   if (url.isEmpty) {
                     return;
                   }
 
-                  final doc = context.adapter?.createDocument(timeline);
+                  final doc = context.model?.createDocument(timeline);
                   if (doc == null) {
                     return;
                   }
@@ -451,8 +463,8 @@ class ChatTimeline extends PageHookWidget {
                   doc[config.mediaKey] = url;
                   chat[config.modifiedTimeKey] = doc[config.createdTimeKey] =
                       DateTime.now().millisecondsSinceEpoch;
-                  context.adapter?.saveDocument(doc);
-                  context.adapter?.saveDocument(chat);
+                  context.model?.saveDocument(doc);
+                  context.model?.saveDocument(chat);
                   focusNode.requestFocus();
                 },
                 padding: const EdgeInsets.all(0),
@@ -630,7 +642,7 @@ class _ChatEdit extends PageHookWidget with UIPageFormMixin {
             }
 
             chat[config.nameKey] = context.get(config.nameKey, "");
-            await context.adapter?.saveDocument(chat).showIndicator(context);
+            await context.model?.saveDocument(chat).showIndicator(context);
             context.navigator.pop();
           },
           label: Text("Submit".localize()),

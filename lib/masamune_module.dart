@@ -12,6 +12,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/src/foundation/diagnostics.dart';
 import 'package:flutter/src/scheduler/ticker.dart';
 import 'package:tuple/tuple.dart';
@@ -28,21 +29,15 @@ import 'package:sprintf/sprintf.dart';
 import 'package:share/share.dart';
 export 'package:masamune/masamune.dart';
 
+export 'chat/chat.dart';
+export 'common/login_and_register.dart';
+export 'home/home.dart';
+export 'media/gallery.dart';
+export 'media/single_media.dart';
+export 'post/post.dart';
+export 'questionnaire/questionnaire.dart';
+
 part 'src/form_config.dart';
 part 'src/tab_config.dart';
 part 'src/exntensions.dart';
 part 'src/functions.dart';
-
-part 'common/login_and_register.dart';
-
-part 'home/home.dart';
-part 'home/tile_menu_home.dart';
-
-part 'media/gallery.dart';
-part 'media/single_media.dart';
-
-part 'post/post.dart';
-
-part 'chat/chat.dart';
-
-part 'questionnaire/questionnaire.dart';

@@ -1,4 +1,7 @@
-part of masamune_module;
+import 'package:masamune/masamune.dart';
+import 'package:masamune_module/masamune_module.dart';
+
+part "questionnaire.m.dart";
 
 enum _QuenstionFormType { text, selection }
 
@@ -33,7 +36,9 @@ extension _QuenstionFormTypeExtension on _QuenstionFormType {
   }
 }
 
-class QuestionnaireModule extends ModuleConfig {
+@module
+@immutable
+class QuestionnaireModule extends PageModule {
   const QuestionnaireModule({
     bool enabled = true,
     String? title = "",
@@ -50,7 +55,7 @@ class QuestionnaireModule extends ModuleConfig {
     this.createdTimeKey = Const.createdTime,
     this.endTimeKey = Const.endTime,
     this.answerKey = Const.answer,
-    PermissionConfig permission = const PermissionConfig(),
+    Permission permission = const Permission(),
   }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
@@ -119,6 +124,13 @@ class QuestionnaireModule extends ModuleConfig {
 
   /// 締切日のキー。
   final String endTimeKey;
+
+  @override
+  QuestionnaireModule? fromMap(DynamicMap map) =>
+      _$QuestionnaireModuleFromMap(map, this);
+
+  @override
+  DynamicMap toMap() => _$QuestionnaireModuleToMap(this);
 }
 
 class Questionnaire extends PageHookWidget {
@@ -135,7 +147,7 @@ class Questionnaire extends PageHookWidget {
         return e;
       }
       final doc = context.readDocumentModel(
-        "${config.questionPath}/$uid/${config.answerPath}/${context.adapter?.userId}",
+        "${config.questionPath}/$uid/${config.answerPath}/${context.model?.userId}",
       );
       if (doc.isNotEmpty) {
         return {...e}..["answered"] = true;
@@ -386,7 +398,7 @@ class _QuestionnaireViewEdit extends PageHookWidget with UIPageFormMixin {
     final questions = useCollectionModel(
         "${config.questionPath}/${context.get("question_id", "")}/${config.questionPath}");
     final answer = useDocumentModel(
-      "${config.questionPath}/${context.get("question_id", "")}/${config.answerPath}/${context.adapter?.userId}",
+      "${config.questionPath}/${context.get("question_id", "")}/${config.answerPath}/${context.model?.userId}",
     );
     final name = question.get(config.nameKey, "");
     final text = question.get(config.textKey, "");
@@ -653,7 +665,7 @@ class _QuestionnaireQuestionEdit extends PageHookWidget
                     submitText: "Yes".localize(),
                     cacnelText: "No".localize(),
                     onSubmit: () async {
-                      await context.adapter
+                      await context.model
                           ?.deleteDocument(item)
                           .showIndicator(context);
                       context.navigator.pop();
@@ -768,7 +780,7 @@ class _QuestionnaireQuestionEdit extends PageHookWidget
             if (type == _QuenstionFormType.selection.text) {
               item[config.selectionKey] = context.get(config.selectionKey, {});
             }
-            await context.adapter?.saveDocument(item).showIndicator(context);
+            await context.model?.saveDocument(item).showIndicator(context);
             context.navigator.pop();
           },
           icon: const Icon(Icons.check),
@@ -819,7 +831,7 @@ class _QuestionnaireEdit extends PageHookWidget
                     submitText: "Yes".localize(),
                     cacnelText: "No".localize(),
                     onSubmit: () async {
-                      await context.adapter
+                      await context.model
                           ?.deleteDocument(item)
                           .showIndicator(context);
                       context.navigator.pop();
@@ -880,7 +892,7 @@ class _QuestionnaireEdit extends PageHookWidget
             item[config.nameKey] = context.get(config.nameKey, "");
             item[config.textKey] = context.get(config.textKey, "");
             item[config.endTimeKey] = context.get(config.endTimeKey, 0);
-            await context.adapter?.saveDocument(item).showIndicator(context);
+            await context.model?.saveDocument(item).showIndicator(context);
             context.navigator.pop();
           },
           label: Text("Submit".localize()),

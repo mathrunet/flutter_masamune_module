@@ -1,7 +1,14 @@
-part of masamune_module;
+import 'package:masamune/masamune.dart';
+import 'package:masamune_module/masamune_module.dart';
+import 'package:photo_view/photo_view.dart';
 
+import 'gallery.dart';
+
+part "single_media.m.dart";
+
+@module
 @immutable
-class SingleMediaModule extends ModuleConfig {
+class SingleMediaModule extends PageModule {
   const SingleMediaModule({
     bool enabled = true,
     String title = "",
@@ -16,7 +23,7 @@ class SingleMediaModule extends ModuleConfig {
     this.categoryKey = Const.category,
     this.createdTimeKey = Const.createdTime,
     this.mediaType = PlatformMediaType.all,
-    PermissionConfig permission = const PermissionConfig(),
+    Permission permission = const Permission(),
   }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
@@ -63,6 +70,13 @@ class SingleMediaModule extends ModuleConfig {
 
   /// 対応するメディアタイプ。
   final PlatformMediaType mediaType;
+
+  @override
+  SingleMediaModule? fromMap(DynamicMap map) =>
+      _$SingleMediaModuleFromMap(map, this);
+
+  @override
+  DynamicMap toMap() => _$SingleMediaModuleToMap(this);
 }
 
 class SingleMedia extends PageHookWidget {
@@ -195,10 +209,10 @@ class _SingleMediaEdit extends PageHookWidget
             }
 
             item[config.nameKey] = context.get(config.nameKey, "");
-            item[config.mediaKey] = await context.adapter
+            item[config.mediaKey] = await context.model
                 ?.uploadMedia(context.get(config.mediaKey, ""))
                 .showIndicator(context);
-            await context.adapter?.saveDocument(item).showIndicator(context);
+            await context.model?.saveDocument(item).showIndicator(context);
             context.navigator.pop();
           },
           label: Text("Submit".localize()),

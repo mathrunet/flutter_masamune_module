@@ -1,7 +1,12 @@
-part of masamune_module;
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:masamune/masamune.dart';
+import 'package:masamune_module/masamune_module.dart';
 
+part 'login_and_register.m.dart';
+
+@module
 @immutable
-class LoginModule extends ModuleConfig {
+class LoginModule extends PageModule {
   const LoginModule({
     bool enabled = true,
     String title = "",
@@ -59,9 +64,6 @@ class LoginModule extends ModuleConfig {
     return route;
   }
 
-  @override
-  String? get initialRoute => "/landing";
-
   /// 権限。
   final List<RoleConfig> roles;
 
@@ -81,7 +83,7 @@ class LoginModule extends ModuleConfig {
   final double? appBarHeightOnSliverList;
 
   /// フィーチャー画像。
-  final ImageProvider? featureImage;
+  final String? featureImage;
 
   /// フィーチャー画像の配置。
   final BoxFit featureImageFit;
@@ -124,6 +126,11 @@ class LoginModule extends ModuleConfig {
 
   /// 登録時のフォームデータ。
   final List<FormConfig> registerForm;
+
+  @override
+  LoginModule? fromMap(DynamicMap map) => _$LoginModuleFromMap(map, this);
+  @override
+  DynamicMap toMap() => _$LoginModuleToMap(this);
 }
 
 @immutable
@@ -132,12 +139,38 @@ class LoginConfig {
     this.label,
     this.color,
     this.icon,
-    this.onTap,
   });
   final String? label;
   final IconData? icon;
   final Color? color;
-  final VoidCallback? onTap;
+
+  static LoginConfig? _fromMap(DynamicMap map) {
+    if (map.isEmpty) {
+      return null;
+    }
+    return LoginConfig(
+      label: map.get<String?>("name", null),
+      color: map.getAsMap("color").toColor(),
+      icon: map.getAsMap("icon").toIconData(),
+    );
+  }
+
+  DynamicMap toMap() {
+    return <String, dynamic>{
+      if (label.isNotEmpty) "name": label,
+      if (color != null) "color": color.toMap(),
+      if (icon != null) "icon": icon.toMap(),
+    };
+  }
+}
+
+extension _LoginConfigExtensions on DynamicMap? {
+  LoginConfig? toLoginConfig() {
+    if (this == null) {
+      return null;
+    }
+    return LoginConfig._fromMap(this!);
+  }
 }
 
 enum LoginType { emailAndPassword }
@@ -167,12 +200,12 @@ class Landing extends PageHookWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      if (config.featureImage != null)
+                      if (config.featureImage.isNotEmpty)
                         SizedBox(
                           width: config.featureImageSize?.width,
                           height: config.featureImageSize?.height,
                           child: Image(
-                            image: config.featureImage!,
+                            image: NetworkOrAsset.image(config.featureImage!),
                             fit: config.featureImageFit,
                           ),
                         ),
@@ -216,8 +249,8 @@ class Landing extends PageHookWidget {
                               context.theme.accentColor,
                           icon: role.icon,
                           onPressed: () {
-                            if (role.onTap != null) {
-                              role.onTap?.call();
+                            if (role.path.isNotEmpty) {
+                              context.navigator.pushNamed(role.path!);
                             } else {
                               if (config.roles.length <= 1) {
                                 context.navigator.pushNamed("/register",
@@ -240,14 +273,10 @@ class Landing extends PageHookWidget {
                               context.theme.primaryColor,
                           icon: config.guestLogin!.icon,
                           onPressed: () async {
-                            if (config.guestLogin!.onTap != null) {
-                              config.guestLogin!.onTap?.call();
-                            } else {
-                              await context.adapter
-                                  ?.signInAnonymously()
-                                  .showIndicator(context);
-                              context.navigator.pushNamed(config.redirectTo);
-                            }
+                            await context.model
+                                ?.signInAnonymously()
+                                .showIndicator(context);
+                            context.navigator.pushNamed(config.redirectTo);
                           },
                         ),
                       FormItemSubmit(
@@ -258,12 +287,8 @@ class Landing extends PageHookWidget {
                             context.theme.primaryColor,
                         icon: config.login.icon,
                         onPressed: () {
-                          if (config.login.onTap != null) {
-                            config.login.onTap?.call();
-                          } else {
-                            context.navigator.pushNamed("/login",
-                                arguments: RouteQuery.fade);
-                          }
+                          context.navigator
+                              .pushNamed("/login", arguments: RouteQuery.fade);
                         },
                       ),
                     ],
@@ -290,12 +315,12 @@ class Landing extends PageHookWidget {
                   background: Stack(
                     fit: StackFit.expand,
                     children: [
-                      if (config.featureImage != null)
+                      if (config.featureImage.isNotEmpty)
                         SizedBox(
                           width: config.featureImageSize?.width,
                           height: config.featureImageSize?.height,
                           child: Image(
-                            image: config.featureImage!,
+                            image: NetworkOrAsset.image(config.featureImage!),
                             fit: config.featureImageFit,
                           ),
                         ),
@@ -336,8 +361,8 @@ class Landing extends PageHookWidget {
                               context.theme.accentColor,
                           icon: role.icon,
                           onPressed: () {
-                            if (role.onTap != null) {
-                              role.onTap?.call();
+                            if (role.path.isNotEmpty) {
+                              context.navigator.pushNamed(role.path!);
                             } else {
                               if (config.roles.length <= 1) {
                                 context.navigator.pushNamed("/register",
@@ -360,14 +385,10 @@ class Landing extends PageHookWidget {
                               context.theme.primaryColor,
                           icon: config.guestLogin!.icon,
                           onPressed: () async {
-                            if (config.guestLogin!.onTap != null) {
-                              config.guestLogin!.onTap?.call();
-                            } else {
-                              await context.adapter
-                                  ?.signInAnonymously()
-                                  .showIndicator(context);
-                              context.navigator.pushNamed(config.redirectTo);
-                            }
+                            await context.model
+                                ?.signInAnonymously()
+                                .showIndicator(context);
+                            context.navigator.pushNamed(config.redirectTo);
                           },
                         ),
                       FormItemSubmit(
@@ -378,12 +399,8 @@ class Landing extends PageHookWidget {
                             context.theme.primaryColor,
                         icon: config.login.icon,
                         onPressed: () {
-                          if (config.login.onTap != null) {
-                            config.login.onTap?.call();
-                          } else {
-                            context.navigator.pushNamed("/login",
-                                arguments: RouteQuery.fade);
-                          }
+                          context.navigator
+                              .pushNamed("/login", arguments: RouteQuery.fade);
                         },
                       )
                     ],
@@ -463,7 +480,7 @@ class Login extends PageHookWidget with UIPageFormMixin {
             return;
           }
           try {
-            await context.adapter
+            await context.model
                 ?.signInEmailAndPassword(
                   email: context.get("email", ""),
                   password: context.get("password", ""),
@@ -549,7 +566,7 @@ class Register extends PageHookWidget with UIPageFormMixin {
             color: config.formColor,
             backgroundColor: config.formBackgroundColor,
           ),
-          ...config.registerForm.map((e) => e.build(context, null))
+          ...config.registerForm.map((e) => e.build(context))
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -567,7 +584,7 @@ class Register extends PageHookWidget with UIPageFormMixin {
             );
           }
           try {
-            await context.adapter
+            await context.model
                 ?.registerInEmailAndPassword(
                   email: context.get("email", ""),
                   password: context.get("password", ""),
@@ -644,7 +661,7 @@ class PasswordReset extends PageHookWidget with UIPageFormMixin {
             return;
           }
           try {
-            await context.adapter
+            await context.model
                 ?.sendPasswordResetEmail(
                   email: context.get("email", ""),
                 )
