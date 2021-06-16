@@ -371,7 +371,7 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
                     dense: true,
                     hintText: "Title".localize(),
                     errorText:
-                        "Input %s".localize().format(["Title".localize()]),
+                        "No input %s".localize().format(["Title".localize()]),
                     subColor: context.theme.disabledColor,
                     controller: useMemoizedTextEditingController(name),
                     onSaved: (value) {
@@ -382,8 +382,9 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
                   FormItemDateTimeField(
                     dense: true,
                     hintText: "Post time".localize(),
-                    errorText:
-                        "Input %s".localize().format(["Post time".localize()]),
+                    errorText: "No input %s"
+                        .localize()
+                        .format(["Post time".localize()]),
                     controller: useMemoizedTextEditingController(
                         FormItemDateTimeField.formatDateTime(dateTime)),
                     onSaved: (value) {

@@ -589,7 +589,7 @@ packages:
       name: masamune
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.3+31"
+    version: "0.8.3+32"
   matcher:
     dependency: transitive
     description:
@@ -617,7 +617,7 @@ packages:
       name: model_notifier
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.2+10"
+    version: "0.8.2+11"
   octo_image:
     dependency: transitive
     description:

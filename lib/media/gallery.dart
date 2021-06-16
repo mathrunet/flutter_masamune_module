@@ -548,6 +548,8 @@ class _MediaEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
                 controller: useMemoizedTextEditingController(
                   inAdd ? "" : media,
                 ),
+                errorText:
+                    "No input %s".localize().format(["Image".localize()]),
                 onTap: (onUpdate) async {
                   final media = await context.platform?.mediaDialog(
                     context,
@@ -565,6 +567,8 @@ class _MediaEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
               FormItemTextField(
                 dense: true,
                 hintText: "Input %s".localize().format(["Title".localize()]),
+                errorText:
+                    "No input %s".localize().format(["Title".localize()]),
                 controller: useMemoizedTextEditingController(inAdd ? "" : name),
                 onSaved: (value) {
                   context[config.nameKey] = value;

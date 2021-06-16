@@ -176,6 +176,8 @@ class _SingleMediaEdit extends PageHookWidget
                 height: 200,
                 dense: true,
                 controller: useMemoizedTextEditingController(media),
+                errorText:
+                    "No input %s".localize().format(["Image".localize()]),
                 onTap: (onUpdate) async {
                   final media = await context.platform?.mediaDialog(
                     context,
@@ -193,6 +195,8 @@ class _SingleMediaEdit extends PageHookWidget
               FormItemTextField(
                 dense: true,
                 hintText: "Input %s".localize().format(["Title".localize()]),
+                errorText:
+                    "No input %s".localize().format(["Title".localize()]),
                 controller: useMemoizedTextEditingController(name),
                 onSaved: (value) {
                   context[config.nameKey] = value;

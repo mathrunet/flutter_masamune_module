@@ -244,6 +244,8 @@ class _QuestionnaireAanswer extends PageHookWidget {
     final now = DateTime.now();
     final question = useDocumentModel(
         "${config.questionPath}/${context.get("question_id", "")}");
+    final questions = useCollectionModel(
+        "${config.questionPath}/${context.get("question_id", "")}/${config.questionPath}");
     final answers = useCollectionModel(
       "${config.questionPath}/${context.get("question_id", "")}/${config.answerPath}",
     );
@@ -290,49 +292,76 @@ class _QuestionnaireAanswer extends PageHookWidget {
           )
         ],
       ),
-      body: PlatformScrollbar(
-        child: ListBuilder<DynamicMap>(
-          source: answersWithUsers.toList(),
-          top: [
-            if (text.isNotEmpty)
-              MessageBox(
-                text,
-                color: context.theme.dividerColor,
-                margin: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+      body: () {
+        if (questions.isEmpty) {
+          return InkWell(
+            onTap: () {
+              context.rootNavigator.pushNamed(
+                "/${config.routePath}/${context.get("question_id", "")}/question",
+                arguments: RouteQuery.fullscreenOrModal,
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Center(
+                child: MessageBox("設問が設定されていません。こちらから設問を設定してください。",
+                    color: context.theme.errorColor),
               ),
-            if (endDate > 0)
-              MessageBox(
-                "Deadline %s".localize().format([
-                  DateTime.fromMillisecondsSinceEpoch(endDate)
-                      .format("yyyy/MM/dd")
-                ]),
-                color: context.theme.errorColor,
-                margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-              ),
-            DividHeadline(
-              "List of %s answers".localize().format([name]),
             ),
-          ],
-          builder: (context, item) {
-            return [
-              ListItem(
-                title: Text(item.get("${Const.user}${config.nameKey}", "")),
-                subtitle: Text(
-                  DateTime.fromMillisecondsSinceEpoch(item.get(
-                          config.createdTimeKey, now.millisecondsSinceEpoch))
-                      .format("yyyy/MM/dd HH:mm"),
+          );
+        }
+        return PlatformScrollbar(
+          child: ListBuilder<DynamicMap>(
+            source: answersWithUsers.toList(),
+            top: [
+              if (text.isNotEmpty)
+                MessageBox(
+                  text,
+                  color: context.theme.dividerColor,
+                  margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                 ),
-                onTap: () {
-                  context.rootNavigator.pushNamed(
-                    "/${config.routePath}/${context.get("question_id", "")}/answer/${item.get(Const.uid, "")}",
-                    arguments: RouteQuery.fullscreenOrModal,
-                  );
-                },
-              ),
-            ];
-          },
-        ),
-      ),
+              if (endDate > 0)
+                MessageBox(
+                  "Deadline %s".localize().format([
+                    DateTime.fromMillisecondsSinceEpoch(endDate)
+                        .format("yyyy/MM/dd")
+                  ]),
+                  color: context.theme.errorColor,
+                  margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                ),
+              const Space.height(10),
+              if (answers.isEmpty)
+                MessageBox(
+                  "回答がまだありません。",
+                  color: context.theme.dividerColor,
+                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                )
+              else
+                DividHeadline(
+                  "List of %s answers".localize().format([name]),
+                ),
+            ],
+            builder: (context, item) {
+              return [
+                ListItem(
+                  title: Text(item.get("${Const.user}${config.nameKey}", "")),
+                  subtitle: Text(
+                    DateTime.fromMillisecondsSinceEpoch(item.get(
+                            config.createdTimeKey, now.millisecondsSinceEpoch))
+                        .format("yyyy/MM/dd HH:mm"),
+                  ),
+                  onTap: () {
+                    context.rootNavigator.pushNamed(
+                      "/${config.routePath}/${context.get("question_id", "")}/answer/${item.get(Const.uid, "")}",
+                      arguments: RouteQuery.fullscreenOrModal,
+                    );
+                  },
+                ),
+              ];
+            },
+          ),
+        );
+      }(),
     );
   }
 }
@@ -424,47 +453,59 @@ class _QuestionnaireViewEdit extends PageHookWidget with UIPageFormMixin {
               ),
           ],
         ),
-        body: FormBuilder(
-          key: formKey,
-          padding: const EdgeInsets.all(0),
-          children: [
-            if (text.isNotEmpty)
-              MessageBox(
-                text,
-                color: context.theme.dividerColor,
-                margin: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-              ),
-            if (answer.isNotEmpty)
-              MessageBox(
-                "Already responding",
-                icon: Icons.check_circle,
-                color: context.theme.primaryColor,
-                margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+        body: questions.isEmpty
+            ? Padding(
+                padding: const EdgeInsets.all(16),
+                child: Center(
+                  child: Text(
+                    canEdit
+                        ? "設問は空です。新規追加ボタンから新しく設問を設定してください。"
+                        : "まだ設問が設定されていません。設問が設定されるまでしばらくお待ち下さい。",
+                  ),
+                ),
               )
-            else if (endDate > 0)
-              MessageBox(
-                "Deadline %s".localize().format([
-                  DateTime.fromMillisecondsSinceEpoch(endDate)
-                      .format("yyyy/MM/dd")
-                ]),
-                color: context.theme.errorColor,
-                margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+            : FormBuilder(
+                key: formKey,
+                padding: const EdgeInsets.all(0),
+                children: [
+                  if (text.isNotEmpty)
+                    MessageBox(
+                      text,
+                      color: context.theme.dividerColor,
+                      margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                    ),
+                  if (answer.isNotEmpty)
+                    MessageBox(
+                      "Already responding",
+                      icon: Icons.check_circle,
+                      color: context.theme.primaryColor,
+                      margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                    )
+                  else if (endDate > 0)
+                    MessageBox(
+                      "Deadline %s".localize().format([
+                        DateTime.fromMillisecondsSinceEpoch(endDate)
+                            .format("yyyy/MM/dd")
+                      ]),
+                      color: context.theme.errorColor,
+                      margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                    ),
+                  const Space.height(10),
+                  ...questions.mapAndRemoveEmpty((item) {
+                    i++;
+                    return _QuestionnaireListTile(
+                      config,
+                      index: i,
+                      question: item,
+                      answer: answer,
+                      canEdit: canEdit,
+                      onlyView: false,
+                    );
+                  }),
+                  const Divid(),
+                  const Space.height(100),
+                ],
               ),
-            ...questions.mapAndRemoveEmpty((item) {
-              i++;
-              return _QuestionnaireListTile(
-                config,
-                index: i,
-                question: item,
-                answer: answer,
-                canEdit: canEdit,
-                onlyView: false,
-              );
-            }),
-            const Divid(),
-            const Space.height(100),
-          ],
-        ),
         floatingActionButton: !canEdit || context.isMobileOrModal
             ? FloatingActionButton.extended(
                 onPressed: () {
@@ -596,6 +637,8 @@ class _QuestionnaireListTile extends PageHookWidget {
                   dense: true,
                   allowEmpty: !required,
                   hintText: "Please enter your answer".localize(),
+                  errorText:
+                      "No input %s".localize().format(["Answer".localize()]),
                   controller:
                       useMemoizedTextEditingController(answers.get(uid, "")),
                   onSaved: (value) {
@@ -684,6 +727,8 @@ class _QuestionnaireQuestionEdit extends PageHookWidget
             FormItemTextField(
               dense: true,
               hintText: "Input %s".localize().format(["Question".localize()]),
+              errorText:
+                  "No input %s".localize().format(["Question".localize()]),
               keyboardType: TextInputType.multiline,
               controller: useMemoizedTextEditingController(name),
               minLines: 3,
@@ -735,6 +780,9 @@ class _QuestionnaireQuestionEdit extends PageHookWidget
                       dense: true,
                       hintText:
                           "Input %s".localize().format(["Choices".localize()]),
+                      errorText: "No input %s"
+                          .localize()
+                          .format(["Choices".localize()]),
                       keyboardType: TextInputType.text,
                       controller: selectionTextEditingControllers[id],
                       onSaved: (value) {
@@ -835,6 +883,7 @@ class _QuestionnaireEdit extends PageHookWidget
                           ?.deleteDocument(item)
                           .showIndicator(context);
                       context.navigator.pop();
+                      context.navigator.pop();
                     },
                   );
                 },
@@ -850,6 +899,7 @@ class _QuestionnaireEdit extends PageHookWidget
             FormItemTextField(
               dense: true,
               hintText: "Input %s".localize().format(["Title".localize()]),
+              errorText: "No input %s".localize().format(["Title".localize()]),
               controller: useMemoizedTextEditingController(inAdd ? "" : name),
               onSaved: (value) {
                 context[config.nameKey] = value;
@@ -874,8 +924,11 @@ class _QuestionnaireEdit extends PageHookWidget
               dense: true,
               allowEmpty: true,
               hintText: "Input %s".localize().format(["End date".localize()]),
+              errorText:
+                  "No input %s".localize().format(["End date".localize()]),
               controller: useMemoizedTextEditingController(
                   inAdd ? "" : FormItemDateTimeField.formatDate(endTime)),
+              type: FormItemDateTimeFieldPickerType.date,
               onSaved: (value) {
                 context[config.endTimeKey] = value?.millisecondsSinceEpoch ?? 0;
               },
