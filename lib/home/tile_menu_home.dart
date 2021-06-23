@@ -1,7 +1,7 @@
 part of 'home.dart';
 
-class TileMenuHome extends HookWidget {
-  const TileMenuHome(this.config);
+class HomeModuleTileMenuHome extends HookWidget {
+  const HomeModuleTileMenuHome(this.config);
   final HomeModule config;
   @override
   Widget build(BuildContext context) {
@@ -133,14 +133,16 @@ class TileMenuHome extends HookWidget {
             ),
             const Space.height(8),
             if (config.info.enabled) ...[
-              _TileMenuHomeInformation(config),
+              config.tileMenuHomeInformation ??
+                  HomeModuleTileMenuHomeInformation(config),
               const Space.height(8),
             ],
             if (config.calendar.enabled) ...[
-              _TileMenuHomeCalendar(config),
+              config.tileMenuHomeCalendar ??
+                  HomeModuleTileMenuHomeCalendar(config),
               const Space.height(8),
             ],
-            _TileMenuHomeHeadline(
+            HomeModuleTileMenuHomeHeadline(
               "Menu".localize(),
               icon: Icons.menu,
               color: config.textColor ?? context.theme.textColorOnPrimary,
@@ -227,8 +229,8 @@ class TileMenuHome extends HookWidget {
   }
 }
 
-class _TileMenuHomeInformation extends HookWidget {
-  const _TileMenuHomeInformation(this.config);
+class HomeModuleTileMenuHomeInformation extends HookWidget {
+  const HomeModuleTileMenuHomeInformation(this.config);
   final HomeModule config;
 
   @override
@@ -239,81 +241,88 @@ class _TileMenuHomeInformation extends HookWidget {
           a.get("created", DateTime.now().millisecondsSinceEpoch);
     });
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _TileMenuHomeHeadline(
-          config.info.title ?? "Information".localize(),
-          icon: config.info.icon,
-          color: config.textColor ?? context.theme.textColorOnPrimary,
-          backgroundColor:
-              config.color ?? context.theme.primaryColor.lighten(0.15),
-        ),
-        const Space.height(4),
-        Grid.extent(
-          maxCrossAxisExtent: 300,
-          mainAxisSpacing: 4,
-          crossAxisSpacing: 4,
-          childAspectRatio: 2,
+    return WaitingBuilder(
+      futures: [info.future],
+      builder: (context) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ...info.limitEnd(4).mapAndRemoveEmpty((item) {
-              final dateTime = DateTime.fromMillisecondsSinceEpoch(
-                item.get("created", DateTime.now().millisecondsSinceEpoch),
-              );
-              return DefaultTextStyle(
-                style: TextStyle(
-                  color: config.textColor ?? context.theme.textColorOnPrimary,
-                ),
-                child: ClickableBox(
-                  color: config.color ?? context.theme.primaryColor,
-                  onTap: () {
-                    context.navigator.pushNamed(
-                      "/info/${item.get(Const.uid, "")}",
-                      arguments: RouteQuery.fullscreenOrModal,
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+            HomeModuleTileMenuHomeHeadline(
+              config.info.title ?? "Information".localize(),
+              icon: config.info.icon,
+              color: config.textColor ?? context.theme.textColorOnPrimary,
+              backgroundColor:
+                  config.color ?? context.theme.primaryColor.lighten(0.15),
+            ),
+            const Space.height(4),
+            Grid.extent(
+              maxCrossAxisExtent: 300,
+              mainAxisSpacing: 4,
+              crossAxisSpacing: 4,
+              childAspectRatio: 2,
+              children: [
+                ...info.limitEnd(4).mapListenable((item) {
+                  final dateTime = DateTime.fromMillisecondsSinceEpoch(
+                    item.get("created", DateTime.now().millisecondsSinceEpoch),
+                  );
+                  return DefaultTextStyle(
+                    style: TextStyle(
+                      color:
+                          config.textColor ?? context.theme.textColorOnPrimary,
+                    ),
+                    child: ClickableBox(
+                      color: config.color ?? context.theme.primaryColor,
+                      onTap: () {
+                        context.navigator.pushNamed(
+                          "/info/${item.get(Const.uid, "")}",
+                          arguments: RouteQuery.fullscreenOrModal,
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(dateTime.format("yyyy/MM/dd HH:mm")),
-                            if (dateTime.isToday()) ...[
-                              const Space.width(4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 4, vertical: 2),
-                                color: context.theme.colorScheme.error,
-                                child: Text(
-                                  "NEW".localize(),
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: context.theme.colorScheme.onError,
+                            Row(
+                              children: [
+                                Text(dateTime.format("yyyy/MM/dd HH:mm")),
+                                if (dateTime.isToday()) ...[
+                                  const Space.width(4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 4, vertical: 2),
+                                    color: context.theme.colorScheme.error,
+                                    child: Text(
+                                      "NEW".localize(),
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color:
+                                            context.theme.colorScheme.onError,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ]
+                                ]
+                              ],
+                            ),
+                            const Space.height(8),
+                            Text(item.get(Const.name, "--")),
                           ],
                         ),
-                        const Space.height(8),
-                        Text(item.get(Const.name, "--")),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              );
-            })
+                  );
+                })
+              ],
+            ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 }
 
-class _TileMenuHomeCalendar extends HookWidget {
-  const _TileMenuHomeCalendar(this.config);
+class HomeModuleTileMenuHomeCalendar extends HookWidget {
+  const HomeModuleTileMenuHomeCalendar(this.config);
   final HomeModule config;
 
   @override
@@ -323,7 +332,7 @@ class _TileMenuHomeCalendar extends HookWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _TileMenuHomeHeadline(
+        HomeModuleTileMenuHomeHeadline(
           config.calendar.title ?? "Calendar".localize(),
           icon: config.calendar.icon,
           color: config.textColor ?? context.theme.textColorOnPrimary,
@@ -335,8 +344,8 @@ class _TileMenuHomeCalendar extends HookWidget {
   }
 }
 
-class _TileMenuHomeHeadline extends StatelessWidget {
-  const _TileMenuHomeHeadline(
+class HomeModuleTileMenuHomeHeadline extends StatelessWidget {
+  const HomeModuleTileMenuHomeHeadline(
     this.label, {
     this.icon,
     this.color,

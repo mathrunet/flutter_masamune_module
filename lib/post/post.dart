@@ -28,6 +28,10 @@ class PostModule extends PageModule {
     this.createdTimeKey = Const.createdTime,
     this.editingType = PostEditingType.planeText,
     Permission permission = const Permission(),
+    this.postQuery,
+    this.home,
+    this.edit,
+    this.view,
   }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
@@ -36,14 +40,20 @@ class PostModule extends PageModule {
       return const {};
     }
     final route = {
-      "/$routePath": RouteConfig((_) => Post(this)),
-      "/$routePath/edit": RouteConfig((_) => _PostEdit(this, inAdd: true)),
+      "/$routePath": RouteConfig((_) => home ?? PostModuleHome(this)),
+      "/$routePath/edit": RouteConfig((_) => edit ?? PostModuleEdit(this)),
       "/$routePath/empty": RouteConfig((_) => const EmptyPage()),
-      "/$routePath/{post_id}": RouteConfig((_) => PostView(this)),
-      "/$routePath/{post_id}/edit": RouteConfig((_) => _PostEdit(this)),
+      "/$routePath/{post_id}": RouteConfig((_) => view ?? PostModuleView(this)),
+      "/$routePath/{post_id}/edit":
+          RouteConfig((_) => edit ?? PostModuleEdit(this)),
     };
     return route;
   }
+
+  /// ページ設定。
+  final Widget? home;
+  final Widget? edit;
+  final Widget? view;
 
   /// ルートのパス。
   final String routePath;
@@ -69,6 +79,9 @@ class PostModule extends PageModule {
   /// エディターのタイプ。
   final PostEditingType editingType;
 
+  /// クエリー。
+  final CollectionQuery? postQuery;
+
   @override
   PostModule? fromMap(DynamicMap map) => _$PostModuleFromMap(map, this);
 
@@ -76,15 +89,15 @@ class PostModule extends PageModule {
   DynamicMap toMap() => _$PostModuleToMap(this);
 }
 
-class Post extends PageHookWidget {
-  const Post(this.config);
+class PostModuleHome extends PageHookWidget {
+  const PostModuleHome(this.config);
   final PostModule config;
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final user = useUserDocumentModel(config.userPath);
-    final post = useCollectionModel(config.postPath);
+    final post = useCollectionModel(config.postQuery?.value ?? config.postPath);
     final users = useCollectionModel(
       CollectionQuery(
         config.userPath,
@@ -104,6 +117,11 @@ class Post extends PageHookWidget {
         title: Text(config.title ?? "Post".localize()),
       ),
       body: PlatformAppLayout(
+        futures: [
+          user.future,
+          post.future,
+          users.future,
+        ],
         initialPath:
             "/${config.routePath}/${postWithUser.firstOrNull.get(Const.uid, "empty")}",
         builder: (context, isMobile, controller, routeId) {
@@ -158,8 +176,8 @@ class Post extends PageHookWidget {
   }
 }
 
-class PostView extends PageHookWidget {
-  const PostView(this.config);
+class PostModuleView extends PageHookWidget {
+  const PostModuleView(this.config);
   final PostModule config;
 
   @override
@@ -294,30 +312,29 @@ class PostView extends PageHookWidget {
   }
 }
 
-class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
-  _PostEdit(this.config, {this.inAdd = false});
+class PostModuleEdit extends PageHookWidget {
+  const PostModuleEdit(this.config);
   final PostModule config;
-  final bool inAdd;
 
   @override
   Widget build(BuildContext context) {
+    final form = useForm("post_id");
     final now = DateTime.now();
     final user = useUserDocumentModel(config.userPath);
-    final item =
-        useDocumentModel("${config.postPath}/${context.get("post_id", puid)}");
+    final item = useDocumentModel("${config.postPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final dateTime =
         item.get(config.createdTimeKey, now.millisecondsSinceEpoch);
 
     final appBar = AppBar(
-      title: Text(
-        inAdd
-            ? "A new entry".localize()
-            : "Editing %s".localize().format([name]),
-      ),
+      title: Text(form.select(
+        "Editing %s".localize().format([name]),
+        "A new entry".localize(),
+      )),
       actions: [
-        if (!inAdd && config.permission.canDelete(user.get(config.roleKey, "")))
+        if (form.exists &&
+            config.permission.canDelete(user.get(config.roleKey, "")))
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () {
@@ -363,7 +380,7 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
             appBar: appBar,
             body: PlatformScrollbar(
               child: FormBuilder(
-                key: formKey,
+                key: form.key,
                 padding: const EdgeInsets.all(0),
                 type: FormBuilderType.fixed,
                 children: [
@@ -431,7 +448,7 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
             ),
             floatingActionButton: FloatingActionButton.extended(
               onPressed: () async {
-                if (!validate(context)) {
+                if (!form.validate()) {
                   return;
                 }
                 try {
@@ -465,7 +482,7 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
             appBar: appBar,
             body: PlatformScrollbar(
               child: FormBuilder(
-                key: formKey,
+                key: form.key,
                 padding: const EdgeInsets.all(0),
                 type: FormBuilderType.fixed,
                 children: [
@@ -514,7 +531,7 @@ class _PostEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
             ),
             floatingActionButton: FloatingActionButton.extended(
               onPressed: () async {
-                if (!validate(context)) {
+                if (!form.validate()) {
                   return;
                 }
                 try {

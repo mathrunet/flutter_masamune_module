@@ -56,6 +56,14 @@ class QuestionnaireModule extends PageModule {
     this.endTimeKey = Const.endTime,
     this.answerKey = Const.answer,
     Permission permission = const Permission(),
+    this.questionnaireQuery,
+    this.home,
+    this.edit,
+    this.view,
+    this.answerView,
+    this.answerDetail,
+    this.questionView,
+    this.questionEdit,
   }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
@@ -64,27 +72,36 @@ class QuestionnaireModule extends PageModule {
       return const {};
     }
     final route = {
-      "/$routePath": RouteConfig((_) => Questionnaire(this)),
+      "/$routePath": RouteConfig((_) => home ?? QuestionnaireModuleHome(this)),
       "/$routePath/edit":
-          RouteConfig((_) => _QuestionnaireEdit(this, inAdd: true)),
+          RouteConfig((_) => edit ?? QuestionnaireModuleEdit(this)),
       "/$routePath/empty": RouteConfig((_) => const EmptyPage()),
       // "/$routePath/{post_id}": RouteConfig((_) => _PostView(this)),
-      "/$routePath/{question_id}": RouteConfig((_) => _QuestionnaireView(this)),
+      "/$routePath/{question_id}":
+          RouteConfig((_) => view ?? QuestionnaireModuleView(this)),
       "/$routePath/{question_id}/edit":
-          RouteConfig((_) => _QuestionnaireEdit(this)),
-      "/$routePath/{question_id}/question":
-          RouteConfig((_) => _QuestionnaireViewEdit(this)),
+          RouteConfig((_) => edit ?? QuestionnaireModuleEdit(this)),
+      "/$routePath/{question_id}/question": RouteConfig(
+          (_) => questionView ?? QuestionnaireModuleQuestionView(this)),
       "/$routePath/{question_id}/answer/empty":
           RouteConfig((_) => const EmptyPage()),
-      "/$routePath/{question_id}/answer/{answer_id}":
-          RouteConfig((_) => _QuestionnaireAanswerView(this)),
-      "/$routePath/{question_id}/question/edit":
-          RouteConfig((_) => _QuestionnaireQuestionEdit(this, inAdd: true)),
-      "/$routePath/{question_id}/question/{item_id}":
-          RouteConfig((_) => _QuestionnaireQuestionEdit(this)),
+      "/$routePath/{question_id}/answer/{answer_id}": RouteConfig(
+          (_) => answerDetail ?? QuestionnaireModuleAanswerDetail(this)),
+      "/$routePath/{question_id}/question/edit": RouteConfig(
+          (_) => questionEdit ?? QuestionnaireModuleQuestionEdit(this)),
+      "/$routePath/{question_id}/question/{item_id}": RouteConfig(
+          (_) => questionEdit ?? QuestionnaireModuleQuestionEdit(this)),
     };
     return route;
   }
+
+  final Widget? home;
+  final Widget? edit;
+  final Widget? view;
+  final Widget? questionView;
+  final Widget? answerView;
+  final Widget? answerDetail;
+  final Widget? questionEdit;
 
   /// ルートのパス。
   final String routePath;
@@ -125,6 +142,9 @@ class QuestionnaireModule extends PageModule {
   /// 締切日のキー。
   final String endTimeKey;
 
+  /// クエリー。
+  final CollectionQuery? questionnaireQuery;
+
   @override
   QuestionnaireModule? fromMap(DynamicMap map) =>
       _$QuestionnaireModuleFromMap(map, this);
@@ -133,14 +153,15 @@ class QuestionnaireModule extends PageModule {
   DynamicMap toMap() => _$QuestionnaireModuleToMap(this);
 }
 
-class Questionnaire extends PageHookWidget {
-  const Questionnaire(this.config);
+class QuestionnaireModuleHome extends PageHookWidget {
+  const QuestionnaireModuleHome(this.config);
   final QuestionnaireModule config;
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final question = useCollectionModel(config.questionPath);
+    final question = useCollectionModel(
+        config.questionnaireQuery?.value ?? config.questionPath);
     final questionWithAnswer = question.map((e) {
       final uid = e.get(Const.uid, "");
       if (uid.isEmpty) {
@@ -161,6 +182,10 @@ class Questionnaire extends PageHookWidget {
         title: Text(config.title ?? "Questionnaire".localize()),
       ),
       body: PlatformAppLayout(
+        futures: [
+          question.future,
+          user.future,
+        ],
         initialPath:
             "${config.routePath}/${questionWithAnswer.firstOrNull.get(Const.uid, "empty")}",
         builder: (context, isMobile, controller, routeId) {
@@ -220,23 +245,23 @@ class Questionnaire extends PageHookWidget {
   }
 }
 
-class _QuestionnaireView extends HookWidget {
-  const _QuestionnaireView(this.config);
+class QuestionnaireModuleView extends HookWidget {
+  const QuestionnaireModuleView(this.config);
   final QuestionnaireModule config;
 
   @override
   Widget build(BuildContext context) {
     final user = useUserDocumentModel();
     if (config.permission.canEdit(user.get(config.roleKey, ""))) {
-      return _QuestionnaireAanswer(config);
+      return QuestionnaireAanswerView(config);
     } else {
-      return _QuestionnaireViewEdit(config);
+      return QuestionnaireModuleQuestionView(config);
     }
   }
 }
 
-class _QuestionnaireAanswer extends PageHookWidget {
-  const _QuestionnaireAanswer(this.config);
+class QuestionnaireAanswerView extends PageHookWidget {
+  const QuestionnaireAanswerView(this.config);
   final QuestionnaireModule config;
 
   @override
@@ -366,8 +391,8 @@ class _QuestionnaireAanswer extends PageHookWidget {
   }
 }
 
-class _QuestionnaireAanswerView extends PageHookWidget {
-  const _QuestionnaireAanswerView(this.config);
+class QuestionnaireModuleAanswerDetail extends PageHookWidget {
+  const QuestionnaireModuleAanswerDetail(this.config);
   final QuestionnaireModule config;
 
   @override
@@ -397,7 +422,7 @@ class _QuestionnaireAanswerView extends PageHookWidget {
             builder: (contex, item) {
               i++;
               return [
-                _QuestionnaireListTile(
+                QuestionnaireModuleListTile(
                   config,
                   index: i,
                   question: item,
@@ -414,13 +439,14 @@ class _QuestionnaireAanswerView extends PageHookWidget {
   }
 }
 
-class _QuestionnaireViewEdit extends PageHookWidget with UIPageFormMixin {
-  _QuestionnaireViewEdit(this.config);
+class QuestionnaireModuleQuestionView extends PageHookWidget {
+  const QuestionnaireModuleQuestionView(this.config);
   final QuestionnaireModule config;
 
   @override
   Widget build(BuildContext context) {
     int i = 0;
+    final form = useForm();
     final user = useUserDocumentModel(config.userPath);
     final question = useDocumentModel(
         "${config.questionPath}/${context.get("question_id", "")}");
@@ -465,7 +491,7 @@ class _QuestionnaireViewEdit extends PageHookWidget with UIPageFormMixin {
                 ),
               )
             : FormBuilder(
-                key: formKey,
+                key: form.key,
                 padding: const EdgeInsets.all(0),
                 children: [
                   if (text.isNotEmpty)
@@ -491,9 +517,9 @@ class _QuestionnaireViewEdit extends PageHookWidget with UIPageFormMixin {
                       margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                     ),
                   const Space.height(10),
-                  ...questions.mapAndRemoveEmpty((item) {
+                  ...questions.mapListenable((item) {
                     i++;
-                    return _QuestionnaireListTile(
+                    return QuestionnaireModuleListTile(
                       config,
                       index: i,
                       question: item,
@@ -511,7 +537,9 @@ class _QuestionnaireViewEdit extends PageHookWidget with UIPageFormMixin {
                 onPressed: () {
                   if (canEdit) {
                     context.navigator.pushNamed(
-                        "/${config.routePath}/${context.get("question_id", "")}/question/edit");
+                      "/${config.routePath}/${context.get("question_id", "")}/question/edit",
+                      arguments: RouteQuery.fullscreenOrModal,
+                    );
                   } else {}
                 },
                 icon: Icon(canEdit ? Icons.add : Icons.check),
@@ -525,8 +553,8 @@ class _QuestionnaireViewEdit extends PageHookWidget with UIPageFormMixin {
   }
 }
 
-class _QuestionnaireListTile extends PageHookWidget {
-  const _QuestionnaireListTile(
+class QuestionnaireModuleListTile extends PageHookWidget {
+  const QuestionnaireModuleListTile(
     this.config, {
     required this.index,
     required this.question,
@@ -664,16 +692,15 @@ class _QuestionnaireListTile extends PageHookWidget {
   }
 }
 
-class _QuestionnaireQuestionEdit extends PageHookWidget
-    with UIPageFormMixin, UIPageUuidMixin {
-  _QuestionnaireQuestionEdit(this.config, {this.inAdd = false});
+class QuestionnaireModuleQuestionEdit extends PageHookWidget {
+  const QuestionnaireModuleQuestionEdit(this.config);
   final QuestionnaireModule config;
-  final bool inAdd;
 
   @override
   Widget build(BuildContext context) {
+    final form = useForm("item_id");
     final item = useDocumentModel(
-        "${config.questionPath}/${context.get("question_id", "")}/${config.questionPath}/${context.get("item_id", puid)}");
+        "${config.questionPath}/${context.get("question_id", "")}/${config.questionPath}/${form.uid}");
     final user = useUserDocumentModel(config.userPath);
     final name = item.get(config.nameKey, "");
     final type = item.get(config.typeKey, Const.text);
@@ -688,13 +715,12 @@ class _QuestionnaireQuestionEdit extends PageHookWidget
       heightRatio: 0.8,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            inAdd
-                ? "A new entry".localize()
-                : "Editing %s".localize().format([name]),
-          ),
+          title: Text(form.select(
+            "Editing %s".localize().format([name]),
+            "A new entry".localize(),
+          )),
           actions: [
-            if (!inAdd &&
+            if (form.exists &&
                 config.permission.canDelete(user.get(config.roleKey, "")))
               IconButton(
                 icon: const Icon(Icons.delete),
@@ -719,7 +745,7 @@ class _QuestionnaireQuestionEdit extends PageHookWidget
           ],
         ),
         body: FormBuilder(
-          key: formKey,
+          key: form.key,
           padding: const EdgeInsets.all(0),
           children: [
             const Space.height(16),
@@ -817,7 +843,7 @@ class _QuestionnaireQuestionEdit extends PageHookWidget
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
-            if (!validate(context)) {
+            if (!form.validate()) {
               return;
             }
 
@@ -839,16 +865,14 @@ class _QuestionnaireQuestionEdit extends PageHookWidget
   }
 }
 
-class _QuestionnaireEdit extends PageHookWidget
-    with UIPageFormMixin, UIPageUuidMixin {
-  _QuestionnaireEdit(this.config, {this.inAdd = false});
+class QuestionnaireModuleEdit extends PageHookWidget {
+  const QuestionnaireModuleEdit(this.config);
   final QuestionnaireModule config;
-  final bool inAdd;
 
   @override
   Widget build(BuildContext context) {
-    final item = useDocumentModel(
-        "${config.questionPath}/${context.get("question_id", puid)}");
+    final form = useForm("question_id");
+    final item = useDocumentModel("${config.questionPath}/${form.uid}");
     final user = useUserDocumentModel(config.userPath);
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
@@ -859,13 +883,12 @@ class _QuestionnaireEdit extends PageHookWidget
       heightRatio: 0.8,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            inAdd
-                ? "A new entry".localize()
-                : "Editing %s".localize().format([name]),
-          ),
+          title: Text(form.select(
+            "Editing %s".localize().format([name]),
+            "A new entry".localize(),
+          )),
           actions: [
-            if (!inAdd &&
+            if (form.exists &&
                 config.permission.canDelete(user.get(config.roleKey, "")))
               IconButton(
                 icon: const Icon(Icons.delete),
@@ -892,7 +915,7 @@ class _QuestionnaireEdit extends PageHookWidget
         ),
         body: FormBuilder(
           padding: const EdgeInsets.all(0),
-          key: formKey,
+          key: form.key,
           children: [
             const Space.height(20),
             DividHeadline("Title".localize()),
@@ -900,7 +923,8 @@ class _QuestionnaireEdit extends PageHookWidget
               dense: true,
               hintText: "Input %s".localize().format(["Title".localize()]),
               errorText: "No input %s".localize().format(["Title".localize()]),
-              controller: useMemoizedTextEditingController(inAdd ? "" : name),
+              controller:
+                  useMemoizedTextEditingController(form.select(name, "")),
               onSaved: (value) {
                 context[config.nameKey] = value;
               },
@@ -914,7 +938,8 @@ class _QuestionnaireEdit extends PageHookWidget
               hintText:
                   "Input %s".localize().format(["Description".localize()]),
               allowEmpty: true,
-              controller: useMemoizedTextEditingController(inAdd ? "" : text),
+              controller:
+                  useMemoizedTextEditingController(form.select(text, "")),
               onSaved: (value) {
                 context[config.textKey] = value;
               },
@@ -927,7 +952,8 @@ class _QuestionnaireEdit extends PageHookWidget
               errorText:
                   "No input %s".localize().format(["End date".localize()]),
               controller: useMemoizedTextEditingController(
-                  inAdd ? "" : FormItemDateTimeField.formatDate(endTime)),
+                form.select(FormItemDateTimeField.formatDate(endTime), ""),
+              ),
               type: FormItemDateTimeFieldPickerType.date,
               onSaved: (value) {
                 context[config.endTimeKey] = value?.millisecondsSinceEpoch ?? 0;
@@ -938,7 +964,7 @@ class _QuestionnaireEdit extends PageHookWidget
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
-            if (!validate(context)) {
+            if (!form.validate()) {
               return;
             }
 

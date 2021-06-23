@@ -414,11 +414,13 @@ class Landing extends PageHookWidget {
   }
 }
 
-class Login extends PageHookWidget with UIPageFormMixin {
-  Login(this.config);
+class Login extends PageHookWidget {
+  const Login(this.config);
   final LoginModule config;
   @override
   Widget build(BuildContext context) {
+    final form = useForm();
+
     return Scaffold(
       backgroundColor: config.backgroundColor,
       appBar: AppBar(
@@ -427,7 +429,7 @@ class Login extends PageHookWidget with UIPageFormMixin {
       ),
       body: FormBuilder(
         type: FormBuilderType.center,
-        key: formKey,
+        key: form.key,
         padding: config.padding,
         children: [
           FormItemLabel("Email".localize(), color: config.formColor),
@@ -476,7 +478,7 @@ class Login extends PageHookWidget with UIPageFormMixin {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          if (!validate(context)) {
+          if (!form.validate()) {
             return;
           }
           try {
@@ -508,12 +510,14 @@ class Login extends PageHookWidget with UIPageFormMixin {
   }
 }
 
-class Register extends PageHookWidget with UIPageFormMixin {
-  Register(this.config, this.role);
+class Register extends PageHookWidget {
+  const Register(this.config, this.role);
   final LoginModule config;
   final RoleConfig role;
   @override
   Widget build(BuildContext context) {
+    final form = useForm();
+
     return Scaffold(
       backgroundColor: config.backgroundColor,
       appBar: AppBar(
@@ -522,7 +526,7 @@ class Register extends PageHookWidget with UIPageFormMixin {
       ),
       body: FormBuilder(
         type: FormBuilderType.center,
-        key: formKey,
+        key: form.key,
         padding: config.padding,
         children: [
           FormItemLabel("Email".localize(), color: config.formColor),
@@ -571,7 +575,7 @@ class Register extends PageHookWidget with UIPageFormMixin {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          if (!validate(context)) {
+          if (!form.validate()) {
             return;
           }
           if (context.get("password", "") !=
@@ -620,11 +624,13 @@ class Register extends PageHookWidget with UIPageFormMixin {
   }
 }
 
-class PasswordReset extends PageHookWidget with UIPageFormMixin {
-  PasswordReset(this.config);
+class PasswordReset extends PageHookWidget {
+  const PasswordReset(this.config);
   final LoginModule config;
   @override
   Widget build(BuildContext context) {
+    final form = useForm();
+
     return Scaffold(
       backgroundColor: config.backgroundColor,
       appBar: AppBar(
@@ -633,7 +639,7 @@ class PasswordReset extends PageHookWidget with UIPageFormMixin {
       ),
       body: FormBuilder(
         type: FormBuilderType.center,
-        key: formKey,
+        key: form.key,
         padding: config.padding,
         children: [
           FormItemLabel("Email".localize(), color: config.formColor),
@@ -657,7 +663,7 @@ class PasswordReset extends PageHookWidget with UIPageFormMixin {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          if (!validate(context)) {
+          if (!form.validate()) {
             return;
           }
           try {

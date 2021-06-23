@@ -3,13 +3,15 @@ part of masamune_module;
 class TabConfig {
   const TabConfig({
     required this.id,
-    required this.label,
+    this.label = "",
     this.icon,
     this.value,
+    this.query,
   });
   final String id;
   final String label;
   final IconData? icon;
+  final CollectionQuery? query;
   final Object? value;
 
   static TabConfig? _fromMap(DynamicMap map) {
@@ -21,6 +23,7 @@ class TabConfig {
       label: map.get("name", ""),
       icon: map.getAsMap("icon").toIconData(),
       value: map.get("value", null),
+      query: map.getAsMap("query").toCollectionQuery(),
     );
   }
 
@@ -28,6 +31,7 @@ class TabConfig {
     return <String, dynamic>{
       "id": id,
       "name": label,
+      if (query != null) "query": query!.toMap(),
       if (icon != null) "icon": icon!.toMap(),
       if (value != null) "value": value,
     };

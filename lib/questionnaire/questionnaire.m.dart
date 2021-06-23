@@ -29,7 +29,9 @@ QuestionnaireModule? _$QuestionnaireModuleFromMap(
       answerKey: map.get<String>("answerKey", Const.answer),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
-          const Permission());
+          const Permission(),
+      questionnaireQuery: map.get<DynamicMap>(
+          "questionnaireQuery", <String, dynamic>{}).toCollectionQuery());
 }
 
 DynamicMap _$QuestionnaireModuleToMap(QuestionnaireModule ref) {
@@ -50,6 +52,8 @@ DynamicMap _$QuestionnaireModuleToMap(QuestionnaireModule ref) {
     if (ref.createdTimeKey.isNotEmpty) "createdTimeKey": ref.createdTimeKey,
     if (ref.endTimeKey.isNotEmpty) "endTimeKey": ref.endTimeKey,
     if (ref.answerKey.isNotEmpty) "answerKey": ref.answerKey,
-    "permission": ref.permission.toMap()
+    "permission": ref.permission.toMap(),
+    if (ref.questionnaireQuery != null)
+      "questionnaireQuery": ref.questionnaireQuery?.toMap()
   };
 }

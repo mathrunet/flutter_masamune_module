@@ -1,6 +1,6 @@
 name: masamune_module
 description: Package in which various functions are modularized.
-version: 0.8.1+3
+version: 0.8.1+8
 homepage: https://mathru.net
 repository: https://github.com/mathrunet/flutter_masamune_module
 
@@ -26,7 +26,7 @@ dev_dependencies:
   # Masamune
   build_runner: ^2.0.4
   katana_module_builder: ^0.8.0
-  
+    
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

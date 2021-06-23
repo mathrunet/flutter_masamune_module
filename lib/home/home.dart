@@ -35,6 +35,10 @@ class HomeModule extends PageModule {
     this.subMenu = const [],
     this.roleMenu = const {},
     Permission permission = const Permission(),
+    this.home,
+    this.tileMenuHome,
+    this.tileMenuHomeInformation,
+    this.tileMenuHomeCalendar,
   }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
@@ -43,12 +47,18 @@ class HomeModule extends PageModule {
       return const {};
     }
     final route = {
-      "/": RouteConfig((_) => Home(this)),
+      "/": RouteConfig((_) => home ?? HomeModuleHome(this)),
     };
     route.addAll(info.routeSettings ?? {});
     route.addAll(calendar.routeSettings ?? {});
     return route;
   }
+
+  // ページの設定。
+  final Widget? home;
+  final Widget? tileMenuHome;
+  final Widget? tileMenuHomeInformation;
+  final Widget? tileMenuHomeCalendar;
 
   /// お知らせの設定。
   final HomeInformationModule info;
@@ -127,6 +137,7 @@ class HomeInformationModule extends PostModule {
     String postPath = "info",
     this.icon = Icons.info_rounded,
     Permission permission = const Permission(),
+    Widget? view,
   }) : super(
           enabled: enabled,
           title: title,
@@ -134,6 +145,7 @@ class HomeInformationModule extends PostModule {
           routePath: "info",
           editingType: PostEditingType.planeText,
           permission: permission,
+          view: view,
         );
 
   @override
@@ -142,7 +154,7 @@ class HomeInformationModule extends PostModule {
       return const {};
     }
     final route = {
-      "/info/{post_id}": RouteConfig((_) => PostView(this)),
+      "/info/{post_id}": RouteConfig((_) => view ?? PostModuleView(this)),
       // "/info/{post_id}/edit": RouteConfig((_) => _PostEdit(this)),
     };
     return route;
@@ -183,14 +195,14 @@ class HomeCalendarModule extends PageModule {
   DynamicMap toMap() => _$HomeCalendarModuleToMap(this);
 }
 
-class Home extends PageHookWidget {
-  const Home(this.config);
+class HomeModuleHome extends PageHookWidget {
+  const HomeModuleHome(this.config);
   final HomeModule config;
   @override
   Widget build(BuildContext context) {
     switch (config.homeType) {
       case HomeType.tileMenu:
-        return TileMenuHome(config);
+        return config.tileMenuHome ?? HomeModuleTileMenuHome(config);
     }
   }
 }

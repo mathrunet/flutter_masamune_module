@@ -26,6 +26,8 @@ ChatModule? _$ChatModuleFromMap(DynamicMap map, ChatModule ref) {
       mediaKey: map.get<String>("mediaKey", Const.media),
       createdTimeKey: map.get<String>("createdTimeKey", Const.createdTime),
       modifiedTimeKey: map.get<String>("modifiedTimeKey", Const.modifiedTime),
+      chatQuery: map.get<DynamicMap>(
+          "chatQuery", <String, dynamic>{}).toCollectionQuery(),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission());
@@ -48,6 +50,7 @@ DynamicMap _$ChatModuleToMap(ChatModule ref) {
     if (ref.mediaKey.isNotEmpty) "mediaKey": ref.mediaKey,
     if (ref.createdTimeKey.isNotEmpty) "createdTimeKey": ref.createdTimeKey,
     if (ref.modifiedTimeKey.isNotEmpty) "modifiedTimeKey": ref.modifiedTimeKey,
+    if (ref.chatQuery != null) "chatQuery": ref.chatQuery?.toMap(),
     "permission": ref.permission.toMap()
   };
 }

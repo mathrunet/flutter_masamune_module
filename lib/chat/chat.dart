@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:masamune/masamune.dart';
 import 'package:masamune_module/masamune_module.dart';
 import 'package:photo_view/photo_view.dart';
@@ -35,7 +36,12 @@ class ChatModule extends PageModule {
     this.mediaKey = Const.media,
     this.createdTimeKey = Const.createdTime,
     this.modifiedTimeKey = Const.modifiedTime,
+    this.chatQuery,
     Permission permission = const Permission(),
+    this.home,
+    this.timeline,
+    this.mediaView,
+    this.edit,
   }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
@@ -44,14 +50,22 @@ class ChatModule extends PageModule {
       return const {};
     }
     final route = {
-      "/$routePath": RouteConfig((_) => Chat(this)),
-      "/$routePath/{chat_id}": RouteConfig((_) => ChatTimeline(this)),
+      "/$routePath": RouteConfig((_) => home ?? ChatModuleHome(this)),
+      "/$routePath/{chat_id}":
+          RouteConfig((_) => timeline ?? ChatModuleTimeline(this)),
       "/$routePath/{chat_id}/media/{timeline_id}":
-          RouteConfig((_) => _ChatMediaView(this)),
-      "/$routePath/{chat_id}/edit": RouteConfig((_) => _ChatEdit(this)),
+          RouteConfig((_) => mediaView ?? ChatModuleMediaView(this)),
+      "/$routePath/{chat_id}/edit":
+          RouteConfig((_) => edit ?? ChatModuleEdit(this)),
     };
     return route;
   }
+
+  // ページ設定
+  final Widget? home;
+  final Widget? timeline;
+  final Widget? mediaView;
+  final Widget? edit;
 
   /// ルートのパス。
   final String routePath;
@@ -89,6 +103,9 @@ class ChatModule extends PageModule {
   /// 対応するメディアタイプ。
   final PlatformMediaType mediaType;
 
+  /// チャットのクエリ。
+  final CollectionQuery? chatQuery;
+
   @override
   ChatModule? fromMap(DynamicMap map) => _$ChatModuleFromMap(map, this);
 
@@ -96,8 +113,8 @@ class ChatModule extends PageModule {
   DynamicMap toMap() => _$ChatModuleToMap(this);
 }
 
-class Chat extends PageHookWidget {
-  const Chat(this.config);
+class ChatModuleHome extends PageHookWidget {
+  const ChatModuleHome(this.config);
   final ChatModule config;
 
   @override
@@ -105,11 +122,12 @@ class Chat extends PageHookWidget {
     final now = DateTime.now();
     final user = useUserDocumentModel(config.userPath);
     final chat = useCollectionModel(
-      CollectionQuery(
-        config.chatPath,
-        key: config.memberKey,
-        arrayContains: user.get(Const.uid, ""),
-      ).value,
+      config.chatQuery?.value ??
+          CollectionQuery(
+            config.chatPath,
+            key: config.memberKey,
+            arrayContains: user.get(Const.uid, ""),
+          ).value,
     );
     final users = useCollectionModel(
       CollectionQuery(
@@ -125,7 +143,7 @@ class Chat extends PageHookWidget {
         }).distinct(),
       ).value,
     );
-    final chatWithUser = chat.setWhere(
+    final chatWithUser = chat.setWhereListenable(
       users,
       test: (o, a) {
         final member = o.get(config.memberKey, []);
@@ -133,7 +151,8 @@ class Chat extends PageHookWidget {
             (item) => item.toString() != a.get(Const.uid, ""));
         return u != null;
       },
-      apply: (o, a) => o.merge(a, convertKeys: (key) => "${Const.user}$key"),
+      apply: (o, a) =>
+          o.mergeListenable(a, convertKeys: (key) => "${Const.user}$key"),
       orElse: (o) => o,
     );
 
@@ -142,20 +161,29 @@ class Chat extends PageHookWidget {
         title: Text(config.title ?? "Chat".localize()),
       ),
       body: PlatformAppLayout(
+        futures: [
+          chat.future,
+          users.future,
+        ],
         initialPath:
             "/${config.routePath}/${chatWithUser.firstOrNull.get(Const.uid, "empty")}",
         builder: (context, isMobile, controller, routeId) {
           return ListView(
             children: [
-              ...chatWithUser.mapAndRemoveEmpty(
+              ...chatWithUser.mapListenable(
                 (item) {
+                  final name = item.get(config.nameKey, "");
                   return ListItem(
                     selected: routeId == item.get(Const.uid, ""),
                     selectedColor: context.theme.textColorOnPrimary,
                     selectedTileColor:
                         context.theme.primaryColor.withOpacity(0.8),
                     disabledTapOnSelected: true,
-                    title: Text(item.get("${Const.user}${config.nameKey}", "")),
+                    title: Text(
+                      name.isNotEmpty
+                          ? name
+                          : item.get("${Const.user}${config.nameKey}", ""),
+                    ),
                     subtitle: Text(
                       DateTime.fromMillisecondsSinceEpoch(
                         item.get(
@@ -185,8 +213,8 @@ class Chat extends PageHookWidget {
   }
 }
 
-class ChatTimeline extends PageHookWidget {
-  const ChatTimeline(this.config);
+class ChatModuleTimeline extends PageHookWidget {
+  const ChatModuleTimeline(this.config);
   final ChatModule config;
 
   @override
@@ -297,7 +325,7 @@ class ChatTimeline extends PageHookWidget {
                     ),
                     const Space.width(4),
                     Flexible(
-                      child: _ChatTimelineItem(
+                      child: ChatModuleTimelineItem(
                         config,
                         data: item,
                         color: context.theme.colorScheme.onPrimary,
@@ -329,7 +357,7 @@ class ChatTimeline extends PageHookWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Flexible(
-                            child: _ChatTimelineItem(
+                            child: ChatModuleTimelineItem(
                               config,
                               data: item,
                               color: context.theme.colorScheme.onSecondary,
@@ -483,8 +511,8 @@ class ChatTimeline extends PageHookWidget {
   }
 }
 
-class _ChatTimelineItem extends StatelessWidget {
-  const _ChatTimelineItem(
+class ChatModuleTimelineItem extends StatelessWidget {
+  const ChatModuleTimelineItem(
     this.config, {
     required this.data,
     this.color,
@@ -554,8 +582,8 @@ class _ChatTimelineItem extends StatelessWidget {
   }
 }
 
-class _ChatMediaView extends PageHookWidget {
-  const _ChatMediaView(this.config);
+class ChatModuleMediaView extends PageHookWidget {
+  const ChatModuleMediaView(this.config);
   final ChatModule config;
 
   @override
@@ -600,12 +628,13 @@ class _ChatMediaView extends PageHookWidget {
   }
 }
 
-class _ChatEdit extends PageHookWidget with UIPageFormMixin {
-  _ChatEdit(this.config);
+class ChatModuleEdit extends PageHookWidget {
+  const ChatModuleEdit(this.config);
   final ChatModule config;
 
   @override
   Widget build(BuildContext context) {
+    final form = useForm();
     final chat =
         useDocumentModel("${config.chatPath}/${context.get("chat_id", "")}");
     final name = chat.get(config.nameKey, "");
@@ -618,7 +647,7 @@ class _ChatEdit extends PageHookWidget with UIPageFormMixin {
             title: Text("Editing %s".localize().format(["Chat".localize()]))),
         body: FormBuilder(
           padding: const EdgeInsets.all(0),
-          key: formKey,
+          key: form.key,
           children: [
             const Space.height(16),
             DividHeadline("Title".localize()),
@@ -637,7 +666,7 @@ class _ChatEdit extends PageHookWidget with UIPageFormMixin {
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
-            if (!validate(context)) {
+            if (!form.validate()) {
               return;
             }
 

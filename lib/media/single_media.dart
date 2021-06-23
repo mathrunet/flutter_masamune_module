@@ -24,6 +24,8 @@ class SingleMediaModule extends PageModule {
     this.createdTimeKey = Const.createdTime,
     this.mediaType = PlatformMediaType.all,
     Permission permission = const Permission(),
+    this.home,
+    this.edit,
   }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
@@ -32,11 +34,16 @@ class SingleMediaModule extends PageModule {
       return const {};
     }
     final route = {
-      "/$routePath": RouteConfig((_) => SingleMedia(this)),
-      "/$routePath/edit": RouteConfig((_) => _SingleMediaEdit(this)),
+      "/$routePath": RouteConfig((_) => home ?? SingleMediaModuleHome(this)),
+      "/$routePath/edit":
+          RouteConfig((_) => edit ?? SingleMediaModuleEdit(this)),
     };
     return route;
   }
+
+  // ページ設定。
+  final Widget? home;
+  final Widget? edit;
 
   /// ルートのパス。
   final String routePath;
@@ -79,8 +86,8 @@ class SingleMediaModule extends PageModule {
   DynamicMap toMap() => _$SingleMediaModuleToMap(this);
 }
 
-class SingleMedia extends PageHookWidget {
-  const SingleMedia(this.config);
+class SingleMediaModuleHome extends PageHookWidget {
+  const SingleMediaModuleHome(this.config);
   final SingleMediaModule config;
 
   @override
@@ -145,13 +152,13 @@ class SingleMedia extends PageHookWidget {
   }
 }
 
-class _SingleMediaEdit extends PageHookWidget
-    with UIPageFormMixin, UIPageUuidMixin {
-  _SingleMediaEdit(this.config);
+class SingleMediaModuleEdit extends PageHookWidget {
+  const SingleMediaModuleEdit(this.config);
   final SingleMediaModule config;
 
   @override
   Widget build(BuildContext context) {
+    final form = useForm();
     final item = useDocumentModel(config.mediaPath);
     final name = item.get(config.nameKey, "");
     final media = item.get(config.mediaKey, "");
@@ -170,7 +177,7 @@ class _SingleMediaEdit extends PageHookWidget
         body: PlatformScrollbar(
           child: FormBuilder(
             padding: const EdgeInsets.all(0),
-            key: formKey,
+            key: form.key,
             children: [
               FormItemMedia(
                 height: 200,
@@ -208,7 +215,7 @@ class _SingleMediaEdit extends PageHookWidget
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
-            if (!validate(context)) {
+            if (!form.validate()) {
               return;
             }
 

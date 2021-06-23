@@ -36,6 +36,15 @@ class GalleryModule extends PageModule {
     this.mediaType = PlatformMediaType.all,
     this.skipDetailPage = false,
     Permission permission = const Permission(),
+    this.galleryQuery,
+    this.home,
+    this.tabView,
+    this.gridView,
+    this.edit,
+    this.tileView,
+    this.tileViewWithTab,
+    this.mediaView,
+    this.mediaDetail,
   }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
@@ -44,16 +53,31 @@ class GalleryModule extends PageModule {
       return const {};
     }
     final route = {
-      "/$routePath": RouteConfig((_) => Gallery(this)),
-      "/$routePath/tab/{tab_id}": RouteConfig(
-          (context) => _GridView(this, category: context.get("tab_id", ""))),
-      "/$routePath/edit": RouteConfig((_) => _MediaEdit(this, inAdd: true)),
-      "/$routePath/{media_id}": RouteConfig((_) => _MediaDetail(this)),
-      "/$routePath/{media_id}/view": RouteConfig((_) => _MediaView(this)),
-      "/$routePath/{media_id}/edit": RouteConfig((_) => _MediaEdit(this)),
+      "/$routePath": RouteConfig((_) => home ?? GalleryModuleHome(this)),
+      "/$routePath/tab/{tab_id}": RouteConfig((context) =>
+          tabView ??
+          GalleryModuleGridView(this,
+              tab: TabConfig(id: context.get("tab_id", "")))),
+      "/$routePath/edit": RouteConfig((_) => GalleryModuleEdit(this)),
+      "/$routePath/{media_id}":
+          RouteConfig((_) => GalleryModuleMediaDetail(this)),
+      "/$routePath/{media_id}/view":
+          RouteConfig((_) => GalleryModuleMediaView(this)),
+      "/$routePath/{media_id}/edit":
+          RouteConfig((_) => GalleryModuleEdit(this)),
     };
     return route;
   }
+
+  // ページ設定。
+  final Widget? home;
+  final Widget? tabView;
+  final Widget? gridView;
+  final Widget? edit;
+  final Widget? mediaDetail;
+  final Widget? mediaView;
+  final Widget? tileView;
+  final Widget? tileViewWithTab;
 
   /// ルートのパス。
   final String routePath;
@@ -85,6 +109,9 @@ class GalleryModule extends PageModule {
   /// 作成日のキー。
   final String createdTimeKey;
 
+  /// クエリ。
+  final CollectionQuery? galleryQuery;
+
   /// タイルの横方向のサイズ。
   final double maxCrossAxisExtentForMobile;
   final double maxCrossAxisExtentForDesktop;
@@ -115,24 +142,24 @@ class GalleryModule extends PageModule {
   DynamicMap toMap() => _$GalleryModuleToMap(this);
 }
 
-class Gallery extends PageHookWidget {
-  const Gallery(this.config);
+class GalleryModuleHome extends PageHookWidget {
+  const GalleryModuleHome(this.config);
   final GalleryModule config;
   @override
   Widget build(BuildContext context) {
     switch (config.galleryType) {
       case GalleryType.tile:
-        return TileGallery(config);
+        return config.tileView ?? GalleryModuleTileView(config);
       case GalleryType.tileWithTab:
-        return TileWithTabGallery(config);
+        return config.tileViewWithTab ?? GalleryModuleTileViewWithTab(config);
       default:
         return Empty();
     }
   }
 }
 
-class TileWithTabGallery extends PageHookWidget {
-  const TileWithTabGallery(this.config);
+class GalleryModuleTileViewWithTab extends PageHookWidget {
+  const GalleryModuleTileViewWithTab(this.config);
   final GalleryModule config;
 
   @override
@@ -144,7 +171,8 @@ class TileWithTabGallery extends PageHookWidget {
         title: Text(config.title ?? "Gallery".localize()),
         source: config.tabConfig,
         tabBuilder: (tab) => Text(tab.label),
-        viewBuilder: (tab) => _GridView(config, category: tab.id),
+        viewBuilder: (tab) =>
+            config.gridView ?? GalleryModuleGridView(config, tab: tab),
         floatingActionButton:
             config.permission.canEdit(user.get(config.roleKey, ""))
                 ? FloatingActionButton.extended(
@@ -212,8 +240,8 @@ class TileWithTabGallery extends PageHookWidget {
   }
 }
 
-class TileGallery extends PageHookWidget {
-  const TileGallery(this.config);
+class GalleryModuleTileView extends PageHookWidget {
+  const GalleryModuleTileView(this.config);
   final GalleryModule config;
 
   @override
@@ -224,7 +252,7 @@ class TileGallery extends PageHookWidget {
       appBar: PlatformAppBar(
         title: Text(config.title ?? "Gallery".localize()),
       ),
-      body: _GridView(config),
+      body: config.gridView ?? GalleryModuleGridView(config),
       floatingActionButton:
           config.permission.canEdit(user.get(config.roleKey, ""))
               ? FloatingActionButton.extended(
@@ -242,47 +270,74 @@ class TileGallery extends PageHookWidget {
   }
 }
 
-class _GridView extends HookWidget {
-  const _GridView(this.config, {this.category});
+class GalleryModuleGridView extends HookWidget {
+  const GalleryModuleGridView(this.config, {this.tab});
   final GalleryModule config;
-  final String? category;
+  final TabConfig? tab;
 
-  String get path => category.isEmpty
-      ? config.galleryPath
-      : "${config.galleryPath}?key=${config.categoryKey}&equalTo=$category";
+  String get path {
+    if (tab == null) {
+      return config.galleryQuery?.value ?? config.galleryPath;
+    }
+    return tab!.query?.value ??
+        CollectionQuery(
+          config.galleryPath,
+          key: config.categoryKey,
+          isEqualTo: tab!.id,
+        ).value;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final gallery = useCollectionModel(path).where(
+    final gallery = useCollectionModel(path);
+    final filtered = gallery.where(
       (item) {
-        if (category.isEmpty) {
+        if (tab == null) {
           return true;
         }
-        return item.get(config.categoryKey, "") == category;
+        return item.get(config.categoryKey, "") == tab!.id;
       },
     );
 
-    return PlatformScrollbar(
-      child: GridBuilder<DynamicDocumentModel>.extent(
-        maxCrossAxisExtent: context.isMobile
-            ? config.maxCrossAxisExtentForMobile
-            : config.maxCrossAxisExtentForDesktop,
-        childAspectRatio: context.isMobile
-            ? config.childAspectRatioForMobile
-            : config.childAspectRatioForDesktop,
-        mainAxisSpacing: config.tileSpacing,
-        crossAxisSpacing: config.tileSpacing,
-        source: gallery.toList(),
-        builder: (context, item) {
-          final path = item.get(config.mediaKey, "");
-          final type = getPlatformMediaType(path);
-          switch (type) {
-            case PlatformMediaType.video:
-              return Container(
-                color: context.theme.dividerColor,
-                child: ClipRRect(
-                  child: ClickableBox.video(
-                    video: NetworkOrAsset.video(path),
+    return WaitingBuilder(
+      futures: [gallery.future],
+      builder: (context) {
+        return PlatformScrollbar(
+          child: GridBuilder<DynamicDocumentModel>.extent(
+            maxCrossAxisExtent: context.isMobile
+                ? config.maxCrossAxisExtentForMobile
+                : config.maxCrossAxisExtentForDesktop,
+            childAspectRatio: context.isMobile
+                ? config.childAspectRatioForMobile
+                : config.childAspectRatioForDesktop,
+            mainAxisSpacing: config.tileSpacing,
+            crossAxisSpacing: config.tileSpacing,
+            source: filtered.toList(),
+            builder: (context, item) {
+              final path = item.get(config.mediaKey, "");
+              final type = getPlatformMediaType(path);
+              switch (type) {
+                case PlatformMediaType.video:
+                  return Container(
+                    color: context.theme.dividerColor,
+                    child: ClipRRect(
+                      child: ClickableBox.video(
+                        video: NetworkOrAsset.video(path),
+                        fit: BoxFit.cover,
+                        onTap: () {
+                          context.rootNavigator.pushNamed(
+                            config.skipDetailPage
+                                ? "/${config.routePath}/${item.get(Const.uid, "")}/view"
+                                : "/${config.routePath}/${item.get(Const.uid, "")}",
+                            arguments: RouteQuery.fullscreenOrModal,
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                default:
+                  return ClickableBox.image(
+                    image: NetworkOrAsset.image(path),
                     fit: BoxFit.cover,
                     onTap: () {
                       context.rootNavigator.pushNamed(
@@ -292,31 +347,18 @@ class _GridView extends HookWidget {
                         arguments: RouteQuery.fullscreenOrModal,
                       );
                     },
-                  ),
-                ),
-              );
-            default:
-              return ClickableBox.image(
-                image: NetworkOrAsset.image(path),
-                fit: BoxFit.cover,
-                onTap: () {
-                  context.rootNavigator.pushNamed(
-                    config.skipDetailPage
-                        ? "/${config.routePath}/${item.get(Const.uid, "")}/view"
-                        : "/${config.routePath}/${item.get(Const.uid, "")}",
-                    arguments: RouteQuery.fullscreenOrModal,
                   );
-                },
-              );
-          }
-        },
-      ),
+              }
+            },
+          ),
+        );
+      },
     );
   }
 }
 
-class _MediaDetail extends PageHookWidget {
-  const _MediaDetail(this.config);
+class GalleryModuleMediaDetail extends PageHookWidget {
+  const GalleryModuleMediaDetail(this.config);
   final GalleryModule config;
 
   @override
@@ -426,8 +468,8 @@ class _MediaDetail extends PageHookWidget {
   }
 }
 
-class _MediaView extends PageHookWidget {
-  const _MediaView(this.config);
+class GalleryModuleMediaView extends PageHookWidget {
+  const GalleryModuleMediaView(this.config);
   final GalleryModule config;
 
   @override
@@ -488,16 +530,15 @@ class _MediaView extends PageHookWidget {
   }
 }
 
-class _MediaEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
-  _MediaEdit(this.config, {this.inAdd = false});
+class GalleryModuleEdit extends PageHookWidget {
+  const GalleryModuleEdit(this.config);
   final GalleryModule config;
-  final bool inAdd;
 
   @override
   Widget build(BuildContext context) {
+    final form = useForm("media_id");
     final user = useUserDocumentModel(config.userPath);
-    final item = useDocumentModel(
-        "${config.galleryPath}/${context.get("media_id", puid)}");
+    final item = useDocumentModel("${config.galleryPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final media = item.get(config.mediaKey, "");
@@ -507,13 +548,12 @@ class _MediaEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
       heightRatio: 0.8,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            inAdd
-                ? "A new entry".localize()
-                : "Editing %s".localize().format([name]),
-          ),
+          title: Text(form.select(
+            "Editing %s".localize().format([name]),
+            "A new entry".localize(),
+          )),
           actions: [
-            if (!inAdd &&
+            if (form.exists &&
                 config.permission.canDelete(user.get(config.roleKey, "")))
               IconButton(
                 icon: const Icon(Icons.delete),
@@ -540,13 +580,13 @@ class _MediaEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
         body: PlatformScrollbar(
           child: FormBuilder(
             padding: const EdgeInsets.all(0),
-            key: formKey,
+            key: form.key,
             children: [
               FormItemMedia(
                 height: 200,
                 dense: true,
                 controller: useMemoizedTextEditingController(
-                  inAdd ? "" : media,
+                  form.select(media, ""),
                 ),
                 errorText:
                     "No input %s".localize().format(["Image".localize()]),
@@ -569,7 +609,8 @@ class _MediaEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
                 hintText: "Input %s".localize().format(["Title".localize()]),
                 errorText:
                     "No input %s".localize().format(["Title".localize()]),
-                controller: useMemoizedTextEditingController(inAdd ? "" : name),
+                controller:
+                    useMemoizedTextEditingController(form.select(name, "")),
                 onSaved: (value) {
                   context[config.nameKey] = value;
                 },
@@ -583,7 +624,8 @@ class _MediaEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
                 hintText:
                     "Input %s".localize().format(["Description".localize()]),
                 allowEmpty: true,
-                controller: useMemoizedTextEditingController(inAdd ? "" : text),
+                controller:
+                    useMemoizedTextEditingController(form.select(text, "")),
                 onSaved: (value) {
                   context[config.textKey] = value;
                 },
@@ -595,10 +637,12 @@ class _MediaEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
                   // labelText: "Category".localize(),
                   hintText:
                       "Input %s".localize().format(["Category".localize()]),
-                  controller: useMemoizedTextEditingController(inAdd
-                      ? config.tabConfig.first.id
-                      : item.get(
-                          config.categoryKey, config.tabConfig.first.id)),
+                  controller: useMemoizedTextEditingController(
+                    form.select(
+                      item.get(config.categoryKey, config.tabConfig.first.id),
+                      config.tabConfig.first.id,
+                    ),
+                  ),
                   items: <String, String>{
                     for (final tab in config.tabConfig) tab.id: tab.label
                   },
@@ -614,7 +658,7 @@ class _MediaEdit extends PageHookWidget with UIPageFormMixin, UIPageUuidMixin {
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
-            if (!validate(context)) {
+            if (!form.validate()) {
               return;
             }
 

@@ -44,7 +44,9 @@ GalleryModule? _$GalleryModuleFromMap(DynamicMap map, GalleryModule ref) {
       skipDetailPage: map.get<bool>("skipDetailPage", false),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
-          const Permission());
+          const Permission(),
+      galleryQuery: map.get<DynamicMap>(
+          "galleryQuery", <String, dynamic>{}).toCollectionQuery());
 }
 
 DynamicMap _$GalleryModuleToMap(GalleryModule ref) {
@@ -72,6 +74,7 @@ DynamicMap _$GalleryModuleToMap(GalleryModule ref) {
       "tabConfig": ref.tabConfig.map((e) => e.toMap()),
     "mediaType": ref.mediaType.index,
     "skipDetailPage": ref.skipDetailPage,
-    "permission": ref.permission.toMap()
+    "permission": ref.permission.toMap(),
+    if (ref.galleryQuery != null) "galleryQuery": ref.galleryQuery?.toMap()
   };
 }
