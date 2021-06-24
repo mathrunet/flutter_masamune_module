@@ -263,12 +263,6 @@ class ChatModuleTimeline extends PageHookWidget {
     ).join(", ");
     final name = chat.get(config.nameKey, "");
 
-    final focusNode = useFocusNode();
-    useWidgetState(onInit: () {
-      focusNode.requestFocus();
-    });
-    final textEditingController = useTextEditingController();
-
     return Scaffold(
       appBar: PlatformInlineAppBar(
         title: Text(name.isEmpty ? title : name),
@@ -388,124 +382,53 @@ class ChatModuleTimeline extends PageHookWidget {
           ];
         },
       ),
-      bottomSheet: Container(
-        padding: const EdgeInsets.all(0),
-        decoration: BoxDecoration(
-          color: context.theme.backgroundColor,
-          border: Border(
-            top: BorderSide(color: context.theme.dividerColor, width: 1),
-          ),
-        ),
-        child: Stack(
-          children: [
-            FormItemTextField(
-              dense: true,
-              hintText: "Input %s".localize().format(["Text".localize()]),
-              focusNode: focusNode,
-              controller: textEditingController,
-              keyboardType: TextInputType.text,
-              maxLines: 4,
-              minLines: 1,
-              textAlignVertical: TextAlignVertical.top,
-              textAlign: TextAlign.start,
-              contentPadding: const EdgeInsets.fromLTRB(56, 0, 56, 0),
-              onSubmitted: (value) {
-                if (value.isEmpty) {
-                  return;
-                }
+      bottomSheet: BottomSheetTextField(
+        maxLines: 4,
+        hintText: "Input %s".localize().format(["Text".localize()]),
+        onSubmitted: (value) {
+          if (value.isEmpty) {
+            return;
+          }
 
-                final doc = context.model?.createDocument(timeline);
-                if (doc == null) {
-                  return;
-                }
-                doc[Const.user] = userId;
-                doc[config.textKey] = value;
-                chat[config.modifiedTimeKey] = doc[config.createdTimeKey] =
-                    DateTime.now().millisecondsSinceEpoch;
-                context.model?.saveDocument(doc);
-                context.model?.saveDocument(chat);
-                textEditingController.text = "";
-                focusNode.requestFocus();
-              },
-            ),
-            Positioned(
-              right: 10,
-              top: 0,
-              bottom: 0,
-              child: IconButton(
-                onPressed: () {
-                  final value = textEditingController.text;
-                  if (value.isEmpty) {
-                    return;
-                  }
+          final doc = context.model?.createDocument(timeline);
+          if (doc == null) {
+            return;
+          }
+          doc[Const.user] = userId;
+          doc[config.textKey] = value;
+          chat[config.modifiedTimeKey] = doc[config.createdTimeKey] =
+              DateTime.now().millisecondsSinceEpoch;
+          context.model?.saveDocument(doc);
+          context.model?.saveDocument(chat);
+        },
+        onTapMediaIcon: () async {
+          final media = await context.platform?.mediaDialog(
+            context,
+            title: "Please select your media".localize(),
+            type: config.mediaType,
+          );
+          if (media?.path == null) {
+            return;
+          }
 
-                  final doc = context.model?.createDocument(timeline);
-                  if (doc == null) {
-                    return;
-                  }
-                  doc[Const.user] = userId;
-                  doc[config.textKey] = value;
-                  chat[config.modifiedTimeKey] = doc[config.createdTimeKey] =
-                      DateTime.now().millisecondsSinceEpoch;
-                  context.model?.saveDocument(doc);
-                  context.model?.saveDocument(chat);
-                  textEditingController.text = "";
-                  focusNode.requestFocus();
-                },
-                padding: const EdgeInsets.all(0),
-                visualDensity: VisualDensity.compact,
-                icon: Icon(
-                  Icons.send,
-                  size: 25,
-                  color: context.theme.disabledColor,
-                ),
-              ),
-            ),
-            Positioned(
-              left: 10,
-              top: 0,
-              bottom: 0,
-              child: IconButton(
-                onPressed: () async {
-                  final media = await context.platform?.mediaDialog(
-                    context,
-                    title: "Please select your media".localize(),
-                    type: config.mediaType,
-                  );
-                  if (media?.path == null) {
-                    return;
-                  }
+          final url = await context.model
+              ?.uploadMedia(media?.path)
+              .showIndicator(context);
+          if (url.isEmpty) {
+            return;
+          }
 
-                  final url = await context.model
-                      ?.uploadMedia(media?.path)
-                      .showIndicator(context);
-                  if (url.isEmpty) {
-                    return;
-                  }
-
-                  final doc = context.model?.createDocument(timeline);
-                  if (doc == null) {
-                    return;
-                  }
-                  doc[Const.user] = userId;
-                  doc[config.mediaKey] = url;
-                  chat[config.modifiedTimeKey] = doc[config.createdTimeKey] =
-                      DateTime.now().millisecondsSinceEpoch;
-                  context.model?.saveDocument(doc);
-                  context.model?.saveDocument(chat);
-                  focusNode.requestFocus();
-                },
-                padding: const EdgeInsets.all(0),
-                visualDensity: VisualDensity.compact,
-                icon: Icon(
-                  Icons.add_photo_alternate,
-                  size: 25,
-                  color: context.theme.disabledColor,
-                ),
-              ),
-            )
-          ],
-        ),
+          final doc = context.model?.createDocument(timeline);
+          if (doc == null) {
+            return;
+          }
+          doc[Const.user] = userId;
+          doc[config.mediaKey] = url;
+          chat[config.modifiedTimeKey] = doc[config.createdTimeKey] =
+              DateTime.now().millisecondsSinceEpoch;
+          context.model?.saveDocument(doc);
+          context.model?.saveDocument(chat);
+        },
       ),
     );
   }
