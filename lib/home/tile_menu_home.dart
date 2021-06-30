@@ -241,7 +241,7 @@ class HomeModuleTileMenuHomeInformation extends HookWidget {
           a.get("created", DateTime.now().millisecondsSinceEpoch);
     });
 
-    return WaitingBuilder(
+    return LoadingBuilder(
       futures: [info.future],
       builder: (context) {
         return Column(

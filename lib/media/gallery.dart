@@ -1,6 +1,6 @@
 import 'package:masamune/masamune.dart';
 import 'package:masamune_module/masamune_module.dart';
-import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view.dart' as phto_view;
 
 part "gallery.m.dart";
 
@@ -299,7 +299,7 @@ class GalleryModuleGridView extends HookWidget {
       },
     );
 
-    return WaitingBuilder(
+    return LoadingBuilder(
       futures: [gallery.future],
       builder: (context) {
         return PlatformScrollbar(
@@ -520,7 +520,7 @@ class GalleryModuleMediaView extends PageHookWidget {
                       ),
                     );
                   default:
-                    return PhotoView(
+                    return phto_view.PhotoView(
                       imageProvider: NetworkOrAsset.image(media),
                     );
                 }
