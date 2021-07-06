@@ -27,8 +27,7 @@ LoginModule? _$LoginModuleFromMap(DynamicMap map, LoginModule ref) {
           e.index ==
           map.get<int>("loginType", LoginType.emailAndPassword.index)),
       layoutType: LoginLayoutType.values.firstWhere((e) =>
-          e.index ==
-          map.get<int>("layoutType", LoginLayoutType.sliverList.index)),
+          e.index == map.get<int>("layoutType", LoginLayoutType.fixed.index)),
       backgroundColor:
           map.get<DynamicMap>("backgroundColor", <String, dynamic>{}).toColor(),
       appBarColorOnSliverList: map.get<DynamicMap>(
@@ -39,6 +38,8 @@ LoginModule? _$LoginModuleFromMap(DynamicMap map, LoginModule ref) {
           map.get<DynamicMap>("buttonColor", <String, dynamic>{}).toColor(),
       buttonBackgroundColor: map.get<DynamicMap>(
           "buttonBackgroundColor", <String, dynamic>{}).toColor(),
+      backgroundImage: map.get<String?>("backgroundImage", null),
+      backgroundImageBlur: map.get<double?>("backgroundImageBlur", null),
       featureImage: map.get<String?>("featureImage", null),
       featureImageSize:
           map.get<DynamicMap>("featureImageSize", <String, dynamic>{}).toSize(),
@@ -53,13 +54,12 @@ LoginModule? _$LoginModuleFromMap(DynamicMap map, LoginModule ref) {
           const LoginConfig(label: "Login", icon: FontAwesomeIcons.signInAlt),
       guestLogin: map
           .get<DynamicMap>("guestLogin", <String, dynamic>{}).toLoginConfig(),
-      titlePadding: map.get<DynamicMap>("titlePadding", <String, dynamic>{}).toEdgeInsets() ??
-          const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+      titlePadding:
+          map.get<DynamicMap>("titlePadding", <String, dynamic>{}).toEdgeInsets() ??
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
       padding: map.get<DynamicMap>("padding", <String, dynamic>{}).toEdgeInsets() ??
-          const EdgeInsets.all(24),
+          const EdgeInsets.all(36),
       redirectTo: map.get<String>("redirectTo", "/"),
-      formColor: map.get<DynamicMap>("formColor", <String, dynamic>{}).toColor(),
-      formBackgroundColor: map.get<DynamicMap>("formBackgroundColor", <String, dynamic>{}).toColor(),
       registerForm: map.get<List>("registerForm", const []).cast<DynamicMap>().map((e) => e.toFormConfig()).removeEmpty());
 }
 
@@ -80,6 +80,9 @@ DynamicMap _$LoginModuleToMap(LoginModule ref) {
     if (ref.buttonColor != null) "buttonColor": ref.buttonColor?.toMap(),
     if (ref.buttonBackgroundColor != null)
       "buttonBackgroundColor": ref.buttonBackgroundColor?.toMap(),
+    if (ref.backgroundImage.isNotEmpty) "backgroundImage": ref.backgroundImage,
+    if (ref.backgroundImageBlur != null)
+      "backgroundImageBlur": ref.backgroundImageBlur,
     if (ref.featureImage.isNotEmpty) "featureImage": ref.featureImage,
     if (ref.featureImageSize != null)
       "featureImageSize": ref.featureImageSize?.toMap(),
@@ -92,9 +95,6 @@ DynamicMap _$LoginModuleToMap(LoginModule ref) {
     "titlePadding": ref.titlePadding.toMap(),
     "padding": ref.padding.toMap(),
     if (ref.redirectTo.isNotEmpty) "redirectTo": ref.redirectTo,
-    if (ref.formColor != null) "formColor": ref.formColor?.toMap(),
-    if (ref.formBackgroundColor != null)
-      "formBackgroundColor": ref.formBackgroundColor?.toMap(),
     if (ref.registerForm.isNotEmpty)
       "registerForm": ref.registerForm.map((e) => e.toMap())
   };
