@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:masamune/masamune.dart';
+import 'package:masamune/ui/ui.dart';
 import 'package:masamune_module/masamune_module.dart';
 import 'package:photo_view/photo_view.dart';
 
@@ -38,6 +39,7 @@ class ChatModule extends PageModule {
     this.modifiedTimeKey = Const.modifiedTime,
     this.chatQuery,
     Permission permission = const Permission(),
+    this.designType = DesignType.modern,
     this.home,
     this.timeline,
     this.mediaView,
@@ -66,6 +68,9 @@ class ChatModule extends PageModule {
   final Widget? timeline;
   final Widget? mediaView;
   final Widget? edit;
+
+  /// デザインタイプ。
+  final DesignType designType;
 
   /// ルートのパス。
   final String routePath;
@@ -155,59 +160,56 @@ class ChatModuleHome extends PageHookWidget {
           o.mergeListenable(a, convertKeys: (key) => "${Const.user}$key"),
       orElse: (o) => o,
     );
+    final controller = useNavigatorController(
+        "/${config.routePath}/${chatWithUser.firstOrNull.get(Const.uid, "empty")}");
 
-    return Scaffold(
-      appBar: PlatformAppBar(
+    return UIScaffold(
+      designType: config.designType,
+      loadingFutures: [
+        chat.future,
+        users.future,
+      ],
+      inlineNavigatorControllerOnWeb: controller,
+      appBar: UIAppBar(
         title: Text(config.title ?? "Chat".localize()),
       ),
-      body: PlatformAppLayout(
-        futures: [
-          chat.future,
-          users.future,
-        ],
-        initialPath:
-            "/${config.routePath}/${chatWithUser.firstOrNull.get(Const.uid, "empty")}",
-        builder: (context, isMobile, controller, routeId) {
-          return ListView(
-            children: [
-              ...chatWithUser.mapListenable(
-                (item) {
-                  final name = item.get(config.nameKey, "");
-                  return ListItem(
-                    selected: routeId == item.get(Const.uid, ""),
-                    selectedColor: context.theme.textColorOnPrimary,
-                    selectedTileColor:
-                        context.theme.primaryColor.withOpacity(0.8),
-                    disabledTapOnSelected: true,
-                    title: Text(
-                      name.isNotEmpty
-                          ? name
-                          : item.get("${Const.user}${config.nameKey}", ""),
-                    ),
-                    subtitle: Text(
-                      DateTime.fromMillisecondsSinceEpoch(
-                        item.get(
-                            config.createdTimeKey, now.millisecondsSinceEpoch),
-                      ).format("yyyy/MM/dd HH:mm"),
-                    ),
-                    onTap: () {
-                      if (isMobile) {
-                        context.navigator.pushNamed(
-                          "/${config.routePath}/${item.get(Const.uid, "")}",
-                          arguments: RouteQuery.fullscreen,
-                        );
-                      } else {
-                        controller?.navigator.pushNamed(
-                          "/${config.routePath}/${item.get(Const.uid, "")}",
-                        );
-                      }
-                    },
-                  );
+      body: UIListView(
+        children: [
+          ...chatWithUser.mapListenable(
+            (item) {
+              final name = item.get(config.nameKey, "");
+              return ListItem(
+                selected:
+                    controller.route?.name.last() == item.get(Const.uid, ""),
+                selectedColor: context.theme.textColorOnPrimary,
+                selectedTileColor: context.theme.primaryColor.withOpacity(0.8),
+                disabledTapOnSelected: true,
+                title: Text(
+                  name.isNotEmpty
+                      ? name
+                      : item.get("${Const.user}${config.nameKey}", ""),
+                ),
+                subtitle: Text(
+                  DateTime.fromMillisecondsSinceEpoch(
+                    item.get(config.createdTimeKey, now.millisecondsSinceEpoch),
+                  ).format("yyyy/MM/dd HH:mm"),
+                ),
+                onTap: () {
+                  if (context.isMobile) {
+                    context.navigator.pushNamed(
+                      "/${config.routePath}/${item.get(Const.uid, "")}",
+                      arguments: RouteQuery.fullscreen,
+                    );
+                  } else {
+                    controller.navigator.pushNamed(
+                      "/${config.routePath}/${item.get(Const.uid, "")}",
+                    );
+                  }
                 },
-              ),
-            ],
-          );
-        },
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -263,8 +265,9 @@ class ChatModuleTimeline extends PageHookWidget {
     ).join(", ");
     final name = chat.get(config.nameKey, "");
 
-    return Scaffold(
-      appBar: PlatformInlineAppBar(
+    return UIScaffold(
+      designType: config.designType,
+      appBar: UIAppBar(
         title: Text(name.isEmpty ? title : name),
         actions: [
           if (config.permission.canEdit(user.get(config.roleKey, ""))) ...[
@@ -289,7 +292,7 @@ class ChatModuleTimeline extends PageHookWidget {
           ]
         ],
       ),
-      body: ListBuilder<DynamicMap>(
+      body: UIListBuilder<DynamicMap>(
         padding: const EdgeInsets.fromLTRB(8, 12, 8, 64),
         reverse: true,
         source: timlineWithUser.toList(),
@@ -516,37 +519,34 @@ class ChatModuleMediaView extends PageHookWidget {
     final media = item.get(config.mediaKey, "");
     final type = getPlatformMediaType(media);
 
-    return PlatformModalView(
-      widthRatio: 0.8,
-      heightRatio: 0.8,
-      child: Scaffold(
-        appBar: AppBar(),
-        backgroundColor: Colors.black,
-        body: media.isEmpty
-            ? Center(
-                child: Text(
-                  "No data.".localize(),
-                  style: const TextStyle(color: Colors.white),
-                ),
-              )
-            : () {
-                switch (type) {
-                  case PlatformMediaType.video:
-                    return Center(
-                      child: Video(
-                        NetworkOrAsset.video(media),
-                        fit: BoxFit.contain,
-                        controllable: true,
-                        mixWithOthers: true,
-                      ),
-                    );
-                  default:
-                    return PhotoView(
-                      imageProvider: NetworkOrAsset.image(media),
-                    );
-                }
-              }(),
-      ),
+    return UIScaffold(
+      designType: config.designType,
+      appBar: const UIAppBar(),
+      backgroundColor: Colors.black,
+      body: media.isEmpty
+          ? Center(
+              child: Text(
+                "No data.".localize(),
+                style: const TextStyle(color: Colors.white),
+              ),
+            )
+          : () {
+              switch (type) {
+                case PlatformMediaType.video:
+                  return Center(
+                    child: Video(
+                      NetworkOrAsset.video(media),
+                      fit: BoxFit.contain,
+                      controllable: true,
+                      mixWithOthers: true,
+                    ),
+                  );
+                default:
+                  return PhotoView(
+                    imageProvider: NetworkOrAsset.image(media),
+                  );
+              }
+            }(),
     );
   }
 }
@@ -562,44 +562,41 @@ class ChatModuleEdit extends PageHookWidget {
         useDocumentModel("${config.chatPath}/${context.get("chat_id", "")}");
     final name = chat.get(config.nameKey, "");
 
-    return PlatformModalView(
-      widthRatio: 0.8,
-      heightRatio: 0.8,
-      child: Scaffold(
-        appBar: AppBar(
-            title: Text("Editing %s".localize().format(["Chat".localize()]))),
-        body: FormBuilder(
-          padding: const EdgeInsets.all(0),
-          key: form.key,
-          children: [
-            const Space.height(16),
-            DividHeadline("Title".localize()),
-            FormItemTextField(
-              dense: true,
-              allowEmpty: true,
-              hintText: "Input %s".localize().format(["Title".localize()]),
-              controller: useMemoizedTextEditingController(name),
-              onSaved: (value) {
-                context[config.nameKey] = value;
-              },
-            ),
-            const Divid(),
-            const Space.height(100),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () async {
-            if (!form.validate()) {
-              return;
-            }
+    return UIScaffold(
+      designType: config.designType,
+      appBar: UIAppBar(
+          title: Text("Editing %s".localize().format(["Chat".localize()]))),
+      body: FormBuilder(
+        padding: const EdgeInsets.all(0),
+        key: form.key,
+        children: [
+          const Space.height(16),
+          DividHeadline("Title".localize()),
+          FormItemTextField(
+            dense: true,
+            allowEmpty: true,
+            hintText: "Input %s".localize().format(["Title".localize()]),
+            controller: useMemoizedTextEditingController(name),
+            onSaved: (value) {
+              context[config.nameKey] = value;
+            },
+          ),
+          const Divid(),
+          const Space.height(100),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          if (!form.validate()) {
+            return;
+          }
 
-            chat[config.nameKey] = context.get(config.nameKey, "");
-            await context.model?.saveDocument(chat).showIndicator(context);
-            context.navigator.pop();
-          },
-          label: Text("Submit".localize()),
-          icon: const Icon(Icons.check),
-        ),
+          chat[config.nameKey] = context.get(config.nameKey, "");
+          await context.model?.saveDocument(chat).showIndicator(context);
+          context.navigator.pop();
+        },
+        label: Text("Submit".localize()),
+        icon: const Icon(Icons.check),
       ),
     );
   }

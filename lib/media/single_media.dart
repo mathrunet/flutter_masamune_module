@@ -1,4 +1,5 @@
 import 'package:masamune/masamune.dart';
+import 'package:masamune/ui/ui.dart';
 import 'package:masamune_module/masamune_module.dart';
 import 'package:photo_view/photo_view.dart';
 
@@ -26,6 +27,7 @@ class SingleMediaModule extends PageModule {
     Permission permission = const Permission(),
     this.home,
     this.edit,
+    this.designType = DesignType.modern,
   }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
@@ -44,6 +46,9 @@ class SingleMediaModule extends PageModule {
   // ページ設定。
   final Widget? home;
   final Widget? edit;
+  
+  /// デザインタイプ。
+  final DesignType designType;
 
   /// ルートのパス。
   final String routePath;
@@ -100,8 +105,9 @@ class SingleMediaModuleHome extends PageHookWidget {
     final date = item.get(config.createdTimeKey, now.millisecondsSinceEpoch);
     final type = getPlatformMediaType(media);
 
-    return Scaffold(
-      appBar: PlatformAppBar(
+    return UIScaffold(
+      designType: config.designType,
+      appBar: UIAppBar(
         title: Text(
           name.isNotEmpty
               ? name
@@ -163,72 +169,65 @@ class SingleMediaModuleEdit extends PageHookWidget {
     final name = item.get(config.nameKey, "");
     final media = item.get(config.mediaKey, "");
 
-    return PlatformModalView(
-      widthRatio: 0.8,
-      heightRatio: 0.8,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            "Editing %s".localize().format([
-              if (name.isEmpty) "Media".localize() else name,
-            ]),
-          ),
+    return UIScaffold(
+      designType: config.designType,
+      appBar: UIAppBar(
+        title: Text(
+          "Editing %s".localize().format([
+            if (name.isEmpty) "Media".localize() else name,
+          ]),
         ),
-        body: PlatformScrollbar(
-          child: FormBuilder(
-            padding: const EdgeInsets.all(0),
-            key: form.key,
-            children: [
-              FormItemMedia(
-                height: 200,
-                dense: true,
-                controller: useMemoizedTextEditingController(media),
-                errorText:
-                    "No input %s".localize().format(["Image".localize()]),
-                onTap: (onUpdate) async {
-                  final media = await context.platform?.mediaDialog(
-                    context,
-                    title: "Please select your media".localize(),
-                    type: config.mediaType,
-                  );
-                  onUpdate(media?.path);
-                },
-                onSaved: (value) {
-                  context[config.mediaKey] = value;
-                },
-              ),
-              const Space.height(12),
-              DividHeadline("Title".localize()),
-              FormItemTextField(
-                dense: true,
-                hintText: "Input %s".localize().format(["Title".localize()]),
-                errorText:
-                    "No input %s".localize().format(["Title".localize()]),
-                controller: useMemoizedTextEditingController(name),
-                onSaved: (value) {
-                  context[config.nameKey] = value;
-                },
-              ),
-              const Divid(),
-            ],
-          ),
+      ),
+      body: FormBuilder(
+          padding: const EdgeInsets.all(0),
+          key: form.key,
+          children: [
+            FormItemMedia(
+              height: 200,
+              dense: true,
+              controller: useMemoizedTextEditingController(media),
+              errorText: "No input %s".localize().format(["Image".localize()]),
+              onTap: (onUpdate) async {
+                final media = await context.platform?.mediaDialog(
+                  context,
+                  title: "Please select your media".localize(),
+                  type: config.mediaType,
+                );
+                onUpdate(media?.path);
+              },
+              onSaved: (value) {
+                context[config.mediaKey] = value;
+              },
+            ),
+            const Space.height(12),
+            DividHeadline("Title".localize()),
+            FormItemTextField(
+              dense: true,
+              hintText: "Input %s".localize().format(["Title".localize()]),
+              errorText: "No input %s".localize().format(["Title".localize()]),
+              controller: useMemoizedTextEditingController(name),
+              onSaved: (value) {
+                context[config.nameKey] = value;
+              },
+            ),
+            const Divid(),
+          ],
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () async {
-            if (!form.validate()) {
-              return;
-            }
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          if (!form.validate()) {
+            return;
+          }
 
-            item[config.nameKey] = context.get(config.nameKey, "");
-            item[config.mediaKey] = await context.model
-                ?.uploadMedia(context.get(config.mediaKey, ""))
-                .showIndicator(context);
-            await context.model?.saveDocument(item).showIndicator(context);
-            context.navigator.pop();
-          },
-          label: Text("Submit".localize()),
-          icon: const Icon(Icons.check),
-        ),
+          item[config.nameKey] = context.get(config.nameKey, "");
+          item[config.mediaKey] = await context.model
+              ?.uploadMedia(context.get(config.mediaKey, ""))
+              .showIndicator(context);
+          await context.model?.saveDocument(item).showIndicator(context);
+          context.navigator.pop();
+        },
+        label: Text("Submit".localize()),
+        icon: const Icon(Icons.check),
       ),
     );
   }

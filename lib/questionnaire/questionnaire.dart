@@ -57,6 +57,7 @@ class QuestionnaireModule extends PageModule {
     this.answerKey = Const.answer,
     Permission permission = const Permission(),
     this.questionnaireQuery,
+    this.designType = DesignType.modern,
     this.home,
     this.edit,
     this.view,
@@ -102,6 +103,9 @@ class QuestionnaireModule extends PageModule {
   final Widget? answerView;
   final Widget? answerDetail;
   final Widget? questionEdit;
+
+  /// デザインタイプ。
+  final DesignType designType;
 
   /// ルートのパス。
   final String routePath;
@@ -176,56 +180,53 @@ class QuestionnaireModuleHome extends PageHookWidget {
       return e;
     });
     final user = useUserDocumentModel(config.userPath);
+    final controller = useNavigatorController(
+      "${config.routePath}/${questionWithAnswer.firstOrNull.get(Const.uid, "empty")}",
+    );
 
-    return Scaffold(
-      appBar: PlatformAppBar(
+    return UIScaffold(
+      designType: config.designType,
+      loadingFutures: [
+        question.future,
+        user.future,
+      ],
+      appBar: UIAppBar(
         title: Text(config.title ?? "Questionnaire".localize()),
       ),
-      body: PlatformAppLayout(
-        futures: [
-          question.future,
-          user.future,
-        ],
-        initialPath:
-            "${config.routePath}/${questionWithAnswer.firstOrNull.get(Const.uid, "empty")}",
-        builder: (context, isMobile, controller, routeId) {
-          return ListBuilder<DynamicMap>(
-            source: questionWithAnswer.toList(),
-            builder: (context, item) {
-              return [
-                ListItem(
-                  selected: routeId == item.get(Const.uid, ""),
-                  selectedColor: context.theme.textColorOnPrimary,
-                  iconColor: Colors.green,
-                  selectedTileColor:
-                      context.theme.primaryColor.withOpacity(0.8),
-                  disabledTapOnSelected: true,
-                  title: Text(item.get(config.nameKey, "")),
-                  subtitle: Text(
-                    DateTime.fromMillisecondsSinceEpoch(
-                      item.get(
-                          config.createdTimeKey, now.millisecondsSinceEpoch),
-                    ).format("yyyy/MM/dd HH:mm"),
-                  ),
-                  onTap: () {
-                    if (isMobile) {
-                      context.navigator.pushNamed(
-                        "${config.routePath}/${item.get(Const.uid, "")}",
-                        arguments: RouteQuery.fullscreen,
-                      );
-                    } else {
-                      controller?.navigator.pushReplacementNamed(
-                        "${config.routePath}/${item.get(Const.uid, "")}",
-                      );
-                    }
-                  },
-                  trailing: item.get("answered", false)
-                      ? const Icon(Icons.check_circle)
-                      : null,
-                ),
-              ];
-            },
-          );
+      body: UIListBuilder<DynamicMap>(
+        source: questionWithAnswer.toList(),
+        builder: (context, item) {
+          return [
+            ListItem(
+              selected:
+                  controller.route?.name.last() == item.get(Const.uid, ""),
+              selectedColor: context.theme.textColorOnPrimary,
+              iconColor: Colors.green,
+              selectedTileColor: context.theme.primaryColor.withOpacity(0.8),
+              disabledTapOnSelected: true,
+              title: Text(item.get(config.nameKey, "")),
+              subtitle: Text(
+                DateTime.fromMillisecondsSinceEpoch(
+                  item.get(config.createdTimeKey, now.millisecondsSinceEpoch),
+                ).format("yyyy/MM/dd HH:mm"),
+              ),
+              onTap: () {
+                if (context.isMobile) {
+                  context.navigator.pushNamed(
+                    "${config.routePath}/${item.get(Const.uid, "")}",
+                    arguments: RouteQuery.fullscreen,
+                  );
+                } else {
+                  controller.navigator.pushReplacementNamed(
+                    "${config.routePath}/${item.get(Const.uid, "")}",
+                  );
+                }
+              },
+              trailing: item.get("answered", false)
+                  ? const Icon(Icons.check_circle)
+                  : null,
+            ),
+          ];
         },
       ),
       floatingActionButton:
@@ -293,8 +294,9 @@ class QuestionnaireAanswerView extends PageHookWidget {
     final text = question.get(config.textKey, "");
     final endDate = question.get(config.endTimeKey, 0);
 
-    return Scaffold(
-      appBar: PlatformInlineAppBar(
+    return UIScaffold(
+      designType: config.designType,
+      appBar: UIAppBar(
         title: Text(name),
         actions: [
           IconButton(
@@ -335,56 +337,54 @@ class QuestionnaireAanswerView extends PageHookWidget {
             ),
           );
         }
-        return PlatformScrollbar(
-          child: ListBuilder<DynamicMap>(
-            source: answersWithUsers.toList(),
-            top: [
-              if (text.isNotEmpty)
-                MessageBox(
-                  text,
-                  color: context.theme.dividerColor,
-                  margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+        return UIListBuilder<DynamicMap>(
+          source: answersWithUsers.toList(),
+          top: [
+            if (text.isNotEmpty)
+              MessageBox(
+                text,
+                color: context.theme.dividerColor,
+                margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+              ),
+            if (endDate > 0)
+              MessageBox(
+                "Deadline %s".localize().format([
+                  DateTime.fromMillisecondsSinceEpoch(endDate)
+                      .format("yyyy/MM/dd")
+                ]),
+                color: context.theme.errorColor,
+                margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+              ),
+            const Space.height(10),
+            if (answers.isEmpty)
+              MessageBox(
+                "回答がまだありません。",
+                color: context.theme.dividerColor,
+                margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+              )
+            else
+              DividHeadline(
+                "List of %s answers".localize().format([name]),
+              ),
+          ],
+          builder: (context, item) {
+            return [
+              ListItem(
+                title: Text(item.get("${Const.user}${config.nameKey}", "")),
+                subtitle: Text(
+                  DateTime.fromMillisecondsSinceEpoch(item.get(
+                          config.createdTimeKey, now.millisecondsSinceEpoch))
+                      .format("yyyy/MM/dd HH:mm"),
                 ),
-              if (endDate > 0)
-                MessageBox(
-                  "Deadline %s".localize().format([
-                    DateTime.fromMillisecondsSinceEpoch(endDate)
-                        .format("yyyy/MM/dd")
-                  ]),
-                  color: context.theme.errorColor,
-                  margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                ),
-              const Space.height(10),
-              if (answers.isEmpty)
-                MessageBox(
-                  "回答がまだありません。",
-                  color: context.theme.dividerColor,
-                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                )
-              else
-                DividHeadline(
-                  "List of %s answers".localize().format([name]),
-                ),
-            ],
-            builder: (context, item) {
-              return [
-                ListItem(
-                  title: Text(item.get("${Const.user}${config.nameKey}", "")),
-                  subtitle: Text(
-                    DateTime.fromMillisecondsSinceEpoch(item.get(
-                            config.createdTimeKey, now.millisecondsSinceEpoch))
-                        .format("yyyy/MM/dd HH:mm"),
-                  ),
-                  onTap: () {
-                    context.rootNavigator.pushNamed(
-                      "/${config.routePath}/${context.get("question_id", "")}/answer/${item.get(Const.uid, "")}",
-                      arguments: RouteQuery.fullscreenOrModal,
-                    );
-                  },
-                ),
-              ];
-            },
-          ),
+                onTap: () {
+                  context.rootNavigator.pushNamed(
+                    "/${config.routePath}/${context.get("question_id", "")}/answer/${item.get(Const.uid, "")}",
+                    arguments: RouteQuery.fullscreenOrModal,
+                  );
+                },
+              ),
+            ];
+          },
         );
       }(),
     );
@@ -406,34 +406,29 @@ class QuestionnaireModuleAanswerDetail extends PageHookWidget {
     final user =
         useDocumentModel("${config.userPath}/${answer.get(Const.user, "")}");
 
-    return PlatformModalView(
-      widthRatio: 0.8,
-      heightRatio: 0.8,
-      child: Scaffold(
-        appBar: PlatformInlineAppBar(
-          title: Text(
-            "%s answers".localize().format([user.get(config.nameKey, "")]),
-          ),
+    return UIScaffold(
+      designType: config.designType,
+      appBar: UIAppBar(
+        title: Text(
+          "%s answers".localize().format([user.get(config.nameKey, "")]),
         ),
-        body: PlatformScrollbar(
-          child: ListBuilder<DynamicDocumentModel>(
-            padding: const EdgeInsets.only(top: 12),
-            source: questions,
-            builder: (contex, item) {
-              i++;
-              return [
-                QuestionnaireModuleListTile(
-                  config,
-                  index: i,
-                  question: item,
-                  answer: answer,
-                  canEdit: true,
-                  onlyView: true,
-                ),
-              ];
-            },
-          ),
-        ),
+      ),
+      body: UIListBuilder<DynamicDocumentModel>(
+        padding: const EdgeInsets.only(top: 12),
+        source: questions,
+        builder: (contex, item) {
+          i++;
+          return [
+            QuestionnaireModuleListTile(
+              config,
+              index: i,
+              question: item,
+              answer: answer,
+              canEdit: true,
+              onlyView: true,
+            ),
+          ];
+        },
       ),
     );
   }
@@ -460,95 +455,92 @@ class QuestionnaireModuleQuestionView extends PageHookWidget {
     final endDate = question.get(config.endTimeKey, 0);
     final canEdit = config.permission.canEdit(user.get(config.roleKey, ""));
 
-    return PlatformModalView(
-      widthRatio: 0.8,
-      heightRatio: 0.8,
-      child: Scaffold(
-        appBar: PlatformInlineAppBar(
-          title: Text(name),
-          actions: [
-            if (canEdit && !context.isMobileOrModal)
-              IconButton(
-                onPressed: () {
-                  context.rootNavigator.pushNamed(
+    return UIScaffold(
+      designType: config.designType,
+      appBar: UIAppBar(
+        title: Text(name),
+        actions: [
+          if (canEdit && !context.isMobileOrModal)
+            IconButton(
+              onPressed: () {
+                context.rootNavigator.pushNamed(
+                  "/${config.routePath}/${context.get("question_id", "")}/question/edit",
+                  arguments: RouteQuery.fullscreenOrModal,
+                );
+              },
+              icon: const Icon(Icons.add),
+            ),
+        ],
+      ),
+      body: questions.isEmpty
+          ? Padding(
+              padding: const EdgeInsets.all(16),
+              child: Center(
+                child: Text(
+                  canEdit
+                      ? "設問は空です。新規追加ボタンから新しく設問を設定してください。"
+                      : "まだ設問が設定されていません。設問が設定されるまでしばらくお待ち下さい。",
+                ),
+              ),
+            )
+          : FormBuilder(
+              key: form.key,
+              padding: const EdgeInsets.all(0),
+              children: [
+                if (text.isNotEmpty)
+                  MessageBox(
+                    text,
+                    color: context.theme.dividerColor,
+                    margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                  ),
+                if (answer.isNotEmpty)
+                  MessageBox(
+                    "Already responding",
+                    icon: Icons.check_circle,
+                    color: context.theme.primaryColor,
+                    margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                  )
+                else if (endDate > 0)
+                  MessageBox(
+                    "Deadline %s".localize().format([
+                      DateTime.fromMillisecondsSinceEpoch(endDate)
+                          .format("yyyy/MM/dd")
+                    ]),
+                    color: context.theme.errorColor,
+                    margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                  ),
+                const Space.height(10),
+                ...questions.mapListenable((item) {
+                  i++;
+                  return QuestionnaireModuleListTile(
+                    config,
+                    index: i,
+                    question: item,
+                    answer: answer,
+                    canEdit: canEdit,
+                    onlyView: false,
+                  );
+                }),
+                const Divid(),
+                const Space.height(100),
+              ],
+            ),
+      floatingActionButton: !canEdit || context.isMobileOrModal
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                if (canEdit) {
+                  context.navigator.pushNamed(
                     "/${config.routePath}/${context.get("question_id", "")}/question/edit",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
-                },
-                icon: const Icon(Icons.add),
+                } else {}
+              },
+              icon: Icon(canEdit ? Icons.add : Icons.check),
+              label: Text(
+                canEdit ? "Add".localize() : "Submit".localize(),
               ),
-          ],
-        ),
-        body: questions.isEmpty
-            ? Padding(
-                padding: const EdgeInsets.all(16),
-                child: Center(
-                  child: Text(
-                    canEdit
-                        ? "設問は空です。新規追加ボタンから新しく設問を設定してください。"
-                        : "まだ設問が設定されていません。設問が設定されるまでしばらくお待ち下さい。",
-                  ),
-                ),
-              )
-            : FormBuilder(
-                key: form.key,
-                padding: const EdgeInsets.all(0),
-                children: [
-                  if (text.isNotEmpty)
-                    MessageBox(
-                      text,
-                      color: context.theme.dividerColor,
-                      margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                    ),
-                  if (answer.isNotEmpty)
-                    MessageBox(
-                      "Already responding",
-                      icon: Icons.check_circle,
-                      color: context.theme.primaryColor,
-                      margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                    )
-                  else if (endDate > 0)
-                    MessageBox(
-                      "Deadline %s".localize().format([
-                        DateTime.fromMillisecondsSinceEpoch(endDate)
-                            .format("yyyy/MM/dd")
-                      ]),
-                      color: context.theme.errorColor,
-                      margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                    ),
-                  const Space.height(10),
-                  ...questions.mapListenable((item) {
-                    i++;
-                    return QuestionnaireModuleListTile(
-                      config,
-                      index: i,
-                      question: item,
-                      answer: answer,
-                      canEdit: canEdit,
-                      onlyView: false,
-                    );
-                  }),
-                  const Divid(),
-                  const Space.height(100),
-                ],
-              ),
-        floatingActionButton: !canEdit || context.isMobileOrModal
-            ? FloatingActionButton.extended(
-                onPressed: () {
-                  if (canEdit) {
-                    context.navigator.pushNamed(
-                      "/${config.routePath}/${context.get("question_id", "")}/question/edit",
-                      arguments: RouteQuery.fullscreenOrModal,
-                    );
-                  } else {}
-                },
-                icon: Icon(canEdit ? Icons.add : Icons.check),
-                label: Text(
-                  canEdit ? "Add".localize() : "Submit".localize(),
-                ),
-              )
-            : null,
-      ),
+            )
+          : null,
     );
   }
 }
@@ -710,156 +702,150 @@ class QuestionnaireModuleQuestionEdit extends PageHookWidget {
     final selectionTextEditingControllers =
         useMemoizedTextEditingControllerMap(selection);
 
-    return PlatformModalView(
-      widthRatio: 0.8,
-      heightRatio: 0.8,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(form.select(
-            "Editing %s".localize().format([name]),
-            "A new entry".localize(),
-          )),
-          actions: [
-            if (form.exists &&
-                config.permission.canDelete(user.get(config.roleKey, "")))
-              IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: () {
-                  UIConfirm.show(
-                    context,
-                    title: "Confirmation".localize(),
-                    text:
-                        "You can't undo it after deleting it. May I delete it?"
-                            .localize(),
-                    submitText: "Yes".localize(),
-                    cacnelText: "No".localize(),
-                    onSubmit: () async {
-                      await context.model
-                          ?.deleteDocument(item)
-                          .showIndicator(context);
-                      context.navigator.pop();
+    return UIScaffold(
+      designType: config.designType,
+      appBar: UIAppBar(
+        title: Text(form.select(
+          "Editing %s".localize().format([name]),
+          "A new entry".localize(),
+        )),
+        actions: [
+          if (form.exists &&
+              config.permission.canDelete(user.get(config.roleKey, "")))
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () {
+                UIConfirm.show(
+                  context,
+                  title: "Confirmation".localize(),
+                  text: "You can't undo it after deleting it. May I delete it?"
+                      .localize(),
+                  submitText: "Yes".localize(),
+                  cacnelText: "No".localize(),
+                  onSubmit: () async {
+                    await context.model
+                        ?.deleteDocument(item)
+                        .showIndicator(context);
+                    context.navigator.pop();
+                  },
+                );
+              },
+            ),
+        ],
+      ),
+      body: FormBuilder(
+        key: form.key,
+        padding: const EdgeInsets.all(0),
+        children: [
+          const Space.height(16),
+          DividHeadline("Question".localize()),
+          FormItemTextField(
+            dense: true,
+            hintText: "Input %s".localize().format(["Question".localize()]),
+            errorText: "No input %s".localize().format(["Question".localize()]),
+            keyboardType: TextInputType.multiline,
+            controller: useMemoizedTextEditingController(name),
+            minLines: 3,
+            maxLines: 5,
+            onSaved: (value) {
+              context[config.nameKey] = value;
+            },
+          ),
+          DividHeadline("Required".localize()),
+          FormItemDropdownField(
+            dense: true,
+            items: {
+              "yes": "Required".localize(),
+              "no": "Optional".localize(),
+            },
+            controller:
+                useMemoizedTextEditingController(required ? "yes" : "no"),
+            onSaved: (value) {
+              context[config.requiredKey] = value == "yes";
+            },
+          ),
+          DividHeadline("Type".localize()),
+          FormItemDropdownField(
+            dense: true,
+            items: {
+              ..._QuenstionFormType.values.toMap(
+                key: (e) => (e as _QuenstionFormType).text,
+                value: (e) => (e as _QuenstionFormType).name,
+              )
+            },
+            controller: useMemoizedTextEditingController(type),
+            onChanged: (value) {
+              view.value = value ?? Const.text;
+            },
+            onSaved: (value) {
+              context[config.typeKey] = value;
+            },
+          ),
+          if (view.value == _QuenstionFormType.selection.text) ...[
+            DividHeadline("Choices".localize()),
+            AppendableBuilder(
+              initialValues: selection.keys.cast<String>(),
+              builder: (context, id, onAdd, onRemove) {
+                return AppendableBuilderItem(
+                  onPressed: () {
+                    onRemove(id);
+                  },
+                  child: FormItemTextField(
+                    dense: true,
+                    hintText:
+                        "Input %s".localize().format(["Choices".localize()]),
+                    errorText:
+                        "No input %s".localize().format(["Choices".localize()]),
+                    keyboardType: TextInputType.text,
+                    controller: selectionTextEditingControllers[id],
+                    onSaved: (value) {
+                      final select = context.get(config.selectionKey, {});
+                      select[id] = value;
+                      context[config.selectionKey] = select;
                     },
-                  );
-                },
-              ),
-          ],
-        ),
-        body: FormBuilder(
-          key: form.key,
-          padding: const EdgeInsets.all(0),
-          children: [
-            const Space.height(16),
-            DividHeadline("Question".localize()),
-            FormItemTextField(
-              dense: true,
-              hintText: "Input %s".localize().format(["Question".localize()]),
-              errorText:
-                  "No input %s".localize().format(["Question".localize()]),
-              keyboardType: TextInputType.multiline,
-              controller: useMemoizedTextEditingController(name),
-              minLines: 3,
-              maxLines: 5,
-              onSaved: (value) {
-                context[config.nameKey] = value;
+                  ),
+                );
               },
-            ),
-            DividHeadline("Required".localize()),
-            FormItemDropdownField(
-              dense: true,
-              items: {
-                "yes": "Required".localize(),
-                "no": "Optional".localize(),
-              },
-              controller:
-                  useMemoizedTextEditingController(required ? "yes" : "no"),
-              onSaved: (value) {
-                context[config.requiredKey] = value == "yes";
-              },
-            ),
-            DividHeadline("Type".localize()),
-            FormItemDropdownField(
-              dense: true,
-              items: {
-                ..._QuenstionFormType.values.toMap(
-                  key: (e) => (e as _QuenstionFormType).text,
-                  value: (e) => (e as _QuenstionFormType).name,
-                )
-              },
-              controller: useMemoizedTextEditingController(type),
-              onChanged: (value) {
-                view.value = value ?? Const.text;
-              },
-              onSaved: (value) {
-                context[config.typeKey] = value;
-              },
-            ),
-            if (view.value == _QuenstionFormType.selection.text) ...[
-              DividHeadline("Choices".localize()),
-              AppendableBuilder(
-                initialValues: selection.keys.cast<String>(),
-                builder: (context, id, onAdd, onRemove) {
-                  return AppendableBuilderItem(
-                    onPressed: () {
-                      onRemove(id);
-                    },
-                    child: FormItemTextField(
-                      dense: true,
-                      hintText:
-                          "Input %s".localize().format(["Choices".localize()]),
-                      errorText: "No input %s"
-                          .localize()
-                          .format(["Choices".localize()]),
-                      keyboardType: TextInputType.text,
-                      controller: selectionTextEditingControllers[id],
-                      onSaved: (value) {
-                        final select = context.get(config.selectionKey, {});
-                        select[id] = value;
-                        context[config.selectionKey] = select;
+              child: (context, children, onAdd, onRemove) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ...children,
+                    IconButton(
+                      icon: const Icon(
+                        Icons.add,
+                      ),
+                      onPressed: () {
+                        onAdd.call();
                       },
                     ),
-                  );
-                },
-                child: (context, children, onAdd, onRemove) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ...children,
-                      IconButton(
-                        icon: const Icon(
-                          Icons.add,
-                        ),
-                        onPressed: () {
-                          onAdd.call();
-                        },
-                      ),
-                    ],
-                  );
-                },
-              )
-            ],
-            const Divid(),
-            const Space.height(100),
+                  ],
+                );
+              },
+            )
           ],
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () async {
-            if (!form.validate()) {
-              return;
-            }
+          const Divid(),
+          const Space.height(100),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          if (!form.validate()) {
+            return;
+          }
 
-            final type = context.get(config.typeKey, Const.text);
-            item[config.nameKey] = context.get(config.nameKey, "");
-            item[config.requiredKey] = context.get(config.requiredKey, false);
-            item[config.typeKey] = context.get(config.typeKey, Const.text);
-            if (type == _QuenstionFormType.selection.text) {
-              item[config.selectionKey] = context.get(config.selectionKey, {});
-            }
-            await context.model?.saveDocument(item).showIndicator(context);
-            context.navigator.pop();
-          },
-          icon: const Icon(Icons.check),
-          label: Text("Submit".localize()),
-        ),
+          final type = context.get(config.typeKey, Const.text);
+          item[config.nameKey] = context.get(config.nameKey, "");
+          item[config.requiredKey] = context.get(config.requiredKey, false);
+          item[config.typeKey] = context.get(config.typeKey, Const.text);
+          if (type == _QuenstionFormType.selection.text) {
+            item[config.selectionKey] = context.get(config.selectionKey, {});
+          }
+          await context.model?.saveDocument(item).showIndicator(context);
+          context.navigator.pop();
+        },
+        icon: const Icon(Icons.check),
+        label: Text("Submit".localize()),
       ),
     );
   }
@@ -878,105 +864,97 @@ class QuestionnaireModuleEdit extends PageHookWidget {
     final text = item.get(config.textKey, "");
     final endTime = item.get(config.endTimeKey, 0);
 
-    return PlatformModalView(
-      widthRatio: 0.8,
-      heightRatio: 0.8,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(form.select(
-            "Editing %s".localize().format([name]),
-            "A new entry".localize(),
-          )),
-          actions: [
-            if (form.exists &&
-                config.permission.canDelete(user.get(config.roleKey, "")))
-              IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: () {
-                  UIConfirm.show(
-                    context,
-                    title: "Confirmation".localize(),
-                    text:
-                        "You can't undo it after deleting it. May I delete it?"
-                            .localize(),
-                    submitText: "Yes".localize(),
-                    cacnelText: "No".localize(),
-                    onSubmit: () async {
-                      await context.model
-                          ?.deleteDocument(item)
-                          .showIndicator(context);
-                      context.navigator.pop();
-                      context.navigator.pop();
-                    },
-                  );
-                },
-              ),
-          ],
-        ),
-        body: FormBuilder(
-          padding: const EdgeInsets.all(0),
-          key: form.key,
-          children: [
-            const Space.height(20),
-            DividHeadline("Title".localize()),
-            FormItemTextField(
-              dense: true,
-              hintText: "Input %s".localize().format(["Title".localize()]),
-              errorText: "No input %s".localize().format(["Title".localize()]),
-              controller:
-                  useMemoizedTextEditingController(form.select(name, "")),
-              onSaved: (value) {
-                context[config.nameKey] = value;
+    return UIScaffold(
+      designType: config.designType,
+      appBar: UIAppBar(
+        title: Text(form.select(
+          "Editing %s".localize().format([name]),
+          "A new entry".localize(),
+        )),
+        actions: [
+          if (form.exists &&
+              config.permission.canDelete(user.get(config.roleKey, "")))
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () {
+                UIConfirm.show(
+                  context,
+                  title: "Confirmation".localize(),
+                  text: "You can't undo it after deleting it. May I delete it?"
+                      .localize(),
+                  submitText: "Yes".localize(),
+                  cacnelText: "No".localize(),
+                  onSubmit: () async {
+                    await context.model
+                        ?.deleteDocument(item)
+                        .showIndicator(context);
+                    context.navigator.pop();
+                    context.navigator.pop();
+                  },
+                );
               },
             ),
-            DividHeadline("Description".localize()),
-            FormItemTextField(
-              dense: true,
-              keyboardType: TextInputType.multiline,
-              minLines: 5,
-              maxLines: 5,
-              hintText:
-                  "Input %s".localize().format(["Description".localize()]),
-              allowEmpty: true,
-              controller:
-                  useMemoizedTextEditingController(form.select(text, "")),
-              onSaved: (value) {
-                context[config.textKey] = value;
-              },
+        ],
+      ),
+      body: FormBuilder(
+        padding: const EdgeInsets.all(0),
+        key: form.key,
+        children: [
+          const Space.height(20),
+          DividHeadline("Title".localize()),
+          FormItemTextField(
+            dense: true,
+            hintText: "Input %s".localize().format(["Title".localize()]),
+            errorText: "No input %s".localize().format(["Title".localize()]),
+            controller: useMemoizedTextEditingController(form.select(name, "")),
+            onSaved: (value) {
+              context[config.nameKey] = value;
+            },
+          ),
+          DividHeadline("Description".localize()),
+          FormItemTextField(
+            dense: true,
+            keyboardType: TextInputType.multiline,
+            minLines: 5,
+            maxLines: 5,
+            hintText: "Input %s".localize().format(["Description".localize()]),
+            allowEmpty: true,
+            controller: useMemoizedTextEditingController(form.select(text, "")),
+            onSaved: (value) {
+              context[config.textKey] = value;
+            },
+          ),
+          DividHeadline("End date".localize()),
+          FormItemDateTimeField(
+            dense: true,
+            allowEmpty: true,
+            hintText: "Input %s".localize().format(["End date".localize()]),
+            errorText: "No input %s".localize().format(["End date".localize()]),
+            controller: useMemoizedTextEditingController(
+              form.select(FormItemDateTimeField.formatDate(endTime), ""),
             ),
-            DividHeadline("End date".localize()),
-            FormItemDateTimeField(
-              dense: true,
-              allowEmpty: true,
-              hintText: "Input %s".localize().format(["End date".localize()]),
-              errorText:
-                  "No input %s".localize().format(["End date".localize()]),
-              controller: useMemoizedTextEditingController(
-                form.select(FormItemDateTimeField.formatDate(endTime), ""),
-              ),
-              type: FormItemDateTimeFieldPickerType.date,
-              onSaved: (value) {
-                context[config.endTimeKey] = value?.millisecondsSinceEpoch ?? 0;
-              },
-            ),
-            const Divid(),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () async {
-            if (!form.validate()) {
-              return;
-            }
+            type: FormItemDateTimeFieldPickerType.date,
+            onSaved: (value) {
+              context[config.endTimeKey] = value?.millisecondsSinceEpoch ?? 0;
+            },
+          ),
+          const Divid(),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          if (!form.validate()) {
+            return;
+          }
 
-            item[config.nameKey] = context.get(config.nameKey, "");
-            item[config.textKey] = context.get(config.textKey, "");
-            item[config.endTimeKey] = context.get(config.endTimeKey, 0);
-            await context.model?.saveDocument(item).showIndicator(context);
-            context.navigator.pop();
-          },
-          label: Text("Submit".localize()),
-          icon: const Icon(Icons.check),
-        ),
+          item[config.nameKey] = context.get(config.nameKey, "");
+          item[config.textKey] = context.get(config.textKey, "");
+          item[config.endTimeKey] = context.get(config.endTimeKey, 0);
+          await context.model?.saveDocument(item).showIndicator(context);
+          context.navigator.pop();
+        },
+        label: Text("Submit".localize()),
+        icon: const Icon(Icons.check),
       ),
     );
   }

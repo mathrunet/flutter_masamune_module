@@ -36,4 +36,9 @@ class TabConfig {
       if (value != null) "value": value,
     };
   }
+
+  @override
+  String toString() {
+    return label;
+  }
 }

@@ -6,6 +6,7 @@ import 'package:flutter_quill/widgets/default_styles.dart';
 import 'package:flutter_quill/widgets/editor.dart';
 import 'package:flutter_quill/widgets/toolbar.dart';
 import 'package:masamune/masamune.dart';
+import 'package:masamune/ui/ui.dart';
 import 'package:masamune_module/masamune_module.dart';
 import 'package:tuple/tuple.dart';
 
@@ -32,6 +33,7 @@ class PostModule extends PageModule {
     this.home,
     this.edit,
     this.view,
+    this.designType = DesignType.modern,
   }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
@@ -54,6 +56,9 @@ class PostModule extends PageModule {
   final Widget? home;
   final Widget? edit;
   final Widget? view;
+
+  /// デザインタイプ。
+  final DesignType designType;
 
   /// ルートのパス。
   final String routePath;
@@ -111,52 +116,49 @@ class PostModuleHome extends PageHookWidget {
       apply: (o, a) => o.merge(a, convertKeys: (key) => "${Const.user}$key"),
       orElse: (o) => o,
     );
+    final controller = useNavigatorController(
+      "/${config.routePath}/${postWithUser.firstOrNull.get(Const.uid, "empty")}",
+    );
 
-    return Scaffold(
-      appBar: PlatformAppBar(
+    return UIScaffold(
+      designType: config.designType,
+      loadingFutures: [
+        user.future,
+        post.future,
+        users.future,
+      ],
+      inlineNavigatorControllerOnWeb: controller,
+      appBar: UIAppBar(
         title: Text(config.title ?? "Post".localize()),
       ),
-      body: PlatformAppLayout(
-        futures: [
-          user.future,
-          post.future,
-          users.future,
-        ],
-        initialPath:
-            "/${config.routePath}/${postWithUser.firstOrNull.get(Const.uid, "empty")}",
-        builder: (context, isMobile, controller, routeId) {
-          return ListBuilder<DynamicMap>(
-            source: postWithUser.toList(),
-            builder: (context, item) {
-              return [
-                ListItem(
-                  selected: routeId == item.get(Const.uid, ""),
-                  selectedColor: context.theme.textColorOnPrimary,
-                  selectedTileColor:
-                      context.theme.primaryColor.withOpacity(0.8),
-                  title: Text(item.get(config.nameKey, "")),
-                  subtitle: Text(
-                    DateTime.fromMillisecondsSinceEpoch(
-                      item.get(
-                          config.createdTimeKey, now.millisecondsSinceEpoch),
-                    ).format("yyyy/MM/dd HH:mm"),
-                  ),
-                  onTap: () {
-                    if (isMobile) {
-                      context.navigator.pushNamed(
-                        "/${config.routePath}/${item.get(Const.uid, "")}",
-                        arguments: RouteQuery.fullscreen,
-                      );
-                    } else {
-                      controller?.navigator.pushReplacementNamed(
-                        "/${config.routePath}/${item.get(Const.uid, "")}",
-                      );
-                    }
-                  },
-                ),
-              ];
-            },
-          );
+      body: UIListBuilder<DynamicMap>(
+        source: postWithUser.toList(),
+        builder: (context, item) {
+          return [
+            ListItem(
+              selected: controller.route?.name.last() == item.get(Const.uid, ""),
+              selectedColor: context.theme.textColorOnPrimary,
+              selectedTileColor: context.theme.primaryColor.withOpacity(0.8),
+              title: Text(item.get(config.nameKey, "")),
+              subtitle: Text(
+                DateTime.fromMillisecondsSinceEpoch(
+                  item.get(config.createdTimeKey, now.millisecondsSinceEpoch),
+                ).format("yyyy/MM/dd HH:mm"),
+              ),
+              onTap: () {
+                if (context.isMobile) {
+                  context.navigator.pushNamed(
+                    "/${config.routePath}/${item.get(Const.uid, "")}",
+                    arguments: RouteQuery.fullscreen,
+                  );
+                } else {
+                  controller.navigator.pushReplacementNamed(
+                    "/${config.routePath}/${item.get(Const.uid, "")}",
+                  );
+                }
+              },
+            ),
+          ];
         },
       ),
       floatingActionButton:
@@ -195,7 +197,7 @@ class PostModuleView extends PageHookWidget {
         ? PostEditingType.planeText
         : config.editingType;
 
-    final appBar = PlatformInlineAppBar(
+    final appBar = UIAppBar(
       title: Text(name),
       actions: [
         if (config.permission.canEdit(user.get(config.roleKey, "")))
@@ -223,91 +225,73 @@ class PostModuleView extends PageHookWidget {
           [text],
         );
 
-        final child = Scaffold(
+        final child = UIScaffold(
+      designType: config.designType,
           appBar: appBar,
-          body: PlatformScrollbar(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              children: [
-                Text(
-                  DateTime.fromMillisecondsSinceEpoch(createdTime)
-                      .format("yyyy/MM/dd HH:mm"),
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                    color: context.theme.disabledColor,
-                    fontSize: 13,
-                  ),
+          body: UIListView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            children: [
+              Text(
+                DateTime.fromMillisecondsSinceEpoch(createdTime)
+                    .format("yyyy/MM/dd HH:mm"),
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  color: context.theme.disabledColor,
+                  fontSize: 13,
                 ),
-                const Space.height(12),
-                QuillEditor(
-                  scrollController: ScrollController(),
-                  scrollable: false,
-                  focusNode: useFocusNode(),
-                  autoFocus: false,
-                  controller: controller,
-                  placeholder: "Text".localize(),
-                  readOnly: true,
-                  expands: false,
-                  padding: EdgeInsets.zero,
-                  customStyles: DefaultStyles(
-                    placeHolder: DefaultTextBlockStyle(
-                        TextStyle(
-                            color: context.theme.disabledColor, fontSize: 16),
-                        const Tuple2(16, 0),
-                        const Tuple2(0, 0),
-                        null),
-                  ),
+              ),
+              const Space.height(12),
+              QuillEditor(
+                scrollController: ScrollController(),
+                scrollable: false,
+                focusNode: useFocusNode(),
+                autoFocus: false,
+                controller: controller,
+                placeholder: "Text".localize(),
+                readOnly: true,
+                expands: false,
+                padding: EdgeInsets.zero,
+                customStyles: DefaultStyles(
+                  placeHolder: DefaultTextBlockStyle(
+                      TextStyle(
+                          color: context.theme.disabledColor, fontSize: 16),
+                      const Tuple2(16, 0),
+                      const Tuple2(0, 0),
+                      null),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
-        if (context.isMobile) {
-          return child;
-        } else {
-          return PlatformModalView(
-            widthRatio: 0.8,
-            heightRatio: 0.8,
-            child: child,
-          );
-        }
+        return child;
       default:
-        final child = Scaffold(
+        final child = UIScaffold(
+      designType: config.designType,
           appBar: appBar,
-          body: PlatformScrollbar(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              children: [
-                Text(
-                  DateTime.fromMillisecondsSinceEpoch(createdTime)
-                      .format("yyyy/MM/dd HH:mm"),
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                    color: context.theme.disabledColor,
-                    fontSize: 13,
-                  ),
+          body: UIListView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            children: [
+              Text(
+                DateTime.fromMillisecondsSinceEpoch(createdTime)
+                    .format("yyyy/MM/dd HH:mm"),
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  color: context.theme.disabledColor,
+                  fontSize: 13,
                 ),
-                const Space.height(12),
-                UIMarkdown(
-                  text,
-                  fontSize: 16,
-                  onTapLink: (url) {
-                    context.open(url);
-                  },
-                )
-              ],
-            ),
+              ),
+              const Space.height(12),
+              UIMarkdown(
+                text,
+                fontSize: 16,
+                onTapLink: (url) {
+                  context.open(url);
+                },
+              )
+            ],
           ),
         );
-        if (context.isMobile) {
-          return child;
-        } else {
-          return PlatformModalView(
-            widthRatio: 0.8,
-            heightRatio: 0.8,
-            child: child,
-          );
-        }
+        return child;
     }
   }
 }
@@ -327,7 +311,7 @@ class PostModuleEdit extends PageHookWidget {
     final dateTime =
         item.get(config.createdTimeKey, now.millisecondsSinceEpoch);
 
-    final appBar = AppBar(
+    final appBar = UIAppBar(
       title: Text(form.select(
         "Editing %s".localize().format([name]),
         "A new entry".localize(),
@@ -373,187 +357,175 @@ class PostModuleEdit extends PageHookWidget {
           [text],
         );
 
-        return PlatformModalView(
-          widthRatio: 0.8,
-          heightRatio: 0.8,
-          child: Scaffold(
-            appBar: appBar,
-            body: PlatformScrollbar(
-              child: FormBuilder(
-                key: form.key,
-                padding: const EdgeInsets.all(0),
-                type: FormBuilderType.fixed,
-                children: [
-                  FormItemTextField(
-                    dense: true,
-                    hintText: "Title".localize(),
-                    errorText:
-                        "No input %s".localize().format(["Title".localize()]),
-                    subColor: context.theme.disabledColor,
-                    controller: useMemoizedTextEditingController(name),
-                    onSaved: (value) {
-                      context[config.nameKey] = value;
-                    },
-                  ),
-                  const Divid(),
-                  FormItemDateTimeField(
-                    dense: true,
-                    hintText: "Post time".localize(),
-                    errorText: "No input %s"
-                        .localize()
-                        .format(["Post time".localize()]),
-                    controller: useMemoizedTextEditingController(
-                        FormItemDateTimeField.formatDateTime(dateTime)),
-                    onSaved: (value) {
-                      context[config.createdTimeKey] =
-                          value?.millisecondsSinceEpoch ??
-                              now.millisecondsSinceEpoch;
-                    },
-                  ),
-                  const Divid(),
-                  QuillToolbar.basic(
+        return UIScaffold(
+      designType: config.designType,
+          appBar: appBar,
+          body: FormBuilder(
+              key: form.key,
+              padding: const EdgeInsets.all(0),
+              type: FormBuilderType.fixed,
+              children: [
+                FormItemTextField(
+                  dense: true,
+                  hintText: "Title".localize(),
+                  errorText:
+                      "No input %s".localize().format(["Title".localize()]),
+                  subColor: context.theme.disabledColor,
+                  controller: useMemoizedTextEditingController(name),
+                  onSaved: (value) {
+                    context[config.nameKey] = value;
+                  },
+                ),
+                const Divid(),
+                FormItemDateTimeField(
+                  dense: true,
+                  hintText: "Post time".localize(),
+                  errorText:
+                      "No input %s".localize().format(["Post time".localize()]),
+                  controller: useMemoizedTextEditingController(
+                      FormItemDateTimeField.formatDateTime(dateTime)),
+                  onSaved: (value) {
+                    context[config.createdTimeKey] =
+                        value?.millisecondsSinceEpoch ??
+                            now.millisecondsSinceEpoch;
+                  },
+                ),
+                const Divid(),
+                Theme(
+                  data: context.theme.copyWith(canvasColor: context.theme.scaffoldBackgroundColor),
+                  child:
+                QuillToolbar.basic(
+                  controller: controller,
+                  toolbarIconSize: 24,
+                  multiRowsDisplay: false,
+                  onImagePickCallback: (file) async {
+                    if (file.path.isEmpty || !file.existsSync()) {
+                      return "";
+                    }
+                    return await context.model!.uploadMedia(file.path);
+                  },
+                ),),
+                Divid(color: context.theme.dividerColor.withOpacity(0.25)),
+                Expanded(
+                  child: QuillEditor(
+                    scrollController: ScrollController(),
+                    scrollable: true,
+                    focusNode: useFocusNode(),
+                    autoFocus: false,
                     controller: controller,
-                    toolbarIconSize: 24,
-                    onImagePickCallback: (file) async {
-                      if (file.path.isEmpty || !file.existsSync()) {
-                        return "";
-                      }
-                      return await context.model!.uploadMedia(file.path);
-                    },
-                  ),
-                  Expanded(
-                    child: QuillEditor(
-                      scrollController: ScrollController(),
-                      scrollable: true,
-                      focusNode: useFocusNode(),
-                      autoFocus: false,
-                      controller: controller,
-                      placeholder: "Text".localize(),
-                      readOnly: false,
-                      expands: true,
-                      padding: const EdgeInsets.all(12),
-                      customStyles: DefaultStyles(
-                        placeHolder: DefaultTextBlockStyle(
-                            TextStyle(
-                                color: context.theme.disabledColor,
-                                fontSize: 16),
-                            const Tuple2(16, 0),
-                            const Tuple2(0, 0),
-                            null),
-                      ),
+                    placeholder: "Text".localize(),
+                    readOnly: false,
+                    expands: true,
+                    padding: const EdgeInsets.all(12),
+                    customStyles: DefaultStyles(
+                      placeHolder: DefaultTextBlockStyle(
+                          TextStyle(
+                              color: context.theme.disabledColor, fontSize: 16),
+                          const Tuple2(16, 0),
+                          const Tuple2(0, 0),
+                          null),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            floatingActionButton: FloatingActionButton.extended(
-              onPressed: () async {
-                if (!form.validate()) {
-                  return;
-                }
-                try {
-                  item[config.nameKey] = context.get(config.nameKey, "");
-                  item[config.textKey] =
-                      jsonEncode(controller.document.toDelta().toJson());
-                  item[config.createdTimeKey] = context.get(
-                      config.createdTimeKey, now.millisecondsSinceEpoch);
-                  await context.model
-                      ?.saveDocument(item)
-                      .showIndicator(context);
-                  context.navigator.pop();
-                } catch (e) {
-                  UIDialog.show(
-                    context,
-                    title: "Error".localize(),
-                    text: "Editing is not completed.".localize(),
-                  );
-                }
-              },
-              label: Text("Submit".localize()),
-              icon: const Icon(Icons.check),
-            ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () async {
+              if (!form.validate()) {
+                return;
+              }
+              try {
+                item[config.nameKey] = context.get(config.nameKey, "");
+                item[config.textKey] =
+                    jsonEncode(controller.document.toDelta().toJson());
+                item[config.createdTimeKey] = context.get(
+                    config.createdTimeKey, now.millisecondsSinceEpoch);
+                await context.model?.saveDocument(item).showIndicator(context);
+                context.navigator.pop();
+              } catch (e) {
+                UIDialog.show(
+                  context,
+                  title: "Error".localize(),
+                  text: "Editing is not completed.".localize(),
+                );
+              }
+            },
+            label: Text("Submit".localize()),
+            icon: const Icon(Icons.check),
           ),
         );
       default:
-        return PlatformModalView(
-          widthRatio: 0.8,
-          heightRatio: 0.8,
-          child: Scaffold(
-            appBar: appBar,
-            body: PlatformScrollbar(
-              child: FormBuilder(
-                key: form.key,
-                padding: const EdgeInsets.all(0),
-                type: FormBuilderType.fixed,
-                children: [
-                  FormItemTextField(
+        return UIScaffold(
+          designType: config.designType,
+          appBar: appBar,
+          body: FormBuilder(
+              key: form.key,
+              padding: const EdgeInsets.all(0),
+              type: FormBuilderType.fixed,
+              children: [
+                FormItemTextField(
+                  dense: true,
+                  hintText: "Title".localize(),
+                  errorText: "Input %s".localize().format(["Title".localize()]),
+                  subColor: context.theme.disabledColor,
+                  controller: useMemoizedTextEditingController(name),
+                  onSaved: (value) {
+                    context[config.nameKey] = value;
+                  },
+                ),
+                const Divid(),
+                FormItemDateTimeField(
+                  dense: true,
+                  hintText: "Post time".localize(),
+                  errorText:
+                      "Input %s".localize().format(["Post time".localize()]),
+                  controller: useMemoizedTextEditingController(
+                      FormItemDateTimeField.formatDateTime(dateTime)),
+                  onSaved: (value) {
+                    context[config.createdTimeKey] =
+                        value?.millisecondsSinceEpoch ??
+                            now.millisecondsSinceEpoch;
+                  },
+                ),
+                const Divid(),
+                Expanded(
+                  child: FormItemTextField(
                     dense: true,
-                    hintText: "Title".localize(),
-                    errorText:
-                        "Input %s".localize().format(["Title".localize()]),
+                    expands: true,
+                    textAlignVertical: TextAlignVertical.top,
+                    keyboardType: TextInputType.multiline,
+                    hintText: "Commenct".localize(),
                     subColor: context.theme.disabledColor,
-                    controller: useMemoizedTextEditingController(name),
+                    controller: useMemoizedTextEditingController(text),
                     onSaved: (value) {
-                      context[config.nameKey] = value;
+                      context[config.textKey] = value;
                     },
                   ),
-                  const Divid(),
-                  FormItemDateTimeField(
-                    dense: true,
-                    hintText: "Post time".localize(),
-                    errorText:
-                        "Input %s".localize().format(["Post time".localize()]),
-                    controller: useMemoizedTextEditingController(
-                        FormItemDateTimeField.formatDateTime(dateTime)),
-                    onSaved: (value) {
-                      context[config.createdTimeKey] =
-                          value?.millisecondsSinceEpoch ??
-                              now.millisecondsSinceEpoch;
-                    },
-                  ),
-                  const Divid(),
-                  Expanded(
-                    child: FormItemTextField(
-                      dense: true,
-                      expands: true,
-                      textAlignVertical: TextAlignVertical.top,
-                      keyboardType: TextInputType.multiline,
-                      hintText: "Commenct".localize(),
-                      subColor: context.theme.disabledColor,
-                      controller: useMemoizedTextEditingController(text),
-                      onSaved: (value) {
-                        context[config.textKey] = value;
-                      },
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            floatingActionButton: FloatingActionButton.extended(
-              onPressed: () async {
-                if (!form.validate()) {
-                  return;
-                }
-                try {
-                  item[config.nameKey] = context.get(config.nameKey, "");
-                  item[config.textKey] = context.get(config.textKey, "");
-                  item[config.createdTimeKey] = context.get(
-                      config.createdTimeKey, now.millisecondsSinceEpoch);
-                  await context.model
-                      ?.saveDocument(item)
-                      .showIndicator(context);
-                  context.navigator.pop();
-                } catch (e) {
-                  UIDialog.show(
-                    context,
-                    title: "Error".localize(),
-                    text: "Editing is not completed.".localize(),
-                  );
-                }
-              },
-              label: Text("Submit".localize()),
-              icon: const Icon(Icons.check),
-            ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () async {
+              if (!form.validate()) {
+                return;
+              }
+              try {
+                item[config.nameKey] = context.get(config.nameKey, "");
+                item[config.textKey] = context.get(config.textKey, "");
+                item[config.createdTimeKey] = context.get(
+                    config.createdTimeKey, now.millisecondsSinceEpoch);
+                await context.model?.saveDocument(item).showIndicator(context);
+                context.navigator.pop();
+              } catch (e) {
+                UIDialog.show(
+                  context,
+                  title: "Error".localize(),
+                  text: "Editing is not completed.".localize(),
+                );
+              }
+            },
+            label: Text("Submit".localize()),
+            icon: const Icon(Icons.check),
           ),
         );
     }

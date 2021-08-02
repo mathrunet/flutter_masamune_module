@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:masamune/masamune.dart';
+import 'package:masamune/ui/ui.dart';
 import 'package:masamune_module/masamune_module.dart';
 
 part 'login_and_register.m.dart';
@@ -43,6 +44,7 @@ class LoginModule extends PageModule {
     this.padding = const EdgeInsets.all(36),
     this.redirectTo = "/",
     this.registerForm = const [],
+    this.designType = DesignType.modern,
   }) : super(enabled: enabled, title: title);
 
   @override
@@ -65,6 +67,9 @@ class LoginModule extends PageModule {
     }
     return route;
   }
+  
+  /// デザインタイプ。
+  final DesignType designType;
 
   /// 権限。
   final List<RoleConfig> roles;
@@ -200,7 +205,8 @@ class Landing extends PageHookWidget {
 
     switch (config.layoutType) {
       case LoginLayoutType.fixed:
-        return Scaffold(
+        return UIScaffold(
+          designType: config.designType,
           body: Stack(
             fit: StackFit.expand,
             children: [
@@ -467,10 +473,11 @@ class Login extends PageHookWidget {
     final passFocus = useFocusNode();
     final showPassword = useState<bool>(false);
 
-    return Scaffold(
+    return UIScaffold(
+      designType: config.designType,
       backgroundColor: config.backgroundColor,
       extendBodyBehindAppBar: true,
-      appBar: AppBar(),
+      appBar: const UIAppBar(),
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -609,10 +616,11 @@ class Register extends PageHookWidget {
     final showPassword = useState<bool>(false);
     final showPasswordConfirm = useState<bool>(false);
 
-    return Scaffold(
+    return UIScaffold(
+      designType: config.designType,
       backgroundColor: config.backgroundColor,
       extendBodyBehindAppBar: true,
-      appBar: AppBar(),
+      appBar: const UIAppBar(),
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -810,10 +818,11 @@ class PasswordReset extends PageHookWidget {
     final form = useForm();
     final emailFocus = useAutoFocusNode();
 
-    return Scaffold(
+    return UIScaffold(
+      designType: config.designType,
       backgroundColor: config.backgroundColor,
       extendBodyBehindAppBar: true,
-      appBar: AppBar(),
+      appBar: const UIAppBar(),
       body: Stack(
         fit: StackFit.expand,
         children: [

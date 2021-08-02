@@ -39,6 +39,7 @@ class HomeModule extends PageModule {
     this.tileMenuHome,
     this.tileMenuHomeInformation,
     this.tileMenuHomeCalendar,
+    this.designType = DesignType.modern,
   }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
@@ -59,6 +60,9 @@ class HomeModule extends PageModule {
   final Widget? tileMenuHome;
   final Widget? tileMenuHomeInformation;
   final Widget? tileMenuHomeCalendar;
+
+  /// デザインタイプ。
+  final DesignType designType;
 
   /// お知らせの設定。
   final HomeInformationModule info;
@@ -136,6 +140,7 @@ class HomeInformationModule extends PostModule {
     String? title,
     String postPath = "info",
     this.icon = Icons.info_rounded,
+    DesignType designType = DesignType.modern,
     Permission permission = const Permission(),
     Widget? view,
   }) : super(
@@ -145,6 +150,7 @@ class HomeInformationModule extends PostModule {
           routePath: "info",
           editingType: PostEditingType.planeText,
           permission: permission,
+          designType: designType,
           view: view,
         );
 
