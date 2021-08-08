@@ -39,7 +39,7 @@ LoginModule? _$LoginModuleFromMap(DynamicMap map, LoginModule ref) {
       buttonBackgroundColor: map.get<DynamicMap>(
           "buttonBackgroundColor", <String, dynamic>{}).toColor(),
       backgroundImage: map.get<String?>("backgroundImage", null),
-      backgroundImageBlur: map.get<double?>("backgroundImageBlur", null),
+      backgroundImageBlur: map.get<double?>("backgroundImageBlur", 5.0) ?? 5.0,
       featureImage: map.get<String?>("featureImage", null),
       featureImageSize:
           map.get<DynamicMap>("featureImageSize", <String, dynamic>{}).toSize(),
@@ -60,7 +60,8 @@ LoginModule? _$LoginModuleFromMap(DynamicMap map, LoginModule ref) {
       padding: map.get<DynamicMap>("padding", <String, dynamic>{}).toEdgeInsets() ??
           const EdgeInsets.all(36),
       redirectTo: map.get<String>("redirectTo", "/"),
-      registerForm: map.get<List>("registerForm", const []).cast<DynamicMap>().map((e) => e.toFormConfig()).removeEmpty());
+      registerForm: map.get<List>("registerForm", const []).cast<DynamicMap>().map((e) => e.toFormConfig()).removeEmpty(),
+      designType: DesignType.values.firstWhere((e) => e.index == map.get<int>("designType", DesignType.modern.index)));
 }
 
 DynamicMap _$LoginModuleToMap(LoginModule ref) {
@@ -96,6 +97,7 @@ DynamicMap _$LoginModuleToMap(LoginModule ref) {
     "padding": ref.padding.toMap(),
     if (ref.redirectTo.isNotEmpty) "redirectTo": ref.redirectTo,
     if (ref.registerForm.isNotEmpty)
-      "registerForm": ref.registerForm.map((e) => e.toMap())
+      "registerForm": ref.registerForm.map((e) => e.toMap()),
+    "designType": ref.designType.index
   };
 }

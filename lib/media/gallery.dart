@@ -202,78 +202,6 @@ class GalleryModuleTileViewWithTab extends PageHookWidget {
                 )
               : null,
     );
-
-    // return PlatformBuilder(
-    //   mobile: TabScaffold<TabConfig>(
-    //     title: Text(config.title ?? "Gallery".localize()),
-    //     source: config.tabConfig,
-    //     tabBuilder: (tab) => Text(tab.label),
-    //     viewBuilder: (tab) =>
-    //         config.gridView ?? GalleryModuleGridView(config, tab: tab),
-    //     floatingActionButton:
-    //         config.permission.canEdit(user.get(config.roleKey, ""))
-    //             ? FloatingActionButton.extended(
-    //                 label: Text("Add".localize()),
-    //                 icon: const Icon(Icons.add),
-    //                 onPressed: () {
-    //                   context.navigator.pushNamed(
-    //                     "/${config.routePath}/edit",
-    //                     arguments: RouteQuery.fullscreenOrModal,
-    //                   );
-    //                 },
-    //               )
-    //             : null,
-    //   ),
-    //   desktop: () {
-    //     final controller = useNavigatorController(
-    //       "/${config.routePath}/tab/${config.tabConfig.firstOrNull?.id}",
-    //     );
-    //     final tabId = controller.route?.name?.last();
-
-    //     return Scaffold(
-    //       appBar: PlatformAppBar(
-    //         title: Text(config.title ?? "Gallery".localize()),
-    //       ),
-    //       body: CMSLayout(
-    //         leftBar: Scrollbar(
-    //           child: ListBuilder<TabConfig>(
-    //             source: config.tabConfig,
-    //             builder: (context, item) {
-    //               return [
-    //                 ListItem(
-    //                   selected: tabId == item.id,
-    //                   disabledTapOnSelected: true,
-    //                   selectedColor: context.theme.textColorOnPrimary,
-    //                   selectedTileColor:
-    //                       context.theme.primaryColor.withOpacity(0.8),
-    //                   title: Text(item.label),
-    //                   onTap: () {
-    //                     controller.navigator.pushReplacementNamed(
-    //                         "/${config.routePath}/tab/${item.id}");
-    //                   },
-    //                 ),
-    //               ];
-    //             },
-    //           ),
-    //         ),
-    //         child: InlinePageBuilder(controller: controller),
-    //       ),
-    //       floatingActionButton:
-    //           config.permission.canEdit(user.get(config.roleKey, ""))
-    //               ? FloatingActionButton.extended(
-    //                   label: Text("Add".localize()),
-    //                   icon: const Icon(Icons.add),
-    //                   onPressed: () {
-    //                     context.rootNavigator.pushNamed(
-    //                       "/${config.routePath}/edit",
-    //                       arguments: RouteQuery.fullscreenOrModal,
-    //                     );
-    //                   },
-    //                 )
-    //               : null,
-    //     );
-    //   }(),
-    // );
   }
 }
 
@@ -309,26 +237,6 @@ class GalleryModuleTileView extends PageHookWidget {
                 )
               : null,
     );
-
-    // return Scaffold(
-    //   appBar: PlatformAppBar(
-    //     title: Text(config.title ?? "Gallery".localize()),
-    //   ),
-    //   body: config.gridView ?? GalleryModuleGridView(config),
-    //   floatingActionButton:
-    //       config.permission.canEdit(user.get(config.roleKey, ""))
-    //           ? FloatingActionButton.extended(
-    //               label: Text("Add".localize()),
-    //               icon: const Icon(Icons.add),
-    //               onPressed: () {
-    //                 context.navigator.pushNamed(
-    //                   "/${config.routePath}/edit",
-    //                   arguments: RouteQuery.fullscreen,
-    //                 );
-    //               },
-    //             )
-    //           : null,
-    // );
   }
 }
 
@@ -631,79 +539,76 @@ class GalleryModuleEdit extends PageHookWidget {
         ],
       ),
       body: FormBuilder(
-          padding: const EdgeInsets.all(0),
-          key: form.key,
-          children: [
-            FormItemMedia(
-              height: 200,
+        padding: const EdgeInsets.all(0),
+        key: form.key,
+        children: [
+          FormItemMedia(
+            height: 200,
+            dense: true,
+            controller: useMemoizedTextEditingController(
+              form.select(media, ""),
+            ),
+            errorText: "No input %s".localize().format(["Image".localize()]),
+            onTap: (onUpdate) async {
+              final media = await context.platform?.mediaDialog(
+                context,
+                title: "Please select your media".localize(),
+                type: config.mediaType,
+              );
+              onUpdate(media?.path);
+            },
+            onSaved: (value) {
+              context[config.mediaKey] = value;
+            },
+          ),
+          const Space.height(12),
+          DividHeadline("Title".localize()),
+          FormItemTextField(
+            dense: true,
+            hintText: "Input %s".localize().format(["Title".localize()]),
+            errorText: "No input %s".localize().format(["Title".localize()]),
+            controller: useMemoizedTextEditingController(form.select(name, "")),
+            onSaved: (value) {
+              context[config.nameKey] = value;
+            },
+          ),
+          DividHeadline("Description".localize()),
+          FormItemTextField(
+            dense: true,
+            keyboardType: TextInputType.multiline,
+            minLines: 5,
+            maxLines: 5,
+            hintText: "Input %s".localize().format(["Description".localize()]),
+            allowEmpty: true,
+            controller: useMemoizedTextEditingController(form.select(text, "")),
+            onSaved: (value) {
+              context[config.textKey] = value;
+            },
+          ),
+          if (config.tabConfig.isNotEmpty) ...[
+            DividHeadline("Category".localize()),
+            FormItemDropdownField(
               dense: true,
+              // labelText: "Category".localize(),
+              hintText: "Input %s".localize().format(["Category".localize()]),
               controller: useMemoizedTextEditingController(
-                form.select(media, ""),
-              ),
-              errorText: "No input %s".localize().format(["Image".localize()]),
-              onTap: (onUpdate) async {
-                final media = await context.platform?.mediaDialog(
-                  context,
-                  title: "Please select your media".localize(),
-                  type: config.mediaType,
-                );
-                onUpdate(media?.path);
-              },
-              onSaved: (value) {
-                context[config.mediaKey] = value;
-              },
-            ),
-            const Space.height(12),
-            DividHeadline("Title".localize()),
-            FormItemTextField(
-              dense: true,
-              hintText: "Input %s".localize().format(["Title".localize()]),
-              errorText: "No input %s".localize().format(["Title".localize()]),
-              controller:
-                  useMemoizedTextEditingController(form.select(name, "")),
-              onSaved: (value) {
-                context[config.nameKey] = value;
-              },
-            ),
-            DividHeadline("Description".localize()),
-            FormItemTextField(
-              dense: true,
-              keyboardType: TextInputType.multiline,
-              minLines: 5,
-              maxLines: 5,
-              hintText:
-                  "Input %s".localize().format(["Description".localize()]),
-              allowEmpty: true,
-              controller:
-                  useMemoizedTextEditingController(form.select(text, "")),
-              onSaved: (value) {
-                context[config.textKey] = value;
-              },
-            ),
-            if (config.tabConfig.isNotEmpty) ...[
-              DividHeadline("Category".localize()),
-              FormItemDropdownField(
-                dense: true,
-                // labelText: "Category".localize(),
-                hintText: "Input %s".localize().format(["Category".localize()]),
-                controller: useMemoizedTextEditingController(
-                  form.select(
-                    item.get(config.categoryKey, config.tabConfig.first.id),
-                    config.tabConfig.first.id,
-                  ),
+                form.select(
+                  item.get(config.categoryKey, config.tabConfig.first.id),
+                  config.tabConfig.first.id,
                 ),
-                items: <String, String>{
-                  for (final tab in config.tabConfig) tab.id: tab.label
-                },
-                onSaved: (value) {
-                  context[config.categoryKey] = value;
-                },
               ),
-            ],
-            const Divid(),
-            const Space.height(100),
+              items: <String, String>{
+                for (final tab in config.tabConfig) tab.id: tab.label
+              },
+              onSaved: (value) {
+                context[config.categoryKey] = value;
+              },
+            ),
           ],
-        ),
+          const Divid(),
+          const Space.height(100),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           if (!form.validate()) {

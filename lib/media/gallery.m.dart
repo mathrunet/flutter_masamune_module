@@ -45,6 +45,8 @@ GalleryModule? _$GalleryModuleFromMap(DynamicMap map, GalleryModule ref) {
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
+      designType: DesignType.values.firstWhere((e) =>
+          e.index == map.get<int>("designType", DesignType.modern.index)),
       galleryQuery: map.get<DynamicMap>(
           "galleryQuery", <String, dynamic>{}).toCollectionQuery());
 }
@@ -75,6 +77,7 @@ DynamicMap _$GalleryModuleToMap(GalleryModule ref) {
     "mediaType": ref.mediaType.index,
     "skipDetailPage": ref.skipDetailPage,
     "permission": ref.permission.toMap(),
+    "designType": ref.designType.index,
     if (ref.galleryQuery != null) "galleryQuery": ref.galleryQuery?.toMap()
   };
 }

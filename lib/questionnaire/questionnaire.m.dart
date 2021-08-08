@@ -31,7 +31,9 @@ QuestionnaireModule? _$QuestionnaireModuleFromMap(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
       questionnaireQuery: map.get<DynamicMap>(
-          "questionnaireQuery", <String, dynamic>{}).toCollectionQuery());
+          "questionnaireQuery", <String, dynamic>{}).toCollectionQuery(),
+      designType: DesignType.values.firstWhere((e) =>
+          e.index == map.get<int>("designType", DesignType.modern.index)));
 }
 
 DynamicMap _$QuestionnaireModuleToMap(QuestionnaireModule ref) {
@@ -54,6 +56,7 @@ DynamicMap _$QuestionnaireModuleToMap(QuestionnaireModule ref) {
     if (ref.answerKey.isNotEmpty) "answerKey": ref.answerKey,
     "permission": ref.permission.toMap(),
     if (ref.questionnaireQuery != null)
-      "questionnaireQuery": ref.questionnaireQuery?.toMap()
+      "questionnaireQuery": ref.questionnaireQuery?.toMap(),
+    "designType": ref.designType.index
   };
 }

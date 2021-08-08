@@ -27,7 +27,9 @@ PostModule? _$PostModuleFromMap(DynamicMap map, PostModule ref) {
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
       postQuery: map.get<DynamicMap>(
-          "postQuery", <String, dynamic>{}).toCollectionQuery());
+          "postQuery", <String, dynamic>{}).toCollectionQuery(),
+      designType: DesignType.values.firstWhere((e) =>
+          e.index == map.get<int>("designType", DesignType.modern.index)));
 }
 
 DynamicMap _$PostModuleToMap(PostModule ref) {
@@ -44,6 +46,7 @@ DynamicMap _$PostModuleToMap(PostModule ref) {
     if (ref.createdTimeKey.isNotEmpty) "createdTimeKey": ref.createdTimeKey,
     "editingType": ref.editingType.index,
     "permission": ref.permission.toMap(),
-    if (ref.postQuery != null) "postQuery": ref.postQuery?.toMap()
+    if (ref.postQuery != null) "postQuery": ref.postQuery?.toMap(),
+    "designType": ref.designType.index
   };
 }

@@ -52,7 +52,8 @@ HomeModule? _$HomeModuleFromMap(DynamicMap map, HomeModule ref) {
           .get<Map>("roleMenu", const {})
           .cast<String, List>()
           .map((k, v) => MapEntry(k, v.cast<DynamicMap>().map((e) => e.toMenuConfig()).removeEmpty())),
-      permission: map.get<DynamicMap>("permission", <String, dynamic>{}).toPermission() ?? const Permission());
+      permission: map.get<DynamicMap>("permission", <String, dynamic>{}).toPermission() ?? const Permission(),
+      designType: DesignType.values.firstWhere((e) => e.index == map.get<int>("designType", DesignType.modern.index)));
 }
 
 DynamicMap _$HomeModuleToMap(HomeModule ref) {
@@ -81,7 +82,8 @@ DynamicMap _$HomeModuleToMap(HomeModule ref) {
     if (ref.roleMenu.isNotEmpty)
       "roleMenu":
           ref.roleMenu.map((k, v) => MapEntry(k, v.map((e) => e.toMap()))),
-    "permission": ref.permission.toMap()
+    "permission": ref.permission.toMap(),
+    "designType": ref.designType.index
   };
 }
 
@@ -96,6 +98,8 @@ HomeInformationModule? _$HomeInformationModuleFromMap(
       postPath: map.get<String>("postPath", "info"),
       icon: map.get<DynamicMap>("icon", <String, dynamic>{}).toIconData() ??
           Icons.info_rounded,
+      designType: DesignType.values.firstWhere((e) =>
+          e.index == map.get<int>("designType", DesignType.modern.index)),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission());
@@ -108,6 +112,7 @@ DynamicMap _$HomeInformationModuleToMap(HomeInformationModule ref) {
     if (ref.title.isNotEmpty) "title": ref.title,
     if (ref.postPath.isNotEmpty) "postPath": ref.postPath,
     "icon": ref.icon.toMap(),
+    "designType": ref.designType.index,
     "permission": ref.permission.toMap()
   };
 }

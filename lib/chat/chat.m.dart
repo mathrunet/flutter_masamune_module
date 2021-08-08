@@ -30,7 +30,9 @@ ChatModule? _$ChatModuleFromMap(DynamicMap map, ChatModule ref) {
           "chatQuery", <String, dynamic>{}).toCollectionQuery(),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
-          const Permission());
+          const Permission(),
+      designType: DesignType.values.firstWhere((e) =>
+          e.index == map.get<int>("designType", DesignType.modern.index)));
 }
 
 DynamicMap _$ChatModuleToMap(ChatModule ref) {
@@ -51,6 +53,7 @@ DynamicMap _$ChatModuleToMap(ChatModule ref) {
     if (ref.createdTimeKey.isNotEmpty) "createdTimeKey": ref.createdTimeKey,
     if (ref.modifiedTimeKey.isNotEmpty) "modifiedTimeKey": ref.modifiedTimeKey,
     if (ref.chatQuery != null) "chatQuery": ref.chatQuery?.toMap(),
-    "permission": ref.permission.toMap()
+    "permission": ref.permission.toMap(),
+    "designType": ref.designType.index
   };
 }

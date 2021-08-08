@@ -136,7 +136,8 @@ class PostModuleHome extends PageHookWidget {
         builder: (context, item) {
           return [
             ListItem(
-              selected: controller.route?.name.last() == item.get(Const.uid, ""),
+              selected:
+                  controller.route?.name.last() == item.get(Const.uid, ""),
               selectedColor: context.theme.textColorOnPrimary,
               selectedTileColor: context.theme.primaryColor.withOpacity(0.8),
               title: Text(item.get(config.nameKey, "")),
@@ -225,8 +226,8 @@ class PostModuleView extends PageHookWidget {
           [text],
         );
 
-        final child = UIScaffold(
-      designType: config.designType,
+        return UIScaffold(
+          designType: config.designType,
           appBar: appBar,
           body: UIListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -263,10 +264,9 @@ class PostModuleView extends PageHookWidget {
             ],
           ),
         );
-        return child;
       default:
-        final child = UIScaffold(
-      designType: config.designType,
+        return UIScaffold(
+          designType: config.designType,
           appBar: appBar,
           body: UIListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -291,7 +291,6 @@ class PostModuleView extends PageHookWidget {
             ],
           ),
         );
-        return child;
     }
   }
 }
@@ -358,43 +357,43 @@ class PostModuleEdit extends PageHookWidget {
         );
 
         return UIScaffold(
-      designType: config.designType,
+          designType: config.designType,
           appBar: appBar,
           body: FormBuilder(
-              key: form.key,
-              padding: const EdgeInsets.all(0),
-              type: FormBuilderType.fixed,
-              children: [
-                FormItemTextField(
-                  dense: true,
-                  hintText: "Title".localize(),
-                  errorText:
-                      "No input %s".localize().format(["Title".localize()]),
-                  subColor: context.theme.disabledColor,
-                  controller: useMemoizedTextEditingController(name),
-                  onSaved: (value) {
-                    context[config.nameKey] = value;
-                  },
-                ),
-                const Divid(),
-                FormItemDateTimeField(
-                  dense: true,
-                  hintText: "Post time".localize(),
-                  errorText:
-                      "No input %s".localize().format(["Post time".localize()]),
-                  controller: useMemoizedTextEditingController(
-                      FormItemDateTimeField.formatDateTime(dateTime)),
-                  onSaved: (value) {
-                    context[config.createdTimeKey] =
-                        value?.millisecondsSinceEpoch ??
-                            now.millisecondsSinceEpoch;
-                  },
-                ),
-                const Divid(),
-                Theme(
-                  data: context.theme.copyWith(canvasColor: context.theme.scaffoldBackgroundColor),
-                  child:
-                QuillToolbar.basic(
+            key: form.key,
+            padding: const EdgeInsets.all(0),
+            type: FormBuilderType.fixed,
+            children: [
+              FormItemTextField(
+                dense: true,
+                hintText: "Title".localize(),
+                errorText:
+                    "No input %s".localize().format(["Title".localize()]),
+                subColor: context.theme.disabledColor,
+                controller: useMemoizedTextEditingController(name),
+                onSaved: (value) {
+                  context[config.nameKey] = value;
+                },
+              ),
+              const Divid(),
+              FormItemDateTimeField(
+                dense: true,
+                hintText: "Post time".localize(),
+                errorText:
+                    "No input %s".localize().format(["Post time".localize()]),
+                controller: useMemoizedTextEditingController(
+                    FormItemDateTimeField.formatDateTime(dateTime)),
+                onSaved: (value) {
+                  context[config.createdTimeKey] =
+                      value?.millisecondsSinceEpoch ??
+                          now.millisecondsSinceEpoch;
+                },
+              ),
+              const Divid(),
+              Theme(
+                data: context.theme.copyWith(
+                    canvasColor: context.theme.scaffoldBackgroundColor),
+                child: QuillToolbar.basic(
                   controller: controller,
                   toolbarIconSize: 24,
                   multiRowsDisplay: false,
@@ -404,31 +403,32 @@ class PostModuleEdit extends PageHookWidget {
                     }
                     return await context.model!.uploadMedia(file.path);
                   },
-                ),),
-                Divid(color: context.theme.dividerColor.withOpacity(0.25)),
-                Expanded(
-                  child: QuillEditor(
-                    scrollController: ScrollController(),
-                    scrollable: true,
-                    focusNode: useFocusNode(),
-                    autoFocus: false,
-                    controller: controller,
-                    placeholder: "Text".localize(),
-                    readOnly: false,
-                    expands: true,
-                    padding: const EdgeInsets.all(12),
-                    customStyles: DefaultStyles(
-                      placeHolder: DefaultTextBlockStyle(
-                          TextStyle(
-                              color: context.theme.disabledColor, fontSize: 16),
-                          const Tuple2(16, 0),
-                          const Tuple2(0, 0),
-                          null),
-                    ),
+                ),
+              ),
+              Divid(color: context.theme.dividerColor.withOpacity(0.25)),
+              Expanded(
+                child: QuillEditor(
+                  scrollController: ScrollController(),
+                  scrollable: true,
+                  focusNode: useFocusNode(),
+                  autoFocus: false,
+                  controller: controller,
+                  placeholder: "Text".localize(),
+                  readOnly: false,
+                  expands: true,
+                  padding: const EdgeInsets.all(12),
+                  customStyles: DefaultStyles(
+                    placeHolder: DefaultTextBlockStyle(
+                        TextStyle(
+                            color: context.theme.disabledColor, fontSize: 16),
+                        const Tuple2(16, 0),
+                        const Tuple2(0, 0),
+                        null),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () async {
               if (!form.validate()) {
@@ -459,51 +459,51 @@ class PostModuleEdit extends PageHookWidget {
           designType: config.designType,
           appBar: appBar,
           body: FormBuilder(
-              key: form.key,
-              padding: const EdgeInsets.all(0),
-              type: FormBuilderType.fixed,
-              children: [
-                FormItemTextField(
+            key: form.key,
+            padding: const EdgeInsets.all(0),
+            type: FormBuilderType.fixed,
+            children: [
+              FormItemTextField(
+                dense: true,
+                hintText: "Title".localize(),
+                errorText: "Input %s".localize().format(["Title".localize()]),
+                subColor: context.theme.disabledColor,
+                controller: useMemoizedTextEditingController(name),
+                onSaved: (value) {
+                  context[config.nameKey] = value;
+                },
+              ),
+              const Divid(),
+              FormItemDateTimeField(
+                dense: true,
+                hintText: "Post time".localize(),
+                errorText:
+                    "Input %s".localize().format(["Post time".localize()]),
+                controller: useMemoizedTextEditingController(
+                    FormItemDateTimeField.formatDateTime(dateTime)),
+                onSaved: (value) {
+                  context[config.createdTimeKey] =
+                      value?.millisecondsSinceEpoch ??
+                          now.millisecondsSinceEpoch;
+                },
+              ),
+              const Divid(),
+              Expanded(
+                child: FormItemTextField(
                   dense: true,
-                  hintText: "Title".localize(),
-                  errorText: "Input %s".localize().format(["Title".localize()]),
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
+                  keyboardType: TextInputType.multiline,
+                  hintText: "Commenct".localize(),
                   subColor: context.theme.disabledColor,
-                  controller: useMemoizedTextEditingController(name),
+                  controller: useMemoizedTextEditingController(text),
                   onSaved: (value) {
-                    context[config.nameKey] = value;
+                    context[config.textKey] = value;
                   },
                 ),
-                const Divid(),
-                FormItemDateTimeField(
-                  dense: true,
-                  hintText: "Post time".localize(),
-                  errorText:
-                      "Input %s".localize().format(["Post time".localize()]),
-                  controller: useMemoizedTextEditingController(
-                      FormItemDateTimeField.formatDateTime(dateTime)),
-                  onSaved: (value) {
-                    context[config.createdTimeKey] =
-                        value?.millisecondsSinceEpoch ??
-                            now.millisecondsSinceEpoch;
-                  },
-                ),
-                const Divid(),
-                Expanded(
-                  child: FormItemTextField(
-                    dense: true,
-                    expands: true,
-                    textAlignVertical: TextAlignVertical.top,
-                    keyboardType: TextInputType.multiline,
-                    hintText: "Commenct".localize(),
-                    subColor: context.theme.disabledColor,
-                    controller: useMemoizedTextEditingController(text),
-                    onSaved: (value) {
-                      context[config.textKey] = value;
-                    },
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
+          ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () async {
               if (!form.validate()) {

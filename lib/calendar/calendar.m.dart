@@ -1,32 +1,27 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'single_media.dart';
+part of 'calendar.dart';
 
 // **************************************************************************
 // MasamuneModuleGenerator
 // **************************************************************************
 
-SingleMediaModule? _$SingleMediaModuleFromMap(
-    DynamicMap map, SingleMediaModule ref) {
+CalendarModule? _$CalendarModuleFromMap(DynamicMap map, CalendarModule ref) {
   if (map.isEmpty || map.get("type", "") != ref.type) {
     return null;
   }
-  return SingleMediaModule(
+  return CalendarModule(
       enabled: map.get<bool>("enabled", true),
-      title: map.get<String>("title", ""),
-      galleryType: GalleryType.values.firstWhere((e) =>
-          e.index == map.get<int>("galleryType", GalleryType.tile.index)),
-      routePath: map.get<String>("routePath", "media"),
-      mediaPath: map.get<String>("mediaPath", "app/media"),
+      title: map.get<String?>("title", "") ?? "",
+      routePath: map.get<String>("routePath", "calendar"),
+      eventPath: map.get<String>("eventPath", "event"),
       userPath: map.get<String>("userPath", "user"),
-      mediaKey: map.get<String>("mediaKey", Const.media),
       nameKey: map.get<String>("nameKey", Const.name),
       textKey: map.get<String>("textKey", Const.text),
       roleKey: map.get<String>("roleKey", Const.role),
-      categoryKey: map.get<String>("categoryKey", Const.category),
+      typeKey: map.get<String>("typeKey", Const.type),
       createdTimeKey: map.get<String>("createdTimeKey", Const.createdTime),
-      mediaType: PlatformMediaType.values.firstWhere((e) =>
-          e.index == map.get<int>("mediaType", PlatformMediaType.all.index)),
+      modifiedTimeKey: map.get<String>("modifiedTimeKey", Const.modifiedTime),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
@@ -34,22 +29,20 @@ SingleMediaModule? _$SingleMediaModuleFromMap(
           e.index == map.get<int>("designType", DesignType.modern.index)));
 }
 
-DynamicMap _$SingleMediaModuleToMap(SingleMediaModule ref) {
+DynamicMap _$CalendarModuleToMap(CalendarModule ref) {
   return <String, dynamic>{
     "type": ref.type,
     "enabled": ref.enabled,
     if (ref.title.isNotEmpty) "title": ref.title,
-    "galleryType": ref.galleryType.index,
     if (ref.routePath.isNotEmpty) "routePath": ref.routePath,
-    if (ref.mediaPath.isNotEmpty) "mediaPath": ref.mediaPath,
+    if (ref.eventPath.isNotEmpty) "eventPath": ref.eventPath,
     if (ref.userPath.isNotEmpty) "userPath": ref.userPath,
-    if (ref.mediaKey.isNotEmpty) "mediaKey": ref.mediaKey,
     if (ref.nameKey.isNotEmpty) "nameKey": ref.nameKey,
     if (ref.textKey.isNotEmpty) "textKey": ref.textKey,
     if (ref.roleKey.isNotEmpty) "roleKey": ref.roleKey,
-    if (ref.categoryKey.isNotEmpty) "categoryKey": ref.categoryKey,
+    if (ref.typeKey.isNotEmpty) "typeKey": ref.typeKey,
     if (ref.createdTimeKey.isNotEmpty) "createdTimeKey": ref.createdTimeKey,
-    "mediaType": ref.mediaType.index,
+    if (ref.modifiedTimeKey.isNotEmpty) "modifiedTimeKey": ref.modifiedTimeKey,
     "permission": ref.permission.toMap(),
     "designType": ref.designType.index
   };
