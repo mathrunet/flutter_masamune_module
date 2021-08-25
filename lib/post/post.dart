@@ -44,7 +44,6 @@ class PostModule extends PageModule {
     final route = {
       "/$routePath": RouteConfig((_) => home ?? PostModuleHome(this)),
       "/$routePath/edit": RouteConfig((_) => edit ?? PostModuleEdit(this)),
-      "/$routePath/empty": RouteConfig((_) => const EmptyPage()),
       "/$routePath/{post_id}": RouteConfig((_) => view ?? PostModuleView(this)),
       "/$routePath/{post_id}/edit":
           RouteConfig((_) => edit ?? PostModuleEdit(this)),
@@ -117,7 +116,8 @@ class PostModuleHome extends PageHookWidget {
       orElse: (o) => o,
     );
     final controller = useNavigatorController(
-      "/${config.routePath}/${postWithUser.firstOrNull.get(Const.uid, "empty")}",
+      "/${config.routePath}/${postWithUser.firstOrNull.get(Const.uid, "")}",
+      (route) => postWithUser.isEmpty,
     );
 
     return UIScaffold(
@@ -136,7 +136,7 @@ class PostModuleHome extends PageHookWidget {
         builder: (context, item) {
           return [
             ListItem(
-              selected:
+              selected: !context.isMobileOrModal &&
                   controller.route?.name.last() == item.get(Const.uid, ""),
               selectedColor: context.theme.textColorOnPrimary,
               selectedTileColor: context.theme.primaryColor.withOpacity(0.8),
@@ -344,6 +344,32 @@ class PostModuleEdit extends PageHookWidget {
         ? PostEditingType.planeText
         : config.editingType;
 
+    final header = [
+      FormItemTextField(
+        dense: true,
+        hintText: "Title".localize(),
+        errorText: "No input %s".localize().format(["Title".localize()]),
+        subColor: context.theme.disabledColor,
+        controller: useMemoizedTextEditingController(name),
+        onSaved: (value) {
+          context[config.nameKey] = value;
+        },
+      ),
+      const Divid(),
+      FormItemDateTimeField(
+        dense: true,
+        hintText: "Post time".localize(),
+        errorText: "No input %s".localize().format(["Post time".localize()]),
+        controller: useMemoizedTextEditingController(
+            FormItemDateTimeField.formatDateTime(dateTime)),
+        onSaved: (value) {
+          context[config.createdTimeKey] =
+              value?.millisecondsSinceEpoch ?? now.millisecondsSinceEpoch;
+        },
+      ),
+      const Divid(),
+    ];
+
     switch (editingType) {
       case PostEditingType.wysiwyg:
         final controller = useMemoized(
@@ -364,32 +390,7 @@ class PostModuleEdit extends PageHookWidget {
             padding: const EdgeInsets.all(0),
             type: FormBuilderType.fixed,
             children: [
-              FormItemTextField(
-                dense: true,
-                hintText: "Title".localize(),
-                errorText:
-                    "No input %s".localize().format(["Title".localize()]),
-                subColor: context.theme.disabledColor,
-                controller: useMemoizedTextEditingController(name),
-                onSaved: (value) {
-                  context[config.nameKey] = value;
-                },
-              ),
-              const Divid(),
-              FormItemDateTimeField(
-                dense: true,
-                hintText: "Post time".localize(),
-                errorText:
-                    "No input %s".localize().format(["Post time".localize()]),
-                controller: useMemoizedTextEditingController(
-                    FormItemDateTimeField.formatDateTime(dateTime)),
-                onSaved: (value) {
-                  context[config.createdTimeKey] =
-                      value?.millisecondsSinceEpoch ??
-                          now.millisecondsSinceEpoch;
-                },
-              ),
-              const Divid(),
+              ...header,
               Theme(
                 data: context.theme.copyWith(
                     canvasColor: context.theme.scaffoldBackgroundColor),
@@ -463,38 +464,14 @@ class PostModuleEdit extends PageHookWidget {
             padding: const EdgeInsets.all(0),
             type: FormBuilderType.fixed,
             children: [
-              FormItemTextField(
-                dense: true,
-                hintText: "Title".localize(),
-                errorText: "Input %s".localize().format(["Title".localize()]),
-                subColor: context.theme.disabledColor,
-                controller: useMemoizedTextEditingController(name),
-                onSaved: (value) {
-                  context[config.nameKey] = value;
-                },
-              ),
-              const Divid(),
-              FormItemDateTimeField(
-                dense: true,
-                hintText: "Post time".localize(),
-                errorText:
-                    "Input %s".localize().format(["Post time".localize()]),
-                controller: useMemoizedTextEditingController(
-                    FormItemDateTimeField.formatDateTime(dateTime)),
-                onSaved: (value) {
-                  context[config.createdTimeKey] =
-                      value?.millisecondsSinceEpoch ??
-                          now.millisecondsSinceEpoch;
-                },
-              ),
-              const Divid(),
+              ...header,
               Expanded(
                 child: FormItemTextField(
                   dense: true,
                   expands: true,
                   textAlignVertical: TextAlignVertical.top,
                   keyboardType: TextInputType.multiline,
-                  hintText: "Commenct".localize(),
+                  hintText: "Text".localize(),
                   subColor: context.theme.disabledColor,
                   controller: useMemoizedTextEditingController(text),
                   onSaved: (value) {

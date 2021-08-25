@@ -4,6 +4,7 @@ import 'package:flutter_quill/models/documents/document.dart';
 import 'package:flutter_quill/widgets/controller.dart';
 import 'package:flutter_quill/widgets/default_styles.dart';
 import 'package:flutter_quill/widgets/editor.dart';
+import 'package:flutter_quill/widgets/toolbar.dart';
 import 'package:masamune/masamune.dart';
 import 'package:masamune_module/masamune_module.dart';
 import 'package:tuple/tuple.dart';
@@ -21,21 +22,30 @@ class CalendarModule extends PageModule {
     this.routePath = "calendar",
     this.eventPath = "event",
     this.userPath = "user",
+    this.commentPath = "comment",
+    this.commentTemplatePath = "commentTemplate",
     this.nameKey = Const.name,
+    this.userKey = Const.user,
     this.textKey = Const.text,
     this.roleKey = Const.role,
     this.typeKey = Const.type,
+    this.iamgeKey = Const.media,
     this.createdTimeKey = Const.createdTime,
     this.modifiedTimeKey = Const.modifiedTime,
     this.startTimeKey = Const.startTime,
     this.endTimeKey = Const.endTime,
     this.allDayKey = "allDay",
+    this.detailLabel = "Detail",
+    this.commentLabel = "Comment",
     this.editingType = CalendarEditingType.planeText,
     Permission permission = const Permission(),
+    this.initialCommentTemplate = const [],
     this.designType = DesignType.modern,
     this.home,
     this.dayView,
     this.detail,
+    this.template,
+    this.edit,
   }) : super(enabled: enabled, title: title, permission: permission);
 
   @override
@@ -45,10 +55,16 @@ class CalendarModule extends PageModule {
     }
     final route = {
       "/$routePath": RouteConfig((_) => home ?? CalendarModuleHome(this)),
+      "/$routePath/templates":
+          RouteConfig((_) => template ?? CalendarModuleTemplate(this)),
+      "/$routePath/edit": RouteConfig((_) => edit ?? CalendarModuleEdit(this)),
+      "/$routePath/empty": RouteConfig((_) => const EmptyPage()),
       "/$routePath/{date_id}":
           RouteConfig((_) => dayView ?? CalendarModuleDayView(this)),
       "/$routePath/{event_id}/detail":
           RouteConfig((_) => detail ?? CalendarModuleDetail(this)),
+      "/$routePath/{event_id}/edit":
+          RouteConfig((_) => edit ?? CalendarModuleEdit(this)),
     };
     return route;
   }
@@ -56,7 +72,9 @@ class CalendarModule extends PageModule {
   // ページ設定
   final Widget? home;
   final Widget? dayView;
+  final Widget? template;
   final Widget? detail;
+  final Widget? edit;
 
   /// ルートのパス。
   final String routePath;
@@ -67,11 +85,23 @@ class CalendarModule extends PageModule {
   /// ユーザーのデータパス。
   final String userPath;
 
+  /// コメントデータへのパス。
+  final String commentPath;
+
+  /// コメントテンプレートへのパス。
+  final String commentTemplatePath;
+
   /// タイトルのキー。
   final String nameKey;
 
+  /// ユーザーのキー。
+  final String userKey;
+
   /// テキストのキー。
   final String textKey;
+
+  /// 画像のキー。
+  final String iamgeKey;
 
   /// チャットタイプのキー。
   final String typeKey;
@@ -97,8 +127,17 @@ class CalendarModule extends PageModule {
   /// 終日フラグのキー。
   final String allDayKey;
 
+  /// 詳細のラベル。
+  final String detailLabel;
+
+  /// コメントのラベル。
+  final String commentLabel;
+
   /// エディターのタイプ。
   final CalendarEditingType editingType;
+
+  /// コメントテンプレートの設定。
+  final List<String> initialCommentTemplate;
 
   @override
   CalendarModule? fromMap(DynamicMap map) => _$CalendarModuleFromMap(map, this);
@@ -157,6 +196,7 @@ class CalendarModuleDayView extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
+    final user = useUserDocumentModel(config.userPath);
     final dateId = context.get("date_id", now.format("yyyyMMdd"));
     final year = int.tryParse(dateId.substring(0, 4));
     final month = int.tryParse(dateId.substring(4, 6));
@@ -216,269 +256,19 @@ class CalendarModuleDayView extends PageHookWidget {
           );
         },
       ),
-    );
-  }
-}
-
-class UIDayCalendar extends StatelessWidget {
-  const UIDayCalendar({
-    required this.source,
-    required this.builder,
-    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    this.day,
-    this.height = 36,
-    this.labelWidth = 56,
-    this.startTimeKey = "startTime",
-    this.endTimeKey = "endTime",
-    this.titleKey = "name",
-    this.textKey = "text",
-    this.titleBuilder,
-    this.textBuilder,
-    this.allDayKey = "allDay",
-  });
-
-  final DateTime? day;
-  final EdgeInsetsGeometry padding;
-  final String startTimeKey;
-  final String endTimeKey;
-  final String titleKey;
-  final String textKey;
-  final double height;
-  final double labelWidth;
-  final List<DynamicMap> source;
-  final String allDayKey;
-  final String Function(DynamicMap data)? titleBuilder;
-  final String Function(DynamicMap data)? textBuilder;
-  final Widget? Function(BuildContext context, DynamicMap item) builder;
-
-  @override
-  Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final day = DateTime(this.day?.year ?? now.year,
-        this.day?.month ?? now.month, this.day?.day ?? now.day);
-    final eventMap = <DateTime, List<DynamicMap>>{};
-    source.forEach((item) {
-      if (item.get(allDayKey, false) || !item.containsKey(endTimeKey)) {
-        return;
-      }
-      final startTime = item.getAsDateTime(startTimeKey);
-      if (eventMap.containsKey(startTime)) {
-        eventMap[startTime]?.add(item);
-      } else {
-        eventMap[startTime] = [item];
-      }
-    });
-    final events = eventMap.toList((key, value) {
-      if (value.length > 1) {
-        final startTime = value.first.getAsDateTime(startTimeKey);
-        final start = startTime.difference(day);
-        return Positioned(
-          left: labelWidth + 8,
-          right: 8,
-          top: start.inMinutes * height / 60,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.max,
-            children: value.mapAndRemoveEmpty((item) {
-              final endTime = item.getAsDateTime(endTimeKey);
-              final duration = endTime.difference(startTime);
-              final widget = builder.call(context, item);
-              if (widget == null) {
-                return const Empty();
-              }
-              return Expanded(
-                flex: 1,
-                child: SizedBox(
-                  height: (height * duration.inMinutes / 60) + 1,
-                  child: widget,
-                ),
-              );
-            }),
-          ),
-        );
-      } else {
-        final item = value.first;
-        final startTime = item.getAsDateTime(startTimeKey);
-        final endTime = item.getAsDateTime(endTimeKey);
-        final duration = endTime.difference(startTime);
-        final start = startTime.difference(day);
-        final widget = builder.call(context, item);
-        if (widget == null) {
-          return const Empty();
-        }
-        return Positioned(
-          left: labelWidth + 8,
-          right: 8,
-          top: start.inMinutes * height / 60,
-          child: SizedBox(
-            height: (height * duration.inMinutes / 60) + 1,
-            child: widget,
-          ),
-        );
-      }
-    });
-
-    final allDay = source.mapAndRemoveEmpty((item) {
-      if (item.get(allDayKey, false) || !item.containsKey(endTimeKey)) {
-        final widget = builder.call(context, item);
-        if (widget == null) {
-          return null;
-        }
-        return widget;
-      }
-      return null;
-    });
-
-    return UIScrollbar(
-      child: SingleChildScrollView(
-        physics: const ClampingScrollPhysics(),
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    SizedBox(
-                      width: labelWidth + 8,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              day.shortLocalizedWeekDay,
-                              style: TextStyle(
-                                  color: context.theme.dividerColor,
-                                  fontSize: 12),
-                            ),
-                            Text(
-                              day.day.toString(),
-                              style: TextStyle(
-                                  color: context.theme.dividerColor,
-                                  fontSize: 24),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: allDay)),
-                    const SizedBox(width: 8),
-                  ],
-                ),
-                ConstrainedBox(
-                  constraints: const BoxConstraints.expand(height: 1),
-                  child: ColoredBox(
-                    color: context.theme.dividerColor,
-                  ),
-                ),
-                Stack(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        SizedBox(
-                          height: (height - 8).limitLow(0),
-                        ),
-                        for (var i = 1; i <= 11; i++)
-                          SizedBox(
-                            height: height,
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                SizedBox(
-                                  width: labelWidth,
-                                  child: Text(
-                                    "%s AM".localize().format([i]),
-                                    style: TextStyle(
-                                        color: context.theme.dividerColor),
-                                    textAlign: TextAlign.right,
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 8,
-                                ),
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(top: 8),
-                                    child: ConstrainedBox(
-                                      constraints: const BoxConstraints.expand(
-                                          height: 1),
-                                      child: ColoredBox(
-                                        color: context.theme.dividerColor,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        for (var i = 0; i <= 11; i++)
-                          SizedBox(
-                            height: height,
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                SizedBox(
-                                  width: labelWidth,
-                                  child: Text(
-                                    "%s AM".localize().format([i]),
-                                    style: TextStyle(
-                                        color: context.theme.dividerColor),
-                                    textAlign: TextAlign.right,
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 8,
-                                ),
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(top: 8),
-                                    child: ConstrainedBox(
-                                      constraints: const BoxConstraints.expand(
-                                          height: 1),
-                                      child: ColoredBox(
-                                        color: context.theme.dividerColor,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        const SizedBox(
-                          height: 8,
-                        ),
-                      ],
-                    ),
-                    ...events,
-                  ],
-                ),
-              ],
-            ),
-            Positioned(
-              top: 0,
-              bottom: 0,
-              left: labelWidth + 8,
-              child: SizedBox(
-                width: 1,
-                child: ColoredBox(
-                  color: context.theme.dividerColor,
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
+      floatingActionButton:
+          config.permission.canEdit(user.get(config.roleKey, ""))
+              ? FloatingActionButton.extended(
+                  label: Text("Add".localize()),
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    context.navigator.pushNamed(
+                      "/${config.routePath}/edit",
+                      arguments: RouteQuery.fullscreen,
+                    );
+                  },
+                )
+              : null,
     );
   }
 }
@@ -491,16 +281,42 @@ class CalendarModuleDetail extends PageHookWidget {
   Widget build(BuildContext context) {
     final user = useUserDocumentModel(config.userPath);
     final event =
-        useDocumentModel("/${config.eventPath}/${context.get("event_id", "")}");
+        useDocumentModel("${config.eventPath}/${context.get("event_id", "")}");
+    final author = useDocumentModel(
+        "${config.userPath}/${event.get(config.userKey, uuid)}");
     final name = event.get(config.nameKey, "");
     final text = event.get(config.textKey, "");
     final allDay = event.get(config.allDayKey, false);
     final startTime = event.getAsDateTime(config.startTimeKey);
+    final authorName = author.get(config.nameKey, "");
     final endTimeValue = event.get<int?>(config.endTimeKey, null);
     final endTime = endTimeValue != null
         ? DateTime.fromMillisecondsSinceEpoch(endTimeValue)
         : null;
-    // final time =
+    final userId = context.model?.userId;
+    final commentController = useMemoizedTextEditingController();
+
+    final _comments = useCollectionModel(
+      CollectionQuery(
+              "${config.eventPath}/${context.get("event_id", "")}/${config.commentPath}",
+              order: CollectionQueryOrder.desc,
+              orderBy: Const.time)
+          .value,
+    );
+    final _commentAuthor = useCollectionModel(
+      CollectionQuery(
+        config.userPath,
+        key: Const.uid,
+        whereIn: _comments.map((e) => e.get(config.userKey, "")).distinct(),
+      ).value,
+    );
+    final comments = _comments.setWhereListenable(
+      _commentAuthor,
+      test: (o, a) => o.get(config.userKey, "") == a.uid,
+      apply: (o, a) =>
+          o.mergeListenable(a, convertKeys: (key) => "${Const.user}$key"),
+      orElse: (o) => o,
+    );
 
     final editingType = !text.startsWith(RegExp(r"^(\[|\{)"))
         ? PostEditingType.planeText
@@ -527,6 +343,63 @@ class CalendarModuleDetail extends PageHookWidget {
       ],
     );
 
+    final header = [
+      const Space.height(16),
+      ListItem(
+        title: Text("DateTime".localize()),
+        text: Text(
+          _timeString(
+            startTime: startTime,
+            endTime: endTime,
+            allDay: allDay,
+          ),
+        ),
+      ),
+      if (authorName.isNotEmpty)
+        ListItem(
+          title: Text("Author".localize()),
+          text: Text(authorName),
+        ),
+      const Space.height(16),
+      DividHeadline(config.detailLabel.localize()),
+      const Space.height(16),
+    ];
+
+    final footer = [
+      const Space.height(24),
+      DividHeadline(config.commentLabel.localize()),
+      FormItemCommentField(
+        maxLines: 4,
+        controller: commentController,
+        hintText: "Input %s".localize().format(["Comment".localize()]),
+        onSubmitted: (value) {
+          if (value.isEmpty) {
+            return;
+          }
+
+          final doc = context.model?.createDocument(_comments);
+          if (doc == null) {
+            return;
+          }
+          doc[Const.user] = userId;
+          doc[config.textKey] = value;
+          context.model?.saveDocument(doc);
+        },
+        onTapTemplateIcon: () async {
+          final res = await context.rootNavigator.pushNamed(
+            "/${config.routePath}/templates",
+            arguments: RouteQuery.fullscreenOrModal,
+          );
+          if (res is! String || res.isEmpty) {
+            return;
+          }
+          commentController.text = res;
+        },
+      ),
+      const Divid(),
+      const Space.height(16),
+    ];
+
     switch (editingType) {
       case PostEditingType.wysiwyg:
         final controller = useMemoized(
@@ -543,8 +416,8 @@ class CalendarModuleDetail extends PageHookWidget {
           designType: config.designType,
           appBar: appBar,
           body: UIListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
             children: [
+              ...header,
               QuillEditor(
                 scrollController: ScrollController(),
                 scrollable: false,
@@ -554,7 +427,7 @@ class CalendarModuleDetail extends PageHookWidget {
                 placeholder: "Text".localize(),
                 readOnly: true,
                 expands: false,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 customStyles: DefaultStyles(
                   placeHolder: DefaultTextBlockStyle(
                       TextStyle(
@@ -564,6 +437,17 @@ class CalendarModuleDetail extends PageHookWidget {
                       null),
                 ),
               ),
+              ...footer,
+              ...comments.mapListenable((item) {
+                return CommentTile(
+                  avatar: NetworkOrAsset.image(
+                      item.get("${Const.user}${config.iamgeKey}", "")),
+                  name: item.get("${Const.user}${config.nameKey}", ""),
+                  date: item.getAsDateTime(Const.time),
+                  text: item.get(config.textKey, ""),
+                );
+              }),
+              const Space.height(24),
             ],
           ),
         );
@@ -572,16 +456,371 @@ class CalendarModuleDetail extends PageHookWidget {
           designType: config.designType,
           appBar: appBar,
           body: UIListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             children: [
-              UIMarkdown(
-                text,
-                fontSize: 16,
-                onTapLink: (url) {
-                  context.open(url);
-                },
-              )
+              ...header,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: UIMarkdown(
+                  text,
+                  fontSize: 16,
+                  onTapLink: (url) {
+                    context.open(url);
+                  },
+                ),
+              ),
+              ...footer,
+              ...comments.mapListenable((item) {
+                return CommentTile(
+                  avatar: NetworkOrAsset.image(
+                      item.get("${Const.user}${config.iamgeKey}", "")),
+                  name: item.get("${Const.user}${config.nameKey}", ""),
+                  date: item.getAsDateTime(Const.time),
+                  text: item.get(config.textKey, ""),
+                );
+              }),
+              const Space.height(24),
             ],
+          ),
+        );
+    }
+  }
+}
+
+class CalendarModuleTemplate extends PageHookWidget {
+  const CalendarModuleTemplate(this.config);
+  final CalendarModule config;
+
+  @override
+  Widget build(BuildContext context) {
+    final template = useCollectionModel(
+      "${config.userPath}/${context.model?.userId}/${config.commentTemplatePath}",
+    );
+
+    return UIScaffold(
+      designType: config.designType,
+      appBar: UIAppBar(title: Text("Template".localize())),
+      body: UIListBuilder<String>(
+        source: [
+          ...config.initialCommentTemplate,
+          ...template.mapAndRemoveEmpty(
+            (item) => item.get<String?>(config.textKey, null),
+          )
+        ],
+        bottom: [
+          ListTextField(
+            label: "Add".localize(),
+            onSubmitted: (value) async {
+              if (value.isEmpty) {
+                return;
+              }
+              try {
+                final doc = context.model?.createDocument(template);
+                if (doc == null) {
+                  return;
+                }
+                doc[config.textKey] = value;
+                await context.model?.saveDocument(doc).showIndicator(context);
+              } catch (e) {
+                UIDialog.show(
+                  context,
+                  title: "Error".localize(),
+                  text: "Editing is not completed.".localize(),
+                );
+              }
+            },
+          ),
+        ],
+        builder: (context, item) {
+          return [
+            ListItem(
+              title: Text(item),
+              trailing: config.initialCommentTemplate.contains(item)
+                  ? null
+                  : IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () async {
+                        try {
+                          final tmp = template.firstWhereOrNull(
+                              (e) => e.get(config.textKey, "") == item);
+                          if (tmp == null) {
+                            return;
+                          }
+                          await context.model
+                              ?.deleteDocument(tmp)
+                              .showIndicator(context);
+                        } catch (e) {
+                          UIDialog.show(
+                            context,
+                            title: "Error".localize(),
+                            text: "Editing is not completed.".localize(),
+                          );
+                        }
+                      },
+                    ),
+              onTap: () {
+                context.navigator.pop(item);
+              },
+            ),
+          ];
+        },
+      ),
+    );
+  }
+}
+
+class CalendarModuleEdit extends PageHookWidget {
+  const CalendarModuleEdit(this.config);
+  final CalendarModule config;
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final form = useForm("event_id");
+    final user = useUserDocumentModel(config.userPath);
+    final item = useDocumentModel("${config.eventPath}/${form.uid}");
+    final name = item.get(config.nameKey, "");
+    final text = item.get(config.textKey, "");
+    final startTime = item.getAsDateTime(config.startTimeKey);
+    final allDay = item.get(config.allDayKey, false);
+    final endTimeValue = item.get<int?>(config.endTimeKey, null);
+    final endTime = endTimeValue != null
+        ? DateTime.fromMillisecondsSinceEpoch(endTimeValue)
+        : null;
+    final showEndTime = useState(allDay);
+
+    final editingType = !text.startsWith(RegExp(r"^(\[|\{)"))
+        ? PostEditingType.planeText
+        : config.editingType;
+
+    final appBar = UIAppBar(
+      title: Text(
+        form.select(
+          item.get(config.nameKey, ""),
+          "New Events".localize(),
+        ),
+      ),
+      subtitle: form.select(
+        Text(_timeString(
+          startTime: startTime,
+          endTime: endTime,
+          allDay: allDay,
+        )),
+        null,
+      ),
+      actions: [
+        if (form.exists &&
+            config.permission.canDelete(user.get(config.roleKey, "")))
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () {
+              UIConfirm.show(
+                context,
+                title: "Confirmation".localize(),
+                text: "You can't undo it after deleting it. May I delete it?"
+                    .localize(),
+                submitText: "Yes".localize(),
+                cacnelText: "No".localize(),
+                onSubmit: () async {
+                  await context.model
+                      ?.deleteDocument(item)
+                      .showIndicator(context);
+                  context.navigator.pop();
+                },
+              );
+            },
+          ),
+      ],
+    );
+
+    final header = [
+      FormItemSwitch(
+        labelText: "All day".localize(),
+        type: FormItemSwitchType.list,
+        controller: useMemoizedTextEditingController(allDay.toString()),
+        onSaved: (value) {
+          form[config.allDayKey] = value ?? false;
+        },
+        onChanged: (value) {
+          showEndTime.value = value ?? false;
+        },
+      ),
+      const Divid(),
+      FormItemDateTimeField(
+        labelText: "Start date".localize(),
+        dense: true,
+        errorText: "No input %s".localize().format(["Title".localize()]),
+        controller: useMemoizedTextEditingController(startTime.toString()),
+        onSaved: (value) {
+          value ??= now;
+          form[config.startTimeKey] = value.millisecondsSinceEpoch;
+        },
+      ),
+      const Divid(),
+      if (showEndTime.value) ...[
+        FormItemDateTimeField(
+          labelText: "End date".localize(),
+          dense: true,
+          controller: useMemoizedTextEditingController(
+              (endTime ?? startTime.add(const Duration(hours: 1))).toString()),
+          allowEmpty: true,
+          onSaved: (value) {
+            value ??= now.add(const Duration(hours: 1));
+            form[config.endTimeKey] = value.millisecondsSinceEpoch;
+          },
+        ),
+        const Divid(),
+      ],
+      FormItemTextField(
+        labelText: "Title".localize(),
+        dense: true,
+        errorText: "No input %s".localize().format(["Title".localize()]),
+        subColor: context.theme.disabledColor,
+        controller: useMemoizedTextEditingController(name),
+        onSaved: (value) {
+          form[config.nameKey] = value ?? "";
+        },
+      ),
+      const Divid(),
+    ];
+
+    switch (editingType) {
+      case PostEditingType.wysiwyg:
+        final controller = useMemoized(
+          () => text.isEmpty
+              ? QuillController.basic()
+              : QuillController(
+                  document: Document.fromJson(jsonDecode(text)),
+                  selection: const TextSelection.collapsed(offset: 0),
+                ),
+          [text],
+        );
+
+        return UIScaffold(
+          appBar: appBar,
+          body: FormBuilder(
+            key: form.key,
+            padding: const EdgeInsets.all(0),
+            type: FormBuilderType.fixed,
+            children: [
+              ...header,
+              Theme(
+                data: context.theme.copyWith(
+                    canvasColor: context.theme.scaffoldBackgroundColor),
+                child: QuillToolbar.basic(
+                  controller: controller,
+                  toolbarIconSize: 24,
+                  multiRowsDisplay: false,
+                  onImagePickCallback: (file) async {
+                    if (file.path.isEmpty || !file.existsSync()) {
+                      return "";
+                    }
+                    return await context.model!.uploadMedia(file.path);
+                  },
+                ),
+              ),
+              Divid(color: context.theme.dividerColor.withOpacity(0.25)),
+              Expanded(
+                child: QuillEditor(
+                  scrollController: ScrollController(),
+                  scrollable: true,
+                  focusNode: useFocusNode(),
+                  autoFocus: false,
+                  controller: controller,
+                  placeholder: "Text".localize(),
+                  readOnly: false,
+                  expands: true,
+                  padding: const EdgeInsets.all(12),
+                  customStyles: DefaultStyles(
+                    placeHolder: DefaultTextBlockStyle(
+                        TextStyle(
+                            color: context.theme.disabledColor, fontSize: 16),
+                        const Tuple2(16, 0),
+                        const Tuple2(0, 0),
+                        null),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () async {
+              if (!form.validate()) {
+                return;
+              }
+              try {
+                item[config.nameKey] = context.get(config.nameKey, "");
+                item[config.textKey] =
+                    jsonEncode(controller.document.toDelta().toJson());
+                item[config.allDayKey] = context.get(config.allDayKey, false);
+                item[config.userKey] = user.uid;
+                item[config.startTimeKey] = context.get(
+                    config.startTimeKey, now.millisecondsSinceEpoch);
+                item[config.endTimeKey] =
+                    context.get<int?>(config.endTimeKey, null);
+                await context.model?.saveDocument(item).showIndicator(context);
+                context.navigator.pop();
+              } catch (e) {
+                UIDialog.show(
+                  context,
+                  title: "Error".localize(),
+                  text: "Editing is not completed.".localize(),
+                );
+              }
+            },
+            label: Text("Submit".localize()),
+            icon: const Icon(Icons.check),
+          ),
+        );
+      default:
+        return UIScaffold(
+          appBar: appBar,
+          body: FormBuilder(
+            key: form.key,
+            padding: const EdgeInsets.all(0),
+            type: FormBuilderType.fixed,
+            children: [
+              Expanded(
+                child: FormItemTextField(
+                  dense: true,
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
+                  keyboardType: TextInputType.multiline,
+                  hintText: "Text".localize(),
+                  subColor: context.theme.disabledColor,
+                  controller: useMemoizedTextEditingController(text),
+                  onSaved: (value) {
+                    context[config.textKey] = value;
+                  },
+                ),
+              ),
+            ],
+          ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () async {
+              if (!form.validate()) {
+                return;
+              }
+              try {
+                item[config.nameKey] = context.get(config.nameKey, "");
+                item[config.textKey] = context.get(config.textKey, "");
+                item[config.allDayKey] = context.get(config.allDayKey, false);
+                item[config.userKey] = user.uid;
+                item[config.startTimeKey] = context.get(
+                    config.startTimeKey, now.millisecondsSinceEpoch);
+                item[config.endTimeKey] =
+                    context.get<int?>(config.endTimeKey, null);
+                await context.model?.saveDocument(item).showIndicator(context);
+                context.navigator.pop();
+              } catch (e) {
+                UIDialog.show(
+                  context,
+                  title: "Error".localize(),
+                  text: "Editing is not completed.".localize(),
+                );
+              }
+            },
+            label: Text("Submit".localize()),
+            icon: const Icon(Icons.check),
           ),
         );
     }

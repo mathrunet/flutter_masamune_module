@@ -161,7 +161,9 @@ class ChatModuleHome extends PageHookWidget {
       orElse: (o) => o,
     );
     final controller = useNavigatorController(
-        "/${config.routePath}/${chatWithUser.firstOrNull.get(Const.uid, "empty")}");
+      "/${config.routePath}/${chatWithUser.firstOrNull.get(Const.uid, "")}",
+      (route) => chatWithUser.isEmpty,
+    );
 
     return UIScaffold(
       designType: config.designType,
@@ -179,7 +181,7 @@ class ChatModuleHome extends PageHookWidget {
             (item) {
               final name = item.get(config.nameKey, "");
               return ListItem(
-                selected:
+                selected: !context.isMobileOrModal &&
                     controller.route?.name.last() == item.get(Const.uid, ""),
                 selectedColor: context.theme.textColorOnPrimary,
                 selectedTileColor: context.theme.primaryColor.withOpacity(0.8),
@@ -385,8 +387,10 @@ class ChatModuleTimeline extends PageHookWidget {
           ];
         },
       ),
-      bottomSheet: BottomSheetTextField(
+      bottomSheet: FormItemCommentField(
         maxLines: 4,
+        backgroundColor: context.theme.scaffoldBackgroundColor,
+        borderColor: context.theme.dividerColor,
         hintText: "Input %s".localize().format(["Text".localize()]),
         onSubmitted: (value) {
           if (value.isEmpty) {

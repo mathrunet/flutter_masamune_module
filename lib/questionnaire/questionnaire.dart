@@ -76,7 +76,6 @@ class QuestionnaireModule extends PageModule {
       "/$routePath": RouteConfig((_) => home ?? QuestionnaireModuleHome(this)),
       "/$routePath/edit":
           RouteConfig((_) => edit ?? QuestionnaireModuleEdit(this)),
-      "/$routePath/empty": RouteConfig((_) => const EmptyPage()),
       // "/$routePath/{post_id}": RouteConfig((_) => _PostView(this)),
       "/$routePath/{question_id}":
           RouteConfig((_) => view ?? QuestionnaireModuleView(this)),
@@ -181,7 +180,8 @@ class QuestionnaireModuleHome extends PageHookWidget {
     });
     final user = useUserDocumentModel(config.userPath);
     final controller = useNavigatorController(
-      "${config.routePath}/${questionWithAnswer.firstOrNull.get(Const.uid, "empty")}",
+      "${config.routePath}/${questionWithAnswer.firstOrNull.get(Const.uid, "")}",
+      (route) => questionWithAnswer.isEmpty,
     );
 
     return UIScaffold(
@@ -199,7 +199,7 @@ class QuestionnaireModuleHome extends PageHookWidget {
           return [
             ListItem(
               selected:
-                  controller.route?.name.last() == item.get(Const.uid, ""),
+                  !context.isMobileOrModal && controller.route?.name.last() == item.get(Const.uid, ""),
               selectedColor: context.theme.textColorOnPrimary,
               iconColor: Colors.green,
               selectedTileColor: context.theme.primaryColor.withOpacity(0.8),
