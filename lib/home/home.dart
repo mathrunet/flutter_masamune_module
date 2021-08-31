@@ -1,4 +1,5 @@
 import 'package:masamune/masamune.dart';
+import 'package:masamune_module/calendar/calendar.dart';
 import 'package:masamune_module/masamune_module.dart';
 
 import 'package:masamune_module/post/post.dart';
@@ -138,20 +139,26 @@ class HomeInformationModule extends PostModule {
   const HomeInformationModule({
     bool enabled = true,
     String? title,
+    String routePath = "info",
     String postPath = "info",
     this.icon = Icons.info_rounded,
+    String nameKey = Const.name,
+    String createdTimeKey = Const.createdTime,
     DesignType designType = DesignType.modern,
     Permission permission = const Permission(),
     Widget? view,
+    this.widget,
   }) : super(
           enabled: enabled,
           title: title,
           postPath: postPath,
-          routePath: "info",
+          routePath: routePath,
           editingType: PostEditingType.planeText,
           permission: permission,
           designType: designType,
           view: view,
+          nameKey: nameKey,
+          createdTimeKey: createdTimeKey,
         );
 
   @override
@@ -160,14 +167,16 @@ class HomeInformationModule extends PostModule {
       return const {};
     }
     final route = {
-      "/info/{post_id}": RouteConfig((_) => view ?? PostModuleView(this)),
-      // "/info/{post_id}/edit": RouteConfig((_) => _PostEdit(this)),
+      "/$routePath/{post_id}": RouteConfig((_) => view ?? PostModuleView(this)),
     };
     return route;
   }
 
   /// アイコン。
   final IconData icon;
+
+  /// ウィジェット。
+  final Widget? widget;
 
   @override
   HomeInformationModule? fromMap(DynamicMap map) =>
@@ -179,19 +188,46 @@ class HomeInformationModule extends PostModule {
 
 @module
 @immutable
-class HomeCalendarModule extends PageModule {
-  const HomeCalendarModule(
-      {bool enabled = true,
-      String? title,
-      this.path = "event",
-      this.icon = Icons.calendar_today})
-      : super(enabled: enabled, title: title);
+class HomeCalendarModule extends CalendarModule {
+  const HomeCalendarModule({
+    bool enabled = true,
+    String? title,
+    String routePath = "calendar",
+    String eventPath = "event",
+    String startTimeKey = Const.startTime,
+    String endTimeKey = Const.endTime,
+    String allDayKey = "allDay",
+    this.icon = Icons.calendar_today,
+    Widget? detail,
+    this.widget,
+  }) : super(
+          enabled: enabled,
+          title: title,
+          routePath: routePath,
+          eventPath: eventPath,
+          detail: detail,
+          startTimeKey: startTimeKey,
+          endTimeKey: endTimeKey,
+          allDayKey: allDayKey,
+        );
 
-  /// お知らせのデータパス。
-  final String path;
+  @override
+  Map<String, RouteConfig>? get routeSettings {
+    if (!enabled) {
+      return const {};
+    }
+    final route = {
+      "/$routePath/{event_id}/detail":
+          RouteConfig((_) => detail ?? CalendarModuleDetail(this)),
+    };
+    return route;
+  }
 
   /// アイコン。
   final IconData icon;
+
+  /// ウィジェット。
+  final Widget? widget;
 
   @override
   HomeCalendarModule? fromMap(DynamicMap map) =>

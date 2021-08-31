@@ -67,7 +67,7 @@ class LoginModule extends PageModule {
     }
     return route;
   }
-  
+
   /// デザインタイプ。
   final DesignType designType;
 

@@ -124,7 +124,7 @@ class ChatModuleHome extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
+    final now = useNow();
     final user = useUserDocumentModel(config.userPath);
     final chat = useCollectionModel(
       config.chatQuery?.value ??
@@ -223,7 +223,7 @@ class ChatModuleTimeline extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
+    final now = useNow();
     final userId = context.model?.userId;
     final user = useUserDocumentModel();
     final chat =

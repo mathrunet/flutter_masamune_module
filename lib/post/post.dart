@@ -12,6 +12,7 @@ import 'package:tuple/tuple.dart';
 
 part "post.m.dart";
 
+const _kQuillToolbarHeight = 80;
 enum PostEditingType { planeText, wysiwyg }
 
 @module
@@ -99,7 +100,7 @@ class PostModuleHome extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
+    final now = useNow();
     final user = useUserDocumentModel(config.userPath);
     final post = useCollectionModel(config.postQuery?.value ?? config.postPath);
     final users = useCollectionModel(
@@ -188,13 +189,13 @@ class PostModuleView extends PageHookWidget {
     final user = useUserDocumentModel(config.userPath);
     final item =
         useDocumentModel("${config.postPath}/${context.get("post_id", "")}");
-    final now = DateTime.now();
+    final now = useNow();
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final createdTime =
         item.get(config.createdTimeKey, now.millisecondsSinceEpoch);
 
-    final editingType = !text.startsWith(RegExp(r"^(\[|\{)"))
+    final editingType = text.isNotEmpty && !text.startsWith(RegExp(r"^(\[|\{)"))
         ? PostEditingType.planeText
         : config.editingType;
 
@@ -302,7 +303,7 @@ class PostModuleEdit extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final form = useForm("post_id");
-    final now = DateTime.now();
+    final now = useNow();
     final user = useUserDocumentModel(config.userPath);
     final item = useDocumentModel("${config.postPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
@@ -388,7 +389,7 @@ class PostModuleEdit extends PageHookWidget {
           body: FormBuilder(
             key: form.key,
             padding: const EdgeInsets.all(0),
-            type: FormBuilderType.fixed,
+            type: FormBuilderType.listView,
             children: [
               ...header,
               Theme(
@@ -407,7 +408,12 @@ class PostModuleEdit extends PageHookWidget {
                 ),
               ),
               Divid(color: context.theme.dividerColor.withOpacity(0.25)),
-              Expanded(
+              SizedBox(
+                height: (context.mediaQuery.size.height -
+                        context.mediaQuery.viewInsets.bottom -
+                        kToolbarHeight -
+                        _kQuillToolbarHeight)
+                    .limitLow(0),
                 child: QuillEditor(
                   scrollController: ScrollController(),
                   scrollable: true,
@@ -462,10 +468,15 @@ class PostModuleEdit extends PageHookWidget {
           body: FormBuilder(
             key: form.key,
             padding: const EdgeInsets.all(0),
-            type: FormBuilderType.fixed,
+            type: FormBuilderType.listView,
             children: [
               ...header,
-              Expanded(
+              SizedBox(
+                height: (context.mediaQuery.size.height -
+                        context.mediaQuery.viewInsets.bottom -
+                        kToolbarHeight -
+                        _kQuillToolbarHeight)
+                    .limitLow(0),
                 child: FormItemTextField(
                   dense: true,
                   expands: true,

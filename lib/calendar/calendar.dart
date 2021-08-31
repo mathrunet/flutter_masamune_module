@@ -11,6 +11,7 @@ import 'package:tuple/tuple.dart';
 
 part 'calendar.m.dart';
 
+const _kQuillToolbarHeight = 80;
 enum CalendarEditingType { planeText, wysiwyg }
 
 @module
@@ -58,6 +59,8 @@ class CalendarModule extends PageModule {
       "/$routePath/templates":
           RouteConfig((_) => template ?? CalendarModuleTemplate(this)),
       "/$routePath/edit": RouteConfig((_) => edit ?? CalendarModuleEdit(this)),
+      "/$routePath/edit/{date_id}":
+          RouteConfig((_) => edit ?? CalendarModuleEdit(this)),
       "/$routePath/empty": RouteConfig((_) => const EmptyPage()),
       "/$routePath/{date_id}":
           RouteConfig((_) => dayView ?? CalendarModuleDayView(this)),
@@ -152,6 +155,7 @@ class CalendarModuleHome extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final selected = useState(DateTime.now());
     final events = useCollectionModel(config.eventPath);
     final user = useUserDocumentModel(config.userPath);
 
@@ -166,8 +170,9 @@ class CalendarModuleHome extends PageHookWidget {
         events: events,
         expand: true,
         onDaySelect: (day, events, holidays) {
+          selected.value = day;
           context.rootNavigator.pushNamed(
-            "/${config.routePath}/${day.format("yyyyMMdd")}",
+            "/${config.routePath}/${day.toDateID()}",
             arguments: RouteQuery.fullscreenOrModal,
           );
         },
@@ -178,8 +183,12 @@ class CalendarModuleHome extends PageHookWidget {
                   label: Text("Add".localize()),
                   icon: const Icon(Icons.add),
                   onPressed: () {
+                    final dateId = selected.value
+                        .combine(TimeOfDay.now())
+                        .round(const Duration(minutes: 15))
+                        .toDateTimeID();
                     context.navigator.pushNamed(
-                      "/${config.routePath}/edit",
+                      "/${config.routePath}/edit/$dateId}",
                       arguments: RouteQuery.fullscreen,
                     );
                   },
@@ -195,22 +204,9 @@ class CalendarModuleDayView extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
+    final now = useNow();
     final user = useUserDocumentModel(config.userPath);
-    final dateId = context.get("date_id", now.format("yyyyMMdd"));
-    final year = int.tryParse(dateId.substring(0, 4));
-    final month = int.tryParse(dateId.substring(4, 6));
-    final day = int.tryParse(dateId.substring(6, 8));
-    if (year == null || month == null || day == null) {
-      return UIScaffold(
-        designType: config.designType,
-        appBar: UIAppBar(title: Text("Error".localize())),
-        body: Center(
-          child: Text("No data.".localize()),
-        ),
-      );
-    }
-    final date = DateTime(year, month, day);
+    final date = context.get("date_id", now.toDateID()).toDateTime();
     final startTime = date;
     final endTime = date.add(const Duration(days: 1));
 
@@ -245,13 +241,12 @@ class CalendarModuleDayView extends PageHookWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
               decoration: DefaultBoxDecoration(
-                  color: context.theme.textColor,
+                  color: context.theme.dividerColor,
                   width: 1,
-                  backgroundColor: Colors.red,
+                  backgroundColor: context.theme.primaryColor,
                   radius: 8.0),
-              child: Text(
-                item.get(config.nameKey, ""),
-              ),
+              child: Text(item.get(config.nameKey, ""),
+                  style: TextStyle(color: context.theme.textColorOnPrimary)),
             ),
           );
         },
@@ -262,8 +257,12 @@ class CalendarModuleDayView extends PageHookWidget {
                   label: Text("Add".localize()),
                   icon: const Icon(Icons.add),
                   onPressed: () {
+                    final dateId = date
+                        .combine(TimeOfDay.now())
+                        .round(const Duration(minutes: 15))
+                        .toDateTimeID();
                     context.navigator.pushNamed(
-                      "/${config.routePath}/edit",
+                      "/${config.routePath}/edit/$dateId",
                       arguments: RouteQuery.fullscreen,
                     );
                   },
@@ -318,8 +317,8 @@ class CalendarModuleDetail extends PageHookWidget {
       orElse: (o) => o,
     );
 
-    final editingType = !text.startsWith(RegExp(r"^(\[|\{)"))
-        ? PostEditingType.planeText
+    final editingType = text.isNotEmpty && !text.startsWith(RegExp(r"^(\[|\{)"))
+        ? CalendarEditingType.planeText
         : config.editingType;
 
     final appBar = UIAppBar(
@@ -335,7 +334,7 @@ class CalendarModuleDetail extends PageHookWidget {
             icon: const Icon(Icons.edit),
             onPressed: () {
               context.rootNavigator.pushNamed(
-                "/${config.routePath}/${context.get("post_id", "")}/edit",
+                "/${config.routePath}/${context.get("event_id", "")}/edit",
                 arguments: RouteQuery.fullscreenOrModal,
               );
             },
@@ -401,7 +400,7 @@ class CalendarModuleDetail extends PageHookWidget {
     ];
 
     switch (editingType) {
-      case PostEditingType.wysiwyg:
+      case CalendarEditingType.wysiwyg:
         final controller = useMemoized(
           () => text.isEmpty
               ? QuillController.basic()
@@ -574,22 +573,30 @@ class CalendarModuleEdit extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
+    final date = context.get<String?>("date_id", null)?.toDateTime();
+    final now = useDateTime(date);
     final form = useForm("event_id");
     final user = useUserDocumentModel(config.userPath);
     final item = useDocumentModel("${config.eventPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
-    final startTime = item.getAsDateTime(config.startTimeKey);
+    final startTime = item.getAsDateTime(config.startTimeKey, now);
     final allDay = item.get(config.allDayKey, false);
     final endTimeValue = item.get<int?>(config.endTimeKey, null);
     final endTime = endTimeValue != null
         ? DateTime.fromMillisecondsSinceEpoch(endTimeValue)
         : null;
-    final showEndTime = useState(allDay);
+    final allDayState = useCollapse(allDay);
+    final allDayController =
+        useMemoizedTextEditingController(allDay.toString());
+    final startTimeController =
+        useMemoizedTextEditingController(startTime.toString());
+    final endTimeController = useMemoizedTextEditingController(
+        (endTime ?? startTime.add(const Duration(hours: 1))).toString());
+    final titleController = useMemoizedTextEditingController(name);
 
-    final editingType = !text.startsWith(RegExp(r"^(\[|\{)"))
-        ? PostEditingType.planeText
+    final editingType = text.isNotEmpty && !text.startsWith(RegExp(r"^(\[|\{)"))
+        ? CalendarEditingType.planeText
         : config.editingType;
 
     final appBar = UIAppBar(
@@ -636,46 +643,62 @@ class CalendarModuleEdit extends PageHookWidget {
       FormItemSwitch(
         labelText: "All day".localize(),
         type: FormItemSwitchType.list,
-        controller: useMemoizedTextEditingController(allDay.toString()),
+        controller: allDayController,
         onSaved: (value) {
           form[config.allDayKey] = value ?? false;
         },
         onChanged: (value) {
-          showEndTime.value = value ?? false;
+          allDayState.value = value ?? false;
         },
       ),
-      const Divid(),
+      DividHeadline("Start date".localize()),
       FormItemDateTimeField(
-        labelText: "Start date".localize(),
         dense: true,
         errorText: "No input %s".localize().format(["Title".localize()]),
-        controller: useMemoizedTextEditingController(startTime.toString()),
+        type: allDayState.value
+            ? FormItemDateTimeFieldPickerType.date
+            : FormItemDateTimeFieldPickerType.dateTime,
+        controller: startTimeController,
+        format: allDayState.value ? "yyyy/MM/dd(E)" : "yyyy/MM/dd(E) HH:mm",
         onSaved: (value) {
           value ??= now;
           form[config.startTimeKey] = value.millisecondsSinceEpoch;
         },
       ),
-      const Divid(),
-      if (showEndTime.value) ...[
-        FormItemDateTimeField(
-          labelText: "End date".localize(),
-          dense: true,
-          controller: useMemoizedTextEditingController(
-              (endTime ?? startTime.add(const Duration(hours: 1))).toString()),
-          allowEmpty: true,
-          onSaved: (value) {
-            value ??= now.add(const Duration(hours: 1));
-            form[config.endTimeKey] = value.millisecondsSinceEpoch;
-          },
-        ),
-        const Divid(),
-      ],
+      Collapse(
+        show: !allDayState.value,
+        children: [
+          DividHeadline("End date".localize()),
+          FormItemDateTimeField(
+            dense: true,
+            controller: endTimeController,
+            allowEmpty: true,
+            format: "yyyy/MM/dd(E) HH:mm",
+            validator: (value) {
+              if (value == null || allDayState.value) {
+                return null;
+              }
+              final start = DateTime.parse(startTimeController.text);
+              if (start.millisecondsSinceEpoch >=
+                  value.millisecondsSinceEpoch) {
+                return "The end date and time must be a time after the start date and time."
+                    .localize();
+              }
+              return null;
+            },
+            onSaved: (value) {
+              value ??= now.add(const Duration(hours: 1));
+              form[config.endTimeKey] = value.millisecondsSinceEpoch;
+            },
+          ),
+        ],
+      ),
+      DividHeadline("Title".localize()),
       FormItemTextField(
-        labelText: "Title".localize(),
         dense: true,
         errorText: "No input %s".localize().format(["Title".localize()]),
         subColor: context.theme.disabledColor,
-        controller: useMemoizedTextEditingController(name),
+        controller: titleController,
         onSaved: (value) {
           form[config.nameKey] = value ?? "";
         },
@@ -684,7 +707,7 @@ class CalendarModuleEdit extends PageHookWidget {
     ];
 
     switch (editingType) {
-      case PostEditingType.wysiwyg:
+      case CalendarEditingType.wysiwyg:
         final controller = useMemoized(
           () => text.isEmpty
               ? QuillController.basic()
@@ -697,10 +720,11 @@ class CalendarModuleEdit extends PageHookWidget {
 
         return UIScaffold(
           appBar: appBar,
+          designType: config.designType,
           body: FormBuilder(
             key: form.key,
             padding: const EdgeInsets.all(0),
-            type: FormBuilderType.fixed,
+            type: FormBuilderType.listView,
             children: [
               ...header,
               Theme(
@@ -719,7 +743,12 @@ class CalendarModuleEdit extends PageHookWidget {
                 ),
               ),
               Divid(color: context.theme.dividerColor.withOpacity(0.25)),
-              Expanded(
+              SizedBox(
+                height: (context.mediaQuery.size.height -
+                        context.mediaQuery.viewInsets.bottom -
+                        kToolbarHeight -
+                        _kQuillToolbarHeight)
+                    .limitLow(0),
                 child: QuillEditor(
                   scrollController: ScrollController(),
                   scrollable: true,
@@ -728,7 +757,7 @@ class CalendarModuleEdit extends PageHookWidget {
                   controller: controller,
                   placeholder: "Text".localize(),
                   readOnly: false,
-                  expands: true,
+                  expands: false,
                   padding: const EdgeInsets.all(12),
                   customStyles: DefaultStyles(
                     placeHolder: DefaultTextBlockStyle(
@@ -748,15 +777,16 @@ class CalendarModuleEdit extends PageHookWidget {
                 return;
               }
               try {
+                final allDay = context.get(config.allDayKey, false);
                 item[config.nameKey] = context.get(config.nameKey, "");
                 item[config.textKey] =
                     jsonEncode(controller.document.toDelta().toJson());
-                item[config.allDayKey] = context.get(config.allDayKey, false);
+                item[config.allDayKey] = allDay;
                 item[config.userKey] = user.uid;
                 item[config.startTimeKey] = context.get(
                     config.startTimeKey, now.millisecondsSinceEpoch);
                 item[config.endTimeKey] =
-                    context.get<int?>(config.endTimeKey, null);
+                    allDay ? null : context.get<int?>(config.endTimeKey, null);
                 await context.model?.saveDocument(item).showIndicator(context);
                 context.navigator.pop();
               } catch (e) {
@@ -774,12 +804,18 @@ class CalendarModuleEdit extends PageHookWidget {
       default:
         return UIScaffold(
           appBar: appBar,
+          designType: config.designType,
           body: FormBuilder(
             key: form.key,
             padding: const EdgeInsets.all(0),
-            type: FormBuilderType.fixed,
+            type: FormBuilderType.listView,
             children: [
-              Expanded(
+              ...header,
+              SizedBox(
+                height: (context.mediaQuery.size.height -
+                        context.mediaQuery.viewInsets.bottom -
+                        kToolbarHeight)
+                    .limitLow(0),
                 child: FormItemTextField(
                   dense: true,
                   expands: true,
@@ -801,14 +837,15 @@ class CalendarModuleEdit extends PageHookWidget {
                 return;
               }
               try {
+                final allDay = context.get(config.allDayKey, false);
                 item[config.nameKey] = context.get(config.nameKey, "");
                 item[config.textKey] = context.get(config.textKey, "");
-                item[config.allDayKey] = context.get(config.allDayKey, false);
+                item[config.allDayKey] = allDay;
                 item[config.userKey] = user.uid;
                 item[config.startTimeKey] = context.get(
                     config.startTimeKey, now.millisecondsSinceEpoch);
                 item[config.endTimeKey] =
-                    context.get<int?>(config.endTimeKey, null);
+                    allDay ? null : context.get<int?>(config.endTimeKey, null);
                 await context.model?.saveDocument(item).showIndicator(context);
                 context.navigator.pop();
               } catch (e) {
@@ -836,7 +873,7 @@ String _timeString({
     allDay = true;
   }
   if (allDay) {
-    return startTime.format("yyyy/MM/dd ${"AllDay".localize()}");
+    return "${startTime.format("yyyy/MM/dd")} ${"All day".localize()}";
   } else {
     return "${startTime.format("yyyy/MM/dd HH:mm")} - ${endTime?.format("yyyy/MM/dd HH:mm")}";
   }

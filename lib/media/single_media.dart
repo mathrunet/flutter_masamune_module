@@ -46,7 +46,7 @@ class SingleMediaModule extends PageModule {
   // ページ設定。
   final Widget? home;
   final Widget? edit;
-  
+
   /// デザインタイプ。
   final DesignType designType;
 
@@ -97,7 +97,7 @@ class SingleMediaModuleHome extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
+    final now = useNow();
     final user = useUserDocumentModel(config.userPath);
     final item = useDocumentModel(config.mediaPath);
     final name = item.get(config.nameKey, "");
@@ -179,40 +179,40 @@ class SingleMediaModuleEdit extends PageHookWidget {
         ),
       ),
       body: FormBuilder(
-          padding: const EdgeInsets.all(0),
-          key: form.key,
-          children: [
-            FormItemMedia(
-              height: 200,
-              dense: true,
-              controller: useMemoizedTextEditingController(media),
-              errorText: "No input %s".localize().format(["Image".localize()]),
-              onTap: (onUpdate) async {
-                final media = await context.platform?.mediaDialog(
-                  context,
-                  title: "Please select your media".localize(),
-                  type: config.mediaType,
-                );
-                onUpdate(media?.path);
-              },
-              onSaved: (value) {
-                context[config.mediaKey] = value;
-              },
-            ),
-            const Space.height(12),
-            DividHeadline("Title".localize()),
-            FormItemTextField(
-              dense: true,
-              hintText: "Input %s".localize().format(["Title".localize()]),
-              errorText: "No input %s".localize().format(["Title".localize()]),
-              controller: useMemoizedTextEditingController(name),
-              onSaved: (value) {
-                context[config.nameKey] = value;
-              },
-            ),
-            const Divid(),
-          ],
-        ),
+        padding: const EdgeInsets.all(0),
+        key: form.key,
+        children: [
+          FormItemMedia(
+            height: 200,
+            dense: true,
+            controller: useMemoizedTextEditingController(media),
+            errorText: "No input %s".localize().format(["Image".localize()]),
+            onTap: (onUpdate) async {
+              final media = await context.platform?.mediaDialog(
+                context,
+                title: "Please select your media".localize(),
+                type: config.mediaType,
+              );
+              onUpdate(media?.path);
+            },
+            onSaved: (value) {
+              context[config.mediaKey] = value;
+            },
+          ),
+          const Space.height(12),
+          DividHeadline("Title".localize()),
+          FormItemTextField(
+            dense: true,
+            hintText: "Input %s".localize().format(["Title".localize()]),
+            errorText: "No input %s".localize().format(["Title".localize()]),
+            controller: useMemoizedTextEditingController(name),
+            onSaved: (value) {
+              context[config.nameKey] = value;
+            },
+          ),
+          const Divid(),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           if (!form.validate()) {

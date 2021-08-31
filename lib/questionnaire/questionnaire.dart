@@ -162,7 +162,7 @@ class QuestionnaireModuleHome extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
+    final now = useNow();
     final question = useCollectionModel(
         config.questionnaireQuery?.value ?? config.questionPath);
     final questionWithAnswer = question.map((e) {
@@ -198,8 +198,8 @@ class QuestionnaireModuleHome extends PageHookWidget {
         builder: (context, item) {
           return [
             ListItem(
-              selected:
-                  !context.isMobileOrModal && controller.route?.name.last() == item.get(Const.uid, ""),
+              selected: !context.isMobileOrModal &&
+                  controller.route?.name.last() == item.get(Const.uid, ""),
               selectedColor: context.theme.textColorOnPrimary,
               iconColor: Colors.green,
               selectedTileColor: context.theme.primaryColor.withOpacity(0.8),
@@ -267,7 +267,7 @@ class QuestionnaireAanswerView extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
+    final now = useNow();
     final question = useDocumentModel(
         "${config.questionPath}/${context.get("question_id", "")}");
     final questions = useCollectionModel(

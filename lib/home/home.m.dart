@@ -95,9 +95,12 @@ HomeInformationModule? _$HomeInformationModuleFromMap(
   return HomeInformationModule(
       enabled: map.get<bool>("enabled", true),
       title: map.get<String?>("title", null),
+      routePath: map.get<String>("routePath", "info"),
       postPath: map.get<String>("postPath", "info"),
       icon: map.get<DynamicMap>("icon", <String, dynamic>{}).toIconData() ??
           Icons.info_rounded,
+      nameKey: map.get<String>("nameKey", Const.name),
+      createdTimeKey: map.get<String>("createdTimeKey", Const.createdTime),
       designType: DesignType.values.firstWhere((e) =>
           e.index == map.get<int>("designType", DesignType.modern.index)),
       permission: map.get<DynamicMap>(
@@ -110,8 +113,11 @@ DynamicMap _$HomeInformationModuleToMap(HomeInformationModule ref) {
     "type": ref.type,
     "enabled": ref.enabled,
     if (ref.title.isNotEmpty) "title": ref.title,
+    if (ref.routePath.isNotEmpty) "routePath": ref.routePath,
     if (ref.postPath.isNotEmpty) "postPath": ref.postPath,
     "icon": ref.icon.toMap(),
+    if (ref.nameKey.isNotEmpty) "nameKey": ref.nameKey,
+    if (ref.createdTimeKey.isNotEmpty) "createdTimeKey": ref.createdTimeKey,
     "designType": ref.designType.index,
     "permission": ref.permission.toMap()
   };
@@ -125,7 +131,8 @@ HomeCalendarModule? _$HomeCalendarModuleFromMap(
   return HomeCalendarModule(
       enabled: map.get<bool>("enabled", true),
       title: map.get<String?>("title", null),
-      path: map.get<String>("path", "event"),
+      routePath: map.get<String>("routePath", "calendar"),
+      eventPath: map.get<String>("eventPath", "event"),
       icon: map.get<DynamicMap>("icon", <String, dynamic>{}).toIconData() ??
           Icons.calendar_today);
 }
@@ -135,7 +142,8 @@ DynamicMap _$HomeCalendarModuleToMap(HomeCalendarModule ref) {
     "type": ref.type,
     "enabled": ref.enabled,
     if (ref.title.isNotEmpty) "title": ref.title,
-    if (ref.path.isNotEmpty) "path": ref.path,
+    if (ref.routePath.isNotEmpty) "routePath": ref.routePath,
+    if (ref.eventPath.isNotEmpty) "eventPath": ref.eventPath,
     "icon": ref.icon.toMap()
   };
 }

@@ -335,7 +335,7 @@ class GalleryModuleMediaDetail extends PageHookWidget {
     final item = useDocumentModel(
         "${config.galleryPath}/${context.get("media_id", "")}");
 
-    final now = DateTime.now();
+    final now = useNow();
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final media = item.get(config.mediaKey, "");

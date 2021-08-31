@@ -235,10 +235,15 @@ class HomeModuleTileMenuHomeInformation extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (config.info.widget != null) {
+      return config.info.widget!;
+    }
+
+    final now = useNow();
     final info = useCollectionModel(config.info.postPath);
     info.sort((a, b) {
-      return b.get("created", DateTime.now().millisecondsSinceEpoch) -
-          a.get("created", DateTime.now().millisecondsSinceEpoch);
+      return b.get(config.info.createdTimeKey, now.millisecondsSinceEpoch) -
+          a.get(config.info.createdTimeKey, now.millisecondsSinceEpoch);
     });
 
     return LoadingBuilder(
@@ -263,7 +268,8 @@ class HomeModuleTileMenuHomeInformation extends HookWidget {
               children: [
                 ...info.limitEnd(4).mapListenable((item) {
                   final dateTime = DateTime.fromMillisecondsSinceEpoch(
-                    item.get("created", DateTime.now().millisecondsSinceEpoch),
+                    item.get(
+                        config.info.createdTimeKey, now.millisecondsSinceEpoch),
                   );
                   return DefaultTextStyle(
                     style: TextStyle(
@@ -274,7 +280,7 @@ class HomeModuleTileMenuHomeInformation extends HookWidget {
                       color: config.color ?? context.theme.primaryColor,
                       onTap: () {
                         context.navigator.pushNamed(
-                          "/info/${item.get(Const.uid, "")}",
+                          "/${config.info.routePath}/${item.get(Const.uid, "")}",
                           arguments: RouteQuery.fullscreenOrModal,
                         );
                       },
@@ -305,7 +311,7 @@ class HomeModuleTileMenuHomeInformation extends HookWidget {
                               ],
                             ),
                             const Space.height(8),
-                            Text(item.get(Const.name, "--")),
+                            Text(item.get(config.info.nameKey, "--")),
                           ],
                         ),
                       ),
@@ -327,7 +333,17 @@ class HomeModuleTileMenuHomeCalendar extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final event = useCollectionModel(config.calendar.path);
+    if (config.info.widget != null) {
+      return config.info.widget!;
+    }
+
+    final now = useNow();
+    final start = now.toDate();
+    final event =
+        useCollectionModel(config.calendar.eventPath).where((element) {
+      final time = element.getAsDateTime(config.calendar.startTimeKey);
+      return time.millisecondsSinceEpoch >= start.millisecondsSinceEpoch;
+    }).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -339,8 +355,91 @@ class HomeModuleTileMenuHomeCalendar extends HookWidget {
           backgroundColor:
               config.color ?? context.theme.primaryColor.lighten(0.15),
         ),
+        const Space.height(4),
+        ColoredBox(
+          color: context.theme.primaryColor,
+          child: event.isEmpty
+              ? Container(
+                  alignment: Alignment.center,
+                  height: 100,
+                  child: Text(
+                    "No data.".localize(),
+                    style: TextStyle(
+                      color: context.theme.scaffoldBackgroundColor,
+                    ),
+                  ),
+                )
+              : UIScheduleCalendar(
+                  source: event,
+                  padding: const EdgeInsets.all(8),
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  dayTextStyle:
+                      TextStyle(color: context.theme.textColorOnPrimary),
+                  builder: (context, item) {
+                    final endTimeValue =
+                        item.get<int?>(config.calendar.endTimeKey, null);
+                    final endTime = endTimeValue != null
+                        ? DateTime.fromMillisecondsSinceEpoch(endTimeValue)
+                        : null;
+
+                    return InkWell(
+                      onTap: () {
+                        context.navigator.pushNamed(
+                          "/${config.calendar.routePath}/${item.uid}/detail",
+                          arguments: RouteQuery.fullscreenOrModal,
+                        );
+                      },
+                      child: Container(
+                        color: context.theme.scaffoldBackgroundColor,
+                        padding: const EdgeInsets.all(4),
+                        margin: const EdgeInsets.only(bottom: 4),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.get(config.nameKey, ""),
+                              style: TextStyle(
+                                color: context.theme.primaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              _timeString(
+                                startTime: item.getAsDateTime(
+                                    config.calendar.startTimeKey),
+                                endTime: endTime,
+                                allDay:
+                                    item.get(config.calendar.allDayKey, false),
+                              ),
+                              style: TextStyle(
+                                color: context.theme.primaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
       ],
     );
+  }
+}
+
+String _timeString({
+  required DateTime startTime,
+  DateTime? endTime,
+  bool allDay = false,
+}) {
+  if (endTime == null) {
+    allDay = true;
+  }
+  if (allDay) {
+    return "${startTime.format("yyyy/MM/dd")} ${"All day".localize()}";
+  } else {
+    return "${startTime.format("yyyy/MM/dd HH:mm")} - ${endTime?.format("yyyy/MM/dd HH:mm")}";
   }
 }
 
