@@ -133,6 +133,9 @@ HomeCalendarModule? _$HomeCalendarModuleFromMap(
       title: map.get<String?>("title", null),
       routePath: map.get<String>("routePath", "calendar"),
       eventPath: map.get<String>("eventPath", "event"),
+      startTimeKey: map.get<String>("startTimeKey", Const.startTime),
+      endTimeKey: map.get<String>("endTimeKey", Const.endTime),
+      allDayKey: map.get<String>("allDayKey", "allDay"),
       icon: map.get<DynamicMap>("icon", <String, dynamic>{}).toIconData() ??
           Icons.calendar_today);
 }
@@ -144,6 +147,9 @@ DynamicMap _$HomeCalendarModuleToMap(HomeCalendarModule ref) {
     if (ref.title.isNotEmpty) "title": ref.title,
     if (ref.routePath.isNotEmpty) "routePath": ref.routePath,
     if (ref.eventPath.isNotEmpty) "eventPath": ref.eventPath,
+    if (ref.startTimeKey.isNotEmpty) "startTimeKey": ref.startTimeKey,
+    if (ref.endTimeKey.isNotEmpty) "endTimeKey": ref.endTimeKey,
+    if (ref.allDayKey.isNotEmpty) "allDayKey": ref.allDayKey,
     "icon": ref.icon.toMap()
   };
 }

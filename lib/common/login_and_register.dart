@@ -13,16 +13,11 @@ class LoginModule extends PageModule {
   const LoginModule({
     bool enabled = true,
     String title = "",
-    this.roles = const [
-      RoleConfig(
-        id: "register",
-        label: "Registration",
-        icon: FontAwesomeIcons.userAlt,
-      ),
-    ],
     this.loginType = LoginType.emailAndPassword,
     this.layoutType = LoginLayoutType.fixed,
+    this.color,
     this.backgroundColor,
+    this.backgroundGradient,
     this.appBarColorOnSliverList,
     this.appBarHeightOnSliverList,
     this.buttonColor,
@@ -31,6 +26,7 @@ class LoginModule extends PageModule {
     this.backgroundImageBlur = 5.0,
     this.featureImage,
     this.featureImageSize,
+    this.formImageSize,
     this.featureImageFit = BoxFit.cover,
     this.titleTextStyle,
     this.titleAlignment = Alignment.bottomLeft,
@@ -56,23 +52,14 @@ class LoginModule extends PageModule {
       "/landing": RouteConfig((_) => Landing(this)),
       "/login": RouteConfig((_) => Login(this)),
       "/reset": RouteConfig((_) => PasswordReset(this)),
+      "/register": RouteConfig((_) => Register(this)),
+      "/register/{role_id}": RouteConfig((_) => Register(this)),
     };
-    if (roles.length == 1) {
-      route["/register"] = RouteConfig((_) => Register(this, roles.first));
-    } else if (roles.isNotEmpty) {
-      for (final role in roles) {
-        route["/register/${role.id}"] =
-            RouteConfig((_) => Register(this, role));
-      }
-    }
     return route;
   }
 
   /// デザインタイプ。
   final DesignType designType;
-
-  /// 権限。
-  final List<RoleConfig> roles;
 
   /// ログインタイプ。
   final LoginType loginType;
@@ -80,8 +67,14 @@ class LoginModule extends PageModule {
   /// レイアウトタイプ。
   final LoginLayoutType layoutType;
 
+  /// 前景色。
+  final Color? color;
+
   /// 背景色。
   final Color? backgroundColor;
+
+  /// 背景グラデーション。
+  final Gradient? backgroundGradient;
 
   /// AppBarの背景色。Sliver時のみ。
   final Color? appBarColorOnSliverList;
@@ -97,6 +90,9 @@ class LoginModule extends PageModule {
 
   /// フィーチャー画像のサイズ。
   final Size? featureImageSize;
+
+  /// フォーム画像のサイズ。
+  final Size? formImageSize;
 
   /// 背景画像。
   final String? backgroundImage;
@@ -183,7 +179,6 @@ extension _LoginConfigExtensions on DynamicMap? {
 enum LoginType { emailAndPassword }
 
 enum LoginLayoutType {
-  sliverList,
   fixed,
 }
 
@@ -202,6 +197,11 @@ class Landing extends PageHookWidget {
         ),
       ],
     );
+
+    final color = config.color ?? Colors.white;
+    final buttonColor = config.buttonColor ?? config.color ?? Colors.white;
+    final buttonBackgroundColor =
+        config.buttonBackgroundColor ?? Colors.transparent;
 
     switch (config.layoutType) {
       case LoginLayoutType.fixed:
@@ -243,11 +243,11 @@ class Landing extends PageHookWidget {
                                     child: Padding(
                                       padding: config.titlePadding,
                                       child: DefaultTextStyle(
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 56,
                                           fontFamily: "Mplus",
                                           fontWeight: FontWeight.w700,
-                                          color: Colors.white,
+                                          color: color,
                                         ),
                                         child: Text(
                                           config.title ?? "",
@@ -269,24 +269,26 @@ class Landing extends PageHookWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
-                                  for (final role in config.roles)
+                                  for (final role in context.roles)
                                     FormItemSubmit(
-                                      role.label?.localize() ??
-                                          "Registration".localize(),
-                                      borderRadius: 30,
-                                      width: 2.4,
-                                      color: context
-                                          .theme.colorScheme.onBackground,
-                                      backgroundColor: Colors.transparent,
-                                      borderColor: context
-                                          .theme.colorScheme.onBackground,
+                                      role.label.isNotEmpty
+                                          ? ("%s registration"
+                                              .localize()
+                                              .format([role.label!.localize()]))
+                                          : "Registration".localize(),
+                                      borderRadius: 35,
+                                      height: 70,
+                                      width: 1.6,
+                                      color: buttonColor,
+                                      borderColor: buttonColor,
+                                      backgroundColor: buttonBackgroundColor,
                                       icon: role.icon,
                                       onPressed: () {
                                         if (role.path.isNotEmpty) {
                                           context.navigator
                                               .pushNamed(role.path!);
                                         } else {
-                                          if (config.roles.length <= 1) {
+                                          if (context.roles.length <= 1) {
                                             context.navigator.pushNamed(
                                                 "/register",
                                                 arguments: RouteQuery.fade);
@@ -302,13 +304,12 @@ class Landing extends PageHookWidget {
                                     FormItemSubmit(
                                       config.guestLogin!.label?.localize() ??
                                           "Guest login".localize(),
-                                      borderRadius: 30,
-                                      color: context
-                                          .theme.colorScheme.onBackground,
-                                      backgroundColor: Colors.transparent,
-                                      width: 2.4,
-                                      borderColor: context
-                                          .theme.colorScheme.onBackground,
+                                      borderRadius: 35,
+                                      height: 70,
+                                      width: 1.6,
+                                      color: buttonColor,
+                                      borderColor: buttonColor,
+                                      backgroundColor: buttonBackgroundColor,
                                       icon: config.guestLogin!.icon,
                                       onPressed: () async {
                                         await context.model
@@ -321,13 +322,12 @@ class Landing extends PageHookWidget {
                                   FormItemSubmit(
                                     config.login.label?.localize() ??
                                         "Login".localize(),
-                                    borderRadius: 30,
-                                    width: 2.4,
-                                    color:
-                                        context.theme.colorScheme.onBackground,
-                                    backgroundColor: Colors.transparent,
-                                    borderColor:
-                                        context.theme.colorScheme.onBackground,
+                                    borderRadius: 35,
+                                    height: 70,
+                                    width: 1.6,
+                                    color: buttonColor,
+                                    borderColor: buttonColor,
+                                    backgroundColor: buttonBackgroundColor,
                                     icon: config.login.icon,
                                     onPressed: () {
                                       context.navigator.pushNamed("/login",
@@ -347,118 +347,6 @@ class Landing extends PageHookWidget {
             ],
           ),
         );
-      default:
-        final height = context.mediaQuery.size.height;
-        final appBarHeight = config.appBarHeightOnSliverList ?? (height / 2);
-        final contentHeight = height - appBarHeight;
-        return Scaffold(
-          backgroundColor: config.backgroundColor,
-          body: CustomScrollView(
-            slivers: <Widget>[
-              SliverAppBar(
-                backgroundColor: config.appBarColorOnSliverList ??
-                    context.theme.primaryColor,
-                elevation: 0,
-                expandedHeight: appBarHeight,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      if (config.featureImage.isNotEmpty)
-                        SizedBox(
-                          width: config.featureImageSize?.width,
-                          height: config.featureImageSize?.height,
-                          child: Image(
-                            image: NetworkOrAsset.image(config.featureImage!),
-                            fit: config.featureImageFit,
-                          ),
-                        ),
-                      Align(
-                        alignment: config.titleAlignment,
-                        child: Padding(
-                          padding: config.titlePadding,
-                          child: DefaultTextStyle(
-                            style: const TextStyle(
-                              fontSize: 56,
-                              fontFamily: "Mplus",
-                              fontWeight: FontWeight.w700,
-                            ),
-                            child: Text(
-                              config.title ?? "",
-                              style: config.titleTextStyle,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Container(
-                  constraints: BoxConstraints(minHeight: contentHeight),
-                  padding: config.padding,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      for (final role in config.roles)
-                        FormItemSubmit(
-                          role.label?.localize() ?? "Registration".localize(),
-                          color: config.buttonColor,
-                          backgroundColor: config.buttonBackgroundColor ??
-                              role.color ??
-                              context.theme.accentColor,
-                          icon: role.icon,
-                          onPressed: () {
-                            if (role.path.isNotEmpty) {
-                              context.navigator.pushNamed(role.path!);
-                            } else {
-                              if (config.roles.length <= 1) {
-                                context.navigator.pushNamed("/register",
-                                    arguments: RouteQuery.fade);
-                              } else {
-                                context.navigator.pushNamed(
-                                    "/register/${role.id}",
-                                    arguments: RouteQuery.fade);
-                              }
-                            }
-                          },
-                        ),
-                      if (config.guestLogin != null)
-                        FormItemSubmit(
-                          config.guestLogin!.label?.localize() ??
-                              "Guest login".localize(),
-                          color: config.buttonColor,
-                          backgroundColor: config.buttonBackgroundColor ??
-                              config.guestLogin!.color ??
-                              context.theme.primaryColor,
-                          icon: config.guestLogin!.icon,
-                          onPressed: () async {
-                            await context.model
-                                ?.signInAnonymously()
-                                .showIndicator(context);
-                            context.navigator.pushNamed(config.redirectTo);
-                          },
-                        ),
-                      FormItemSubmit(
-                        config.login.label?.localize() ?? "Login".localize(),
-                        color: config.buttonColor,
-                        backgroundColor: config.buttonBackgroundColor ??
-                            config.login.color ??
-                            context.theme.primaryColor,
-                        icon: config.login.icon,
-                        onPressed: () {
-                          context.navigator
-                              .pushNamed("/login", arguments: RouteQuery.fade);
-                        },
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
     }
   }
 }
@@ -466,6 +354,7 @@ class Landing extends PageHookWidget {
 class Login extends PageHookWidget {
   const Login(this.config);
   final LoginModule config;
+
   @override
   Widget build(BuildContext context) {
     final form = useForm();
@@ -473,34 +362,63 @@ class Login extends PageHookWidget {
     final passFocus = useFocusNode();
     final showPassword = useState<bool>(false);
 
-    return UIScaffold(
-      designType: config.designType,
+    final color = config.color ?? Colors.white;
+    final buttonColor = config.buttonColor ?? config.color ?? Colors.white;
+    final buttonBackgroundColor =
+        config.buttonBackgroundColor ?? Colors.transparent;
+    final imageSize = _imageSize();
+
+    return Scaffold(
       backgroundColor: config.backgroundColor,
       extendBodyBehindAppBar: true,
-      appBar: const UIAppBar(),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: color,
+      ),
       body: Stack(
         fit: StackFit.expand,
         children: [
-          _LoginBackgroundImage(config, opacity: 0.85),
+          _LoginBackgroundImage(config, opacity: 0.75),
           FormBuilder(
             type: FormBuilderType.center,
             key: form.key,
-            padding: config.padding,
+            padding: const EdgeInsets.all(0),
             children: [
-              Center(
-                child: Text(
+              const Space.height(24),
+              if (config.featureImage.isNotEmpty)
+                Center(
+                  child: SizedBox(
+                    width: imageSize?.width,
+                    height: imageSize?.height,
+                    child: Image(
+                      image: NetworkOrAsset.image(config.featureImage!),
+                      fit: config.featureImageFit,
+                    ),
+                  ),
+                )
+              else
+                Center(
+                  child: Text(
                     config.login.label?.localize() ?? "Login".localize(),
                     textAlign: TextAlign.center,
-                    style: context.theme.textTheme.headline5),
-              ),
-              const Space.height(40),
-              DividHeadline("Email".localize(), icon: Icons.email),
+                    style: context.theme.textTheme.headline5
+                            ?.copyWith(color: config.color) ??
+                        TextStyle(color: config.color),
+                  ),
+                ),
+              const Space.height(36),
+              DividHeadline("Email".localize(),
+                  icon: Icons.email, color: color.withOpacity(0.75)),
               FormItemTextField(
                 dense: true,
                 focusNode: emailFocus,
                 hintText: "Please enter a email address".localize(),
                 errorText: "Please enter a email address".localize(),
                 keyboardType: TextInputType.emailAddress,
+                color: color,
+                cursorColor: color,
+                subColor: color.withOpacity(0.5),
                 maxLines: 1,
                 minLength: 2,
                 maxLength: 256,
@@ -511,13 +429,17 @@ class Login extends PageHookWidget {
                   passFocus.requestFocus();
                 },
               ),
-              DividHeadline("Password".localize(), icon: Icons.lock),
+              DividHeadline("Password".localize(),
+                  icon: Icons.lock, color: color.withOpacity(0.75)),
               FormItemTextField(
                 dense: true,
                 focusNode: passFocus,
                 hintText: "Please enter a password".localize(),
                 errorText: "Please enter a password".localize(),
                 keyboardType: TextInputType.visiblePassword,
+                color: color,
+                cursorColor: color,
+                subColor: color.withOpacity(0.5),
                 maxLines: 1,
                 minLength: 8,
                 maxLength: 36,
@@ -527,12 +449,12 @@ class Login extends PageHookWidget {
                 },
                 suffixIcon: GestureDetector(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(6, 0, 6, 0),
+                    padding: const EdgeInsets.fromLTRB(6, 0, 18, 0),
                     child: Icon(
                       !showPassword.value
                           ? FontAwesomeIcons.solidEyeSlash
                           : FontAwesomeIcons.solidEye,
-                      color: context.theme.disabledColor,
+                      color: color.withOpacity(0.5),
                       size: 21,
                     ),
                   ),
@@ -544,39 +466,57 @@ class Login extends PageHookWidget {
                     const BoxConstraints(minHeight: 0, minWidth: 0),
                 onSubmitted: (value) => _onSubmitted(form),
               ),
-              const Divid(),
+              Divid(color: color.withOpacity(0.75)),
               const Space.height(16),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    context.navigator
-                        .pushNamed("/reset", arguments: RouteQuery.fade);
-                  },
-                  child: Text(
-                    "Click here if you forget your password".localize(),
-                    style: TextStyle(
-                      color: context.theme.textColor,
-                      decoration: TextDecoration.underline,
+              Indent(
+                padding: EdgeInsets.symmetric(
+                    horizontal: config.padding.horizontal / 2.0),
+                children: [
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        context.navigator
+                            .pushNamed("/reset", arguments: RouteQuery.fade);
+                      },
+                      child: Text(
+                        "Click here if you forget your password".localize(),
+                        style: TextStyle(
+                          color: color,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  const Space.height(16),
+                  FormItemSubmit(
+                    config.login.label?.localize() ?? "Login".localize(),
+                    borderRadius: 35,
+                    height: 70,
+                    width: 1.6,
+                    color: buttonColor,
+                    backgroundColor: buttonBackgroundColor,
+                    borderColor: buttonColor,
+                    icon: Icons.check,
+                    onPressed: () => _onSubmitted(form),
+                  )
+                ],
               ),
               const Space.height(16),
-              FormItemSubmit(
-                config.login.label?.localize() ?? "Login".localize(),
-                borderRadius: 30,
-                width: 2.4,
-                backgroundColor: Colors.transparent,
-                borderColor: context.theme.colorScheme.onBackground,
-                color: context.theme.colorScheme.onBackground,
-                icon: Icons.check,
-                onPressed: () => _onSubmitted(form),
-              )
             ],
           ),
         ],
       ),
     );
+  }
+
+  Size? _imageSize() {
+    if (config.formImageSize != null) {
+      return config.formImageSize;
+    }
+    if (config.featureImageSize != null) {
+      return config.featureImageSize! / 2.0;
+    }
+    return null;
   }
 
   Future<void> _onSubmitted(FormContext form) async {
@@ -604,9 +544,9 @@ class Login extends PageHookWidget {
 }
 
 class Register extends PageHookWidget {
-  const Register(this.config, this.role);
+  const Register(this.config);
   final LoginModule config;
-  final RoleConfig role;
+
   @override
   Widget build(BuildContext context) {
     final form = useForm();
@@ -615,28 +555,63 @@ class Register extends PageHookWidget {
     final passConfirmFocus = useFocusNode();
     final showPassword = useState<bool>(false);
     final showPasswordConfirm = useState<bool>(false);
+    final role = context.roles.length <= 1
+        ? context.roles.first
+        : context.roles
+            .firstWhere((element) => element.id == context.get("role_id", ""));
 
-    return UIScaffold(
-      designType: config.designType,
+    final color = config.color ?? Colors.white;
+    final buttonColor = config.buttonColor ?? config.color ?? Colors.white;
+    final buttonBackgroundColor =
+        config.buttonBackgroundColor ?? Colors.transparent;
+    final imageSize = _imageSize();
+
+    return Scaffold(
       backgroundColor: config.backgroundColor,
       extendBodyBehindAppBar: true,
-      appBar: const UIAppBar(),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: color,
+      ),
       body: Stack(
         fit: StackFit.expand,
         children: [
-          _LoginBackgroundImage(config, opacity: 0.85),
+          _LoginBackgroundImage(config, opacity: 0.75),
           FormBuilder(
             type: FormBuilderType.center,
             key: form.key,
-            padding: config.padding,
+            padding: const EdgeInsets.all(0),
             children: [
-              Center(
-                child: Text(role.label?.localize() ?? "Registration".localize(),
+              const Space.height(24),
+              if (config.featureImage.isNotEmpty)
+                Center(
+                  child: SizedBox(
+                    width: imageSize?.width,
+                    height: imageSize?.height,
+                    child: Image(
+                      image: NetworkOrAsset.image(config.featureImage!),
+                      fit: config.featureImageFit,
+                    ),
+                  ),
+                )
+              else
+                Center(
+                  child: Text(
+                    role.label.isNotEmpty
+                        ? "%s registration"
+                            .localize()
+                            .format([role.label!.localize()])
+                        : "Registration".localize(),
                     textAlign: TextAlign.center,
-                    style: context.theme.textTheme.headline5),
-              ),
-              const Space.height(40),
-              DividHeadline("Email".localize(), icon: Icons.email),
+                    style: context.theme.textTheme.headline5
+                            ?.copyWith(color: config.color) ??
+                        TextStyle(color: config.color),
+                  ),
+                ),
+              const Space.height(36),
+              DividHeadline("Email".localize(),
+                  icon: Icons.email, color: color.withOpacity(0.75)),
               FormItemTextField(
                 dense: true,
                 hintText: "Please enter a email address".localize(),
@@ -644,6 +619,9 @@ class Register extends PageHookWidget {
                 keyboardType: TextInputType.emailAddress,
                 maxLines: 1,
                 maxLength: 256,
+                color: color,
+                cursorColor: color,
+                subColor: color.withOpacity(0.5),
                 focusNode: emailFocus,
                 onSaved: (value) {
                   context["email"] = value;
@@ -652,7 +630,8 @@ class Register extends PageHookWidget {
                   passFocus.requestFocus();
                 },
               ),
-              DividHeadline("Password".localize(), icon: Icons.lock),
+              DividHeadline("Password".localize(),
+                  icon: Icons.lock, color: color.withOpacity(0.75)),
               FormItemTextField(
                 dense: true,
                 hintText: "Please enter a password".localize(),
@@ -661,6 +640,9 @@ class Register extends PageHookWidget {
                 maxLines: 1,
                 minLength: 8,
                 maxLength: 36,
+                color: color,
+                cursorColor: color,
+                subColor: color.withOpacity(0.5),
                 obscureText: !showPassword.value,
                 onSaved: (value) {
                   context["password"] = value;
@@ -668,12 +650,12 @@ class Register extends PageHookWidget {
                 focusNode: passFocus,
                 suffixIcon: GestureDetector(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(6, 0, 6, 0),
+                    padding: const EdgeInsets.fromLTRB(6, 0, 18, 0),
                     child: Icon(
                       !showPassword.value
                           ? FontAwesomeIcons.solidEyeSlash
                           : FontAwesomeIcons.solidEye,
-                      color: context.theme.disabledColor,
+                      color: color.withOpacity(0.5),
                       size: 21,
                     ),
                   ),
@@ -688,7 +670,7 @@ class Register extends PageHookWidget {
                 },
               ),
               DividHeadline("ConfirmationPassword".localize(),
-                  icon: Icons.lock),
+                  icon: Icons.lock, color: color.withOpacity(0.75)),
               FormItemTextField(
                 dense: true,
                 hintText: "Please enter a password".localize(),
@@ -697,6 +679,9 @@ class Register extends PageHookWidget {
                 maxLines: 1,
                 minLength: 8,
                 maxLength: 36,
+                color: color,
+                cursorColor: color,
+                subColor: color.withOpacity(0.5),
                 focusNode: passConfirmFocus,
                 obscureText: !showPasswordConfirm.value,
                 onSaved: (value) {
@@ -704,12 +689,12 @@ class Register extends PageHookWidget {
                 },
                 suffixIcon: GestureDetector(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(6, 0, 6, 0),
+                    padding: const EdgeInsets.fromLTRB(6, 0, 18, 0),
                     child: Icon(
                       !showPasswordConfirm.value
                           ? FontAwesomeIcons.solidEyeSlash
                           : FontAwesomeIcons.solidEye,
-                      color: context.theme.disabledColor,
+                      color: color.withOpacity(0.5),
                       size: 21,
                     ),
                   ),
@@ -720,36 +705,55 @@ class Register extends PageHookWidget {
                 suffixIconConstraints:
                     const BoxConstraints(minHeight: 0, minWidth: 0),
                 onSubmitted: (value) {
-                  _onSubmitted(form);
+                  _onSubmitted(form, role);
                 },
               ),
               ...config.registerForm.map((e) => e.build(context)),
-              const Divid(),
+              Divid(color: color.withOpacity(0.75)),
               if (context.app?.termsUrl != null)
                 FormItemCheckbox(
                   dense: true,
+                  needToCheck: true,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 0, vertical: 4.5),
                   labelText: "Agree to the %s".localize().format([
-                    "[${"Term of use".localize()}](${context.app?.termsUrl})",
+                    "[${"Terms".localize()}](${context.app?.termsUrl})",
                   ]),
-                  activeColor: context.theme.primaryColor,
+                  errorText: "Please agree to the %s"
+                      .localize()
+                      .format(["Terms".localize()]),
+                  color: color,
+                  checkColor: context.theme.primaryColor,
+                  activeColor: color,
+                  linkTextStyle: TextStyle(
+                      color: color, decoration: TextDecoration.underline),
                   onSaved: (value) {
                     context["terms"] = value;
                   },
                 ),
-              const Divid(),
+              Divid(color: color.withOpacity(0.75)),
               const Space.height(32),
-              FormItemSubmit(
-                "Registration".localize(),
-                borderRadius: 30,
-                width: 2.4,
-                backgroundColor: Colors.transparent,
-                borderColor: context.theme.colorScheme.onBackground,
-                color: context.theme.colorScheme.onBackground,
-                icon: Icons.check,
-                onPressed: () => _onSubmitted(form),
-              )
+              Indent(
+                padding: EdgeInsets.symmetric(
+                    horizontal: config.padding.horizontal / 2.0),
+                children: [
+                  FormItemSubmit(
+                    role.label.isNotEmpty
+                        ? "%s registration"
+                            .localize()
+                            .format([role.label!.localize()])
+                        : "Registration".localize(),
+                    borderRadius: 35,
+                    height: 70,
+                    width: 1.6,
+                    color: buttonColor,
+                    backgroundColor: buttonBackgroundColor,
+                    borderColor: buttonColor,
+                    icon: Icons.check,
+                    onPressed: () => _onSubmitted(form, role),
+                  )
+                ],
+              ),
             ],
           ),
         ],
@@ -757,7 +761,17 @@ class Register extends PageHookWidget {
     );
   }
 
-  Future<void> _onSubmitted(FormContext form) async {
+  Size? _imageSize() {
+    if (config.formImageSize != null) {
+      return config.formImageSize;
+    }
+    if (config.featureImageSize != null) {
+      return config.featureImageSize! / 2.0;
+    }
+    return null;
+  }
+
+  Future<void> _onSubmitted(FormContext form, RoleConfig role) async {
     if (!form.validate()) {
       return;
     }
@@ -774,9 +788,7 @@ class Register extends PageHookWidget {
       UIDialog.show(
         context,
         title: "Error".localize(),
-        text: "Please agree to the %s"
-            .localize()
-            .format(["Term of use".localize()]),
+        text: "Please agree to the %s".localize().format(["Terms".localize()]),
         submitText: "Close".localize(),
       );
       return;
@@ -818,27 +830,61 @@ class PasswordReset extends PageHookWidget {
     final form = useForm();
     final emailFocus = useAutoFocusNode();
 
-    return UIScaffold(
-      designType: config.designType,
+    final color = config.color ?? Colors.white;
+    final buttonColor = config.buttonColor ?? config.color ?? Colors.white;
+    final buttonBackgroundColor =
+        config.buttonBackgroundColor ?? Colors.transparent;
+    final imageSize = _imageSize();
+
+    return Scaffold(
       backgroundColor: config.backgroundColor,
       extendBodyBehindAppBar: true,
-      appBar: const UIAppBar(),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: color,
+      ),
       body: Stack(
         fit: StackFit.expand,
         children: [
-          _LoginBackgroundImage(config, opacity: 0.85),
+          _LoginBackgroundImage(config, opacity: 0.75),
           FormBuilder(
             type: FormBuilderType.center,
             key: form.key,
-            padding: config.padding,
+            padding: const EdgeInsets.all(0),
             children: [
-              Center(
-                child: Text("Password reset".localize(),
+              const Space.height(24),
+              if (config.featureImage.isNotEmpty)
+                Center(
+                  child: SizedBox(
+                    width: imageSize?.width,
+                    height: imageSize?.height,
+                    child: Image(
+                      image: NetworkOrAsset.image(config.featureImage!),
+                      fit: config.featureImageFit,
+                    ),
+                  ),
+                )
+              else
+                Center(
+                  child: Text(
+                    "Password reset".localize(),
                     textAlign: TextAlign.center,
-                    style: context.theme.textTheme.headline5),
+                    style: context.theme.textTheme.headline5
+                            ?.copyWith(color: config.color) ??
+                        TextStyle(color: config.color),
+                  ),
+                ),
+              const Space.height(24),
+              MessageBox(
+                "Email to reset your password will be sent to the email address you specified. Please reset your password from the link in the email you received."
+                    .localize(),
+                color: color,
+                margin: const EdgeInsets.symmetric(horizontal: 16),
               ),
-              const Space.height(40),
-              DividHeadline("Email".localize(), icon: Icons.email),
+              const Space.height(24),
+              DividHeadline("Email".localize(),
+                  icon: Icons.email, color: color.withOpacity(0.75)),
               FormItemTextField(
                 dense: true,
                 focusNode: emailFocus,
@@ -847,34 +893,48 @@ class PasswordReset extends PageHookWidget {
                 keyboardType: TextInputType.emailAddress,
                 maxLines: 1,
                 maxLength: 256,
+                color: color,
+                cursorColor: color,
+                subColor: color.withOpacity(0.5),
                 onSaved: (value) {
                   context["email"] = value;
                 },
                 onSubmitted: (value) => _onSubmitted(form),
               ),
-              const Divid(),
-              const Space.height(16),
-              MessageBox(
-                "Email to reset your password will be sent to the email address you specified. Please reset your password from the link in the email you received."
-                    .localize(),
-                color: context.theme.accentColor,
+              Divid(color: color.withOpacity(0.75)),
+              const Space.height(32),
+              Indent(
+                padding: EdgeInsets.symmetric(
+                    horizontal: config.padding.horizontal / 2.0),
+                children: [
+                  FormItemSubmit(
+                    "Send mail".localize(),
+                    borderRadius: 35,
+                    height: 70,
+                    width: 1.6,
+                    color: buttonColor,
+                    backgroundColor: buttonBackgroundColor,
+                    borderColor: buttonColor,
+                    icon: Icons.send,
+                    onPressed: () => _onSubmitted(form),
+                  ),
+                ],
               ),
-              const Space.height(16),
-              FormItemSubmit(
-                "Send mail".localize(),
-                borderRadius: 30,
-                width: 2.4,
-                backgroundColor: Colors.transparent,
-                borderColor: context.theme.colorScheme.onBackground,
-                color: context.theme.colorScheme.onBackground,
-                icon: Icons.send,
-                onPressed: () => _onSubmitted(form),
-              )
             ],
           ),
         ],
       ),
     );
+  }
+
+  Size? _imageSize() {
+    if (config.formImageSize != null) {
+      return config.formImageSize;
+    }
+    if (config.featureImageSize != null) {
+      return config.featureImageSize! / 2.0;
+    }
+    return null;
   }
 
   Future<void> _onSubmitted(FormContext form) async {
@@ -914,7 +974,7 @@ class PasswordReset extends PageHookWidget {
 class _LoginBackgroundImage extends StatelessWidget {
   const _LoginBackgroundImage(
     this.config, {
-    this.opacity = 0.85,
+    this.opacity = 0.75,
   });
   final LoginModule config;
   final double opacity;
@@ -934,19 +994,32 @@ class _LoginBackgroundImage extends StatelessWidget {
               filter: ImageFilter.blur(
                   sigmaX: config.backgroundImageBlur!,
                   sigmaY: config.backgroundImageBlur!),
-              child: ColoredBox(
-                  color: config.backgroundColor ??
-                      context.theme.backgroundColor.withOpacity(opacity)),
+              child: _backgroundColor(context, opacity),
             )
           else
-            ColoredBox(
-                color: config.backgroundColor ??
-                    context.theme.backgroundColor.withOpacity(opacity)),
+            _backgroundColor(context, opacity),
         ] else ...[
-          ColoredBox(
-              color: config.backgroundColor ?? context.theme.backgroundColor),
+          _backgroundColor(context),
         ],
       ],
     );
+  }
+
+  Widget _backgroundColor(BuildContext context, [double opacity = 1.0]) {
+    if (config.backgroundGradient != null) {
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: config.backgroundGradient,
+        ),
+      );
+    } else if (opacity < 1.0) {
+      return ColoredBox(
+        color: (config.backgroundColor ?? context.theme.backgroundColor)
+            .withOpacity(opacity),
+      );
+    } else {
+      return ColoredBox(
+          color: config.backgroundColor ?? context.theme.backgroundColor);
+    }
   }
 }
