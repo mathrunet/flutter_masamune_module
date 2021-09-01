@@ -165,15 +165,15 @@ class QuestionnaireModuleHome extends PageHookWidget {
     final now = useNow();
     final question = useCollectionModel(
         config.questionnaireQuery?.value ?? config.questionPath);
+    final answered = useCollectionModel(
+        "${config.userPath}/${context.model?.userId}/${config.answerPath}");
+
     final questionWithAnswer = question.map((e) {
       final uid = e.get(Const.uid, "");
       if (uid.isEmpty) {
         return e;
       }
-      final doc = context.readDocumentModel(
-        "${config.questionPath}/$uid/${config.answerPath}/${context.model?.userId}",
-      );
-      if (doc.isNotEmpty) {
+      if (answered.any((element) => element.uid == uid)) {
         return {...e}..["answered"] = true;
       }
       return e;
