@@ -122,6 +122,7 @@ class PostModuleHome extends PageHookWidget {
     );
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       loadingFutures: [
         user.future,
@@ -228,6 +229,7 @@ class PostModuleView extends PageHookWidget {
         );
 
         return UIScaffold(
+          waitTransition: true,
           designType: config.designType,
           appBar: appBar,
           body: UIListView(
@@ -267,6 +269,7 @@ class PostModuleView extends PageHookWidget {
         );
       default:
         return UIScaffold(
+          waitTransition: true,
           designType: config.designType,
           appBar: appBar,
           body: UIListView(
@@ -384,6 +387,7 @@ class PostModuleEdit extends PageHookWidget {
         );
 
         return UIScaffold(
+          waitTransition: true,
           designType: config.designType,
           appBar: appBar,
           body: FormBuilder(
@@ -463,6 +467,7 @@ class PostModuleEdit extends PageHookWidget {
         );
       default:
         return UIScaffold(
+          waitTransition: true,
           designType: config.designType,
           appBar: appBar,
           body: FormBuilder(

@@ -160,6 +160,7 @@ class CalendarModuleHome extends PageHookWidget {
     final user = useUserDocumentModel(config.userPath);
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(
         title: Text(config.title ?? "Calendar".localize()),
@@ -222,6 +223,7 @@ class CalendarModuleDayView extends PageHookWidget {
         .toList();
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(
         title: Text(date.format("yyyy/MM/dd")),
@@ -412,6 +414,7 @@ class CalendarModuleDetail extends PageHookWidget {
         );
 
         return UIScaffold(
+          waitTransition: true,
           designType: config.designType,
           appBar: appBar,
           body: UIListView(
@@ -452,6 +455,7 @@ class CalendarModuleDetail extends PageHookWidget {
         );
       default:
         return UIScaffold(
+          waitTransition: true,
           designType: config.designType,
           appBar: appBar,
           body: UIListView(
@@ -496,6 +500,7 @@ class CalendarModuleTemplate extends PageHookWidget {
     );
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(title: Text("Template".localize())),
       body: UIListBuilder<String>(
@@ -719,6 +724,7 @@ class CalendarModuleEdit extends PageHookWidget {
         );
 
         return UIScaffold(
+          waitTransition: true,
           appBar: appBar,
           designType: config.designType,
           body: FormBuilder(
@@ -803,6 +809,7 @@ class CalendarModuleEdit extends PageHookWidget {
         );
       default:
         return UIScaffold(
+          waitTransition: true,
           appBar: appBar,
           designType: config.designType,
           body: FormBuilder(

@@ -185,6 +185,7 @@ class QuestionnaireModuleHome extends PageHookWidget {
     );
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       loadingFutures: [
         question.future,
@@ -295,6 +296,7 @@ class QuestionnaireAanswerView extends PageHookWidget {
     final endDate = question.get(config.endTimeKey, 0);
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(
         title: Text(name),
@@ -407,6 +409,7 @@ class QuestionnaireModuleAanswerDetail extends PageHookWidget {
         useDocumentModel("${config.userPath}/${answer.get(Const.user, "")}");
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(
         title: Text(
@@ -456,6 +459,7 @@ class QuestionnaireModuleQuestionView extends PageHookWidget {
     final canEdit = config.permission.canEdit(user.get(config.roleKey, ""));
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(
         title: Text(name),
@@ -703,6 +707,7 @@ class QuestionnaireModuleQuestionEdit extends PageHookWidget {
         useMemoizedTextEditingControllerMap(selection);
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(
         title: Text(form.select(
@@ -865,6 +870,7 @@ class QuestionnaireModuleEdit extends PageHookWidget {
     final endTime = item.get(config.endTimeKey, 0);
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(
         title: Text(form.select(

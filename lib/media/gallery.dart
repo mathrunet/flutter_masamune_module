@@ -176,6 +176,7 @@ class GalleryModuleTileViewWithTab extends PageHookWidget {
     );
 
     return UIScaffold(
+      waitTransition: true,
       inlineNavigatorControllerOnWeb: controller,
       designType: config.designType,
       appBar: UIAppBar(
@@ -217,6 +218,7 @@ class GalleryModuleTileView extends PageHookWidget {
     );
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       inlineNavigatorControllerOnWeb: controller,
       appBar: UIAppBar(
@@ -344,6 +346,7 @@ class GalleryModuleMediaDetail extends PageHookWidget {
     final type = getPlatformMediaType(media);
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(
         title: Text(name),
@@ -449,6 +452,7 @@ class GalleryModuleMediaView extends PageHookWidget {
     final type = getPlatformMediaType(media);
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(
         title: Text(name),
@@ -508,6 +512,7 @@ class GalleryModuleEdit extends PageHookWidget {
     final media = item.get(config.mediaKey, "");
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(
         title: Text(form.select(

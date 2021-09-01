@@ -166,6 +166,7 @@ class ChatModuleHome extends PageHookWidget {
     );
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       loadingFutures: [
         chat.future,
@@ -268,6 +269,7 @@ class ChatModuleTimeline extends PageHookWidget {
     final name = chat.get(config.nameKey, "");
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(
         title: Text(name.isEmpty ? title : name),
@@ -524,6 +526,7 @@ class ChatModuleMediaView extends PageHookWidget {
     final type = getPlatformMediaType(media);
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       appBar: const UIAppBar(),
       backgroundColor: Colors.black,
@@ -567,6 +570,7 @@ class ChatModuleEdit extends PageHookWidget {
     final name = chat.get(config.nameKey, "");
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(
           title: Text("Editing %s".localize().format(["Chat".localize()]))),

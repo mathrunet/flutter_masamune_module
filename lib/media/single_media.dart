@@ -106,6 +106,7 @@ class SingleMediaModuleHome extends PageHookWidget {
     final type = getPlatformMediaType(media);
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(
         title: Text(
@@ -170,6 +171,7 @@ class SingleMediaModuleEdit extends PageHookWidget {
     final media = item.get(config.mediaKey, "");
 
     return UIScaffold(
+      waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(
         title: Text(

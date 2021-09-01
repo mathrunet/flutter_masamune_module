@@ -575,7 +575,7 @@ packages:
       name: katana_routing
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.5"
+    version: "0.8.5+1"
   loading_animations:
     dependency: transitive
     description:
@@ -610,7 +610,7 @@ packages:
       name: masamune
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.5+1"
+    version: "0.8.5+2"
   matcher:
     dependency: transitive
     description:
