@@ -26,6 +26,7 @@ class LoginModule extends PageModule {
     this.backgroundImageBlur = 5.0,
     this.featureImage,
     this.featureImageSize,
+    this.roleKey = Const.role,
     this.formImageSize,
     this.featureImageFit = BoxFit.cover,
     this.titleTextStyle,
@@ -69,6 +70,9 @@ class LoginModule extends PageModule {
 
   /// 前景色。
   final Color? color;
+
+  /// ロールのキー。
+  final String roleKey;
 
   /// 背景色。
   final Color? backgroundColor;
@@ -501,7 +505,7 @@ class Login extends PageHookWidget {
                   )
                 ],
               ),
-              const Space.height(16),
+              const Space.height(24),
             ],
           ),
         ],
@@ -732,7 +736,7 @@ class Register extends PageHookWidget {
                   },
                 ),
               Divid(color: color.withOpacity(0.75)),
-              const Space.height(32),
+              const Space.height(24),
               Indent(
                 padding: EdgeInsets.symmetric(
                     horizontal: config.padding.horizontal / 2.0),
@@ -754,6 +758,7 @@ class Register extends PageHookWidget {
                   )
                 ],
               ),
+              const Space.height(24),
             ],
           ),
         ],
@@ -794,12 +799,17 @@ class Register extends PageHookWidget {
       return;
     }
     try {
-      await context.model
-          ?.registerInEmailAndPassword(
-            email: context.get("email", ""),
-            password: context.get("password", ""),
+      await context.model?.registerInEmailAndPassword(
+        email: context.get("email", ""),
+        password: context.get("password", ""),
+        data: {
+          config.roleKey: role.id,
+          ...config.registerForm.toMap<String, dynamic>(
+            key: (key) => key,
+            value: (key) => context[key],
           )
-          .showIndicator(context);
+        },
+      ).showIndicator(context);
       UIDialog.show(
         context,
         title: "Complete".localize(),
@@ -902,7 +912,7 @@ class PasswordReset extends PageHookWidget {
                 onSubmitted: (value) => _onSubmitted(form),
               ),
               Divid(color: color.withOpacity(0.75)),
-              const Space.height(32),
+              const Space.height(24),
               Indent(
                 padding: EdgeInsets.symmetric(
                     horizontal: config.padding.horizontal / 2.0),
@@ -920,6 +930,7 @@ class PasswordReset extends PageHookWidget {
                   ),
                 ],
               ),
+              const Space.height(24),
             ],
           ),
         ],
