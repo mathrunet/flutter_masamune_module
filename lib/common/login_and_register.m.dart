@@ -36,6 +36,7 @@ LoginModule? _$LoginModuleFromMap(DynamicMap map, LoginModule ref) {
       featureImage: map.get<String?>("featureImage", null),
       featureImageSize:
           map.get<DynamicMap>("featureImageSize", <String, dynamic>{}).toSize(),
+      roleKey: map.get<String>("roleKey", Const.role),
       formImageSize:
           map.get<DynamicMap>("formImageSize", <String, dynamic>{}).toSize(),
       featureImageFit: BoxFit.values.firstWhere((e) =>
@@ -81,6 +82,7 @@ DynamicMap _$LoginModuleToMap(LoginModule ref) {
     if (ref.featureImage.isNotEmpty) "featureImage": ref.featureImage,
     if (ref.featureImageSize != null)
       "featureImageSize": ref.featureImageSize?.toMap(),
+    if (ref.roleKey.isNotEmpty) "roleKey": ref.roleKey,
     if (ref.formImageSize != null) "formImageSize": ref.formImageSize?.toMap(),
     "featureImageFit": ref.featureImageFit.index,
     if (ref.titleTextStyle != null)

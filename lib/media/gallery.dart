@@ -9,6 +9,7 @@ enum GalleryType {
   detail,
   tile,
   tileWithTab,
+  tileWithList,
 }
 
 @module
@@ -45,6 +46,7 @@ class GalleryModule extends PageModule {
     this.edit,
     this.tileView,
     this.tileViewWithTab,
+    this.tileViewWithList,
     this.mediaView,
     this.mediaDetail,
   }) : super(enabled: enabled, title: title, permission: permission);
@@ -56,16 +58,16 @@ class GalleryModule extends PageModule {
     }
     final route = {
       "/$routePath": RouteConfig((_) => home ?? GalleryModuleHome(this)),
-      "/$routePath/tab/{tab_id}": RouteConfig((context) =>
+      "/$routePath/{category_id}": RouteConfig((context) =>
           tabView ??
           GalleryModuleGridView(this,
-              tab: TabConfig(id: context.get("tab_id", "")))),
+              tab: TabConfig(id: context.get("category_id", "")))),
       "/$routePath/edit": RouteConfig((_) => GalleryModuleEdit(this)),
-      "/$routePath/{media_id}":
+      "/$routePath/media/{media_id}":
           RouteConfig((_) => GalleryModuleMediaDetail(this)),
-      "/$routePath/{media_id}/view":
+      "/$routePath/media/{media_id}/view":
           RouteConfig((_) => GalleryModuleMediaView(this)),
-      "/$routePath/{media_id}/edit":
+      "/$routePath/media/{media_id}/edit":
           RouteConfig((_) => GalleryModuleEdit(this)),
     };
     return route;
@@ -80,6 +82,7 @@ class GalleryModule extends PageModule {
   final Widget? mediaView;
   final Widget? tileView;
   final Widget? tileViewWithTab;
+  final Widget? tileViewWithList;
 
   /// デザインタイプ。
   final DesignType designType;
@@ -157,8 +160,10 @@ class GalleryModuleHome extends PageHookWidget {
         return config.tileView ?? GalleryModuleTileView(config);
       case GalleryType.tileWithTab:
         return config.tileViewWithTab ?? GalleryModuleTileViewWithTab(config);
+      case GalleryType.tileWithList:
+        return config.tileViewWithList ?? GalleryModuleTileViewWithTab(config);
       default:
-        return Empty();
+        return const Empty();
     }
   }
 }
@@ -172,7 +177,7 @@ class GalleryModuleTileViewWithTab extends PageHookWidget {
     final user = useUserDocumentModel(config.userPath);
     final tab = useTab(config.tabConfig);
     final controller = useNavigatorController(
-      "/${config.routePath}/tab/${config.tabConfig.firstOrNull?.id}",
+      "/${config.routePath}/${config.tabConfig.firstOrNull?.id}",
     );
 
     return UIScaffold(
@@ -214,7 +219,7 @@ class GalleryModuleTileView extends PageHookWidget {
   Widget build(BuildContext context) {
     final user = useUserDocumentModel(config.userPath);
     final controller = useNavigatorController(
-      "/${config.routePath}/tab/${config.tabConfig.firstOrNull?.id}",
+      "/${config.routePath}/${config.tabConfig.firstOrNull?.id}",
     );
 
     return UIScaffold(
@@ -298,8 +303,8 @@ class GalleryModuleGridView extends HookWidget {
                       onTap: () {
                         context.rootNavigator.pushNamed(
                           config.skipDetailPage
-                              ? "/${config.routePath}/${item.get(Const.uid, "")}/view"
-                              : "/${config.routePath}/${item.get(Const.uid, "")}",
+                              ? "/${config.routePath}/media/${item.get(Const.uid, "")}/view"
+                              : "/${config.routePath}/media/${item.get(Const.uid, "")}",
                           arguments: RouteQuery.fullscreenOrModal,
                         );
                       },
@@ -313,8 +318,8 @@ class GalleryModuleGridView extends HookWidget {
                   onTap: () {
                     context.rootNavigator.pushNamed(
                       config.skipDetailPage
-                          ? "/${config.routePath}/${item.get(Const.uid, "")}/view"
-                          : "/${config.routePath}/${item.get(Const.uid, "")}",
+                          ? "/${config.routePath}/media/${item.get(Const.uid, "")}/view"
+                          : "/${config.routePath}/media/${item.get(Const.uid, "")}",
                       arguments: RouteQuery.fullscreenOrModal,
                     );
                   },
@@ -356,7 +361,7 @@ class GalleryModuleMediaDetail extends PageHookWidget {
                 icon: const Icon(Icons.edit),
                 onPressed: () {
                   context.navigator.pushNamed(
-                    "/${config.routePath}/${context.get("media_id", "")}/edit",
+                    "/${config.routePath}/media/${context.get("media_id", "")}/edit",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
                 })
@@ -367,7 +372,7 @@ class GalleryModuleMediaDetail extends PageHookWidget {
           InkWell(
             onTap: () {
               context.navigator.pushNamed(
-                "/${config.routePath}/${context.get("media_id", "")}/view",
+                "/${config.routePath}/media/${context.get("media_id", "")}/view",
                 arguments: RouteQuery.fullscreenOrModal,
               );
             },
@@ -463,7 +468,7 @@ class GalleryModuleMediaView extends PageHookWidget {
                 icon: const Icon(Icons.edit),
                 onPressed: () {
                   context.navigator.pushNamed(
-                    "/${config.routePath}/${context.get("media_id", "")}/edit",
+                    "/${config.routePath}/media/${context.get("media_id", "")}/edit",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
                 })
@@ -515,6 +520,7 @@ class GalleryModuleEdit extends PageHookWidget {
       waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(
+        sliverLayoutWhenModernDesign: false,
         title: Text(form.select(
           "Editing %s".localize().format([name]),
           "A new entry".localize(),

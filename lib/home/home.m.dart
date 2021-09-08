@@ -18,9 +18,13 @@ HomeModule? _$HomeModuleFromMap(DynamicMap map, HomeModule ref) {
           map.get<DynamicMap>("textColor", <String, dynamic>{}).toColor(),
       homeType: HomeType.values.firstWhere(
           (e) => e.index == map.get<int>("homeType", HomeType.tileMenu.index)),
+      featureIcon: map.get<String?>("featureIcon", null),
       featureImage: map.get<String?>("featureImage", null),
       featureImageFit: BoxFit.values.firstWhere((e) =>
           e.index == map.get<int>("featureImageFit", BoxFit.cover.index)),
+      featureImageAlignment:
+          map.get<DynamicMap>("featureImageAlignment", <String, dynamic>{}).toAlignment() ??
+              Alignment.center,
       titleTextStyle: map
           .get<DynamicMap>("titleTextStyle", <String, dynamic>{}).toTextStyle(),
       titleAlignment: map.get<DynamicMap>("titleAlignment", <String, dynamic>{}).toAlignment() ??
@@ -43,15 +47,8 @@ HomeModule? _$HomeModuleFromMap(DynamicMap map, HomeModule ref) {
           .cast<DynamicMap>()
           .map((e) => e.toMenuConfig())
           .removeEmpty(),
-      subMenu: map
-          .get<List>("subMenu", const [])
-          .cast<DynamicMap>()
-          .map((e) => e.toMenuConfig())
-          .removeEmpty(),
-      roleMenu: map
-          .get<Map>("roleMenu", const {})
-          .cast<String, List>()
-          .map((k, v) => MapEntry(k, v.cast<DynamicMap>().map((e) => e.toMenuConfig()).removeEmpty())),
+      subMenu: map.get<List>("subMenu", const []).cast<DynamicMap>().map((e) => e.toMenuConfig()).removeEmpty(),
+      profileRoutePath: map.get<String>("profileRoutePath", "user"),
       permission: map.get<DynamicMap>("permission", <String, dynamic>{}).toPermission() ?? const Permission(),
       designType: DesignType.values.firstWhere((e) => e.index == map.get<int>("designType", DesignType.modern.index)));
 }
@@ -64,8 +61,10 @@ DynamicMap _$HomeModuleToMap(HomeModule ref) {
     if (ref.color != null) "color": ref.color?.toMap(),
     if (ref.textColor != null) "textColor": ref.textColor?.toMap(),
     "homeType": ref.homeType.index,
+    if (ref.featureIcon.isNotEmpty) "featureIcon": ref.featureIcon,
     if (ref.featureImage.isNotEmpty) "featureImage": ref.featureImage,
     "featureImageFit": ref.featureImageFit.index,
+    "featureImageAlignment": ref.featureImageAlignment.toMap(),
     if (ref.titleTextStyle != null)
       "titleTextStyle": ref.titleTextStyle?.toMap(),
     "titleAlignment": ref.titleAlignment.toMap(),
@@ -79,9 +78,8 @@ DynamicMap _$HomeModuleToMap(HomeModule ref) {
     if (ref.nameKey.isNotEmpty) "nameKey": ref.nameKey,
     if (ref.menu.isNotEmpty) "menu": ref.menu.map((e) => e.toMap()),
     if (ref.subMenu.isNotEmpty) "subMenu": ref.subMenu.map((e) => e.toMap()),
-    if (ref.roleMenu.isNotEmpty)
-      "roleMenu":
-          ref.roleMenu.map((k, v) => MapEntry(k, v.map((e) => e.toMap()))),
+    if (ref.profileRoutePath.isNotEmpty)
+      "profileRoutePath": ref.profileRoutePath,
     "permission": ref.permission.toMap(),
     "designType": ref.designType.index
   };

@@ -315,6 +315,7 @@ class PostModuleEdit extends PageHookWidget {
         item.get(config.createdTimeKey, now.millisecondsSinceEpoch);
 
     final appBar = UIAppBar(
+      sliverLayoutWhenModernDesign: false,
       title: Text(form.select(
         "Editing %s".localize().format([name]),
         "A new entry".localize(),

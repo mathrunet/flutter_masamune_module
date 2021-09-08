@@ -45,13 +45,33 @@ class HomeModuleTileMenuHome extends HookWidget {
                                     image: NetworkOrAsset.image(
                                         config.featureImage!),
                                     fit: config.featureImageFit,
+                                    alignment: config.featureImageAlignment,
                                   )
                                 : null,
                             color: config.color ?? context.theme.primaryColor,
                           ),
-                          child: Text(
-                            config.title ?? "",
-                            style: config.titleTextStyle,
+                          child: Row(
+                            children: [
+                              if (config.featureIcon.isNotEmpty) ...[
+                                Image(
+                                    image: NetworkOrAsset.image(
+                                        config.featureIcon!)),
+                                const Space.width(8),
+                              ],
+                              Expanded(
+                                child: DefaultTextStyle(
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  child: Text(
+                                    config.title ?? "",
+                                    textAlign: TextAlign.center,
+                                    style: config.titleTextStyle,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -99,7 +119,7 @@ class HomeModuleTileMenuHome extends HookWidget {
                                         ),
                                       ],
                                     ),
-                                    const Space.width(4),
+                                    const Space.height(4),
                                     Text(
                                       "%s san".localize().format([name]),
                                       style: const TextStyle(fontSize: 12),
@@ -116,12 +136,17 @@ class HomeModuleTileMenuHome extends HookWidget {
                                     horizontal: 16, vertical: 8),
                                 child: Text(
                                   "MyPage".localize(),
+                                  textAlign: TextAlign.center,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 15,
                                   ),
                                 ),
                               ),
+                              onTap: () {
+                                context.navigator.pushNamed(
+                                    "/${config.profileRoutePath}/${context.model?.userId}");
+                              },
                             ),
                           ],
                         ),
@@ -155,7 +180,13 @@ class HomeModuleTileMenuHome extends HookWidget {
               crossAxisSpacing: 4,
               mainAxisSpacing: 4,
               children: [
-                ...config.menuByRole(role).mapAndRemoveEmpty((item) {
+                ...config.menu.mapAndRemoveEmpty((item) {
+                  if (role != null &&
+                      role.id.isNotEmpty &&
+                      item.availableRole.isNotEmpty &&
+                      !item.availableRole.contains(role.id)) {
+                    return null;
+                  }
                   return ClickableBox(
                     color: config.color ?? context.theme.primaryColor,
                     onTap: item.path.isEmpty
@@ -199,6 +230,12 @@ class HomeModuleTileMenuHome extends HookWidget {
               childAspectRatio: 3,
               children: [
                 ...config.subMenu.mapAndRemoveEmpty((item) {
+                  if (role != null &&
+                      role.id.isNotEmpty &&
+                      item.availableRole.isNotEmpty &&
+                      !item.availableRole.contains(role.id)) {
+                    return null;
+                  }
                   return ClickableBox(
                     color: config.color ?? context.theme.primaryColor,
                     onTap: item.path.isEmpty

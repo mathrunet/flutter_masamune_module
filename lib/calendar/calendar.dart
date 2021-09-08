@@ -605,6 +605,7 @@ class CalendarModuleEdit extends PageHookWidget {
         : config.editingType;
 
     final appBar = UIAppBar(
+      sliverLayoutWhenModernDesign: false,
       title: Text(
         form.select(
           item.get(config.nameKey, ""),

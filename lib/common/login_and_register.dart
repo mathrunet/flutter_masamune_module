@@ -417,8 +417,9 @@ class Login extends PageHookWidget {
               FormItemTextField(
                 dense: true,
                 focusNode: emailFocus,
-                hintText: "Please enter a email address".localize(),
-                errorText: "Please enter a email address".localize(),
+                hintText: "Input %s".localize().format(["Email".localize()]),
+                errorText:
+                    "No input %s".localize().format(["Email".localize()]),
                 keyboardType: TextInputType.emailAddress,
                 color: color,
                 cursorColor: color,
@@ -438,8 +439,9 @@ class Login extends PageHookWidget {
               FormItemTextField(
                 dense: true,
                 focusNode: passFocus,
-                hintText: "Please enter a password".localize(),
-                errorText: "Please enter a password".localize(),
+                hintText: "Input %s".localize().format(["Password".localize()]),
+                errorText:
+                    "No input %s".localize().format(["Password".localize()]),
                 keyboardType: TextInputType.visiblePassword,
                 color: color,
                 cursorColor: color,
@@ -468,7 +470,7 @@ class Login extends PageHookWidget {
                 ),
                 suffixIconConstraints:
                     const BoxConstraints(minHeight: 0, minWidth: 0),
-                onSubmitted: (value) => _onSubmitted(form),
+                onSubmitted: (value) => _onSubmitted(context, form),
               ),
               Divid(color: color.withOpacity(0.75)),
               const Space.height(16),
@@ -501,7 +503,7 @@ class Login extends PageHookWidget {
                     backgroundColor: buttonBackgroundColor,
                     borderColor: buttonColor,
                     icon: Icons.check,
-                    onPressed: () => _onSubmitted(form),
+                    onPressed: () => _onSubmitted(context, form),
                   )
                 ],
               ),
@@ -523,7 +525,7 @@ class Login extends PageHookWidget {
     return null;
   }
 
-  Future<void> _onSubmitted(FormContext form) async {
+  Future<void> _onSubmitted(BuildContext context, FormContext form) async {
     if (!form.validate()) {
       return;
     }
@@ -618,8 +620,9 @@ class Register extends PageHookWidget {
                   icon: Icons.email, color: color.withOpacity(0.75)),
               FormItemTextField(
                 dense: true,
-                hintText: "Please enter a email address".localize(),
-                errorText: "Please enter a email address".localize(),
+                hintText: "Input %s".localize().format(["Email".localize()]),
+                errorText:
+                    "No input %s".localize().format(["Email".localize()]),
                 keyboardType: TextInputType.emailAddress,
                 maxLines: 1,
                 maxLength: 256,
@@ -638,8 +641,9 @@ class Register extends PageHookWidget {
                   icon: Icons.lock, color: color.withOpacity(0.75)),
               FormItemTextField(
                 dense: true,
-                hintText: "Please enter a password".localize(),
-                errorText: "Please enter a password".localize(),
+                hintText: "Input %s".localize().format(["Password".localize()]),
+                errorText:
+                    "No input %s".localize().format(["Password".localize()]),
                 keyboardType: TextInputType.visiblePassword,
                 maxLines: 1,
                 minLength: 8,
@@ -677,8 +681,9 @@ class Register extends PageHookWidget {
                   icon: Icons.lock, color: color.withOpacity(0.75)),
               FormItemTextField(
                 dense: true,
-                hintText: "Please enter a password".localize(),
-                errorText: "Please enter a password".localize(),
+                hintText: "Input %s".localize().format(["Password".localize()]),
+                errorText:
+                    "No input %s".localize().format(["Password".localize()]),
                 keyboardType: TextInputType.visiblePassword,
                 maxLines: 1,
                 minLength: 8,
@@ -709,7 +714,7 @@ class Register extends PageHookWidget {
                 suffixIconConstraints:
                     const BoxConstraints(minHeight: 0, minWidth: 0),
                 onSubmitted: (value) {
-                  _onSubmitted(form, role);
+                  _onSubmitted(context, form, role);
                 },
               ),
               ...config.registerForm.map((e) => e.build(context)),
@@ -754,7 +759,7 @@ class Register extends PageHookWidget {
                     backgroundColor: buttonBackgroundColor,
                     borderColor: buttonColor,
                     icon: Icons.check,
-                    onPressed: () => _onSubmitted(form, role),
+                    onPressed: () => _onSubmitted(context, form, role),
                   )
                 ],
               ),
@@ -776,7 +781,15 @@ class Register extends PageHookWidget {
     return null;
   }
 
-  Future<void> _onSubmitted(FormContext form, RoleConfig role) async {
+  Future<void> _onSubmitted(
+      BuildContext context, FormContext form, RoleConfig role) async {
+    if (await context.model?.skipRegistration(data: {
+          config.roleKey: role.id,
+        }) ??
+        false) {
+      context.navigator.pushNamed(config.redirectTo);
+      return;
+    }
     if (!form.validate()) {
       return;
     }
@@ -898,8 +911,9 @@ class PasswordReset extends PageHookWidget {
               FormItemTextField(
                 dense: true,
                 focusNode: emailFocus,
-                hintText: "Please enter a email address".localize(),
-                errorText: "Please enter a email address".localize(),
+                hintText: "Input %s".localize().format(["Email".localize()]),
+                errorText:
+                    "No input %s".localize().format(["Email".localize()]),
                 keyboardType: TextInputType.emailAddress,
                 maxLines: 1,
                 maxLength: 256,
@@ -909,7 +923,7 @@ class PasswordReset extends PageHookWidget {
                 onSaved: (value) {
                   context["email"] = value;
                 },
-                onSubmitted: (value) => _onSubmitted(form),
+                onSubmitted: (value) => _onSubmitted(context, form),
               ),
               Divid(color: color.withOpacity(0.75)),
               const Space.height(24),
@@ -926,7 +940,7 @@ class PasswordReset extends PageHookWidget {
                     backgroundColor: buttonBackgroundColor,
                     borderColor: buttonColor,
                     icon: Icons.send,
-                    onPressed: () => _onSubmitted(form),
+                    onPressed: () => _onSubmitted(context, form),
                   ),
                 ],
               ),
@@ -948,7 +962,7 @@ class PasswordReset extends PageHookWidget {
     return null;
   }
 
-  Future<void> _onSubmitted(FormContext form) async {
+  Future<void> _onSubmitted(BuildContext context, FormContext form) async {
     if (!form.validate()) {
       return;
     }

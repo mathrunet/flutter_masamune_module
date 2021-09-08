@@ -174,6 +174,7 @@ class SingleMediaModuleEdit extends PageHookWidget {
       waitTransition: true,
       designType: config.designType,
       appBar: UIAppBar(
+        sliverLayoutWhenModernDesign: false,
         title: Text(
           "Editing %s".localize().format([
             if (name.isEmpty) "Media".localize() else name,

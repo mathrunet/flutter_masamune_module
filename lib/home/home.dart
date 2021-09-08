@@ -20,8 +20,10 @@ class HomeModule extends PageModule {
     this.color,
     this.textColor,
     this.homeType = HomeType.tileMenu,
+    this.featureIcon,
     this.featureImage,
     this.featureImageFit = BoxFit.cover,
+    this.featureImageAlignment = Alignment.center,
     this.titleTextStyle,
     this.titleAlignment = Alignment.center,
     this.titlePadding = const EdgeInsets.all(12),
@@ -34,7 +36,7 @@ class HomeModule extends PageModule {
     this.nameKey = Const.name,
     this.menu = const [],
     this.subMenu = const [],
-    this.roleMenu = const {},
+    this.profileRoutePath = "user",
     Permission permission = const Permission(),
     this.home,
     this.tileMenuHome,
@@ -74,9 +76,6 @@ class HomeModule extends PageModule {
   /// デフォルトのメニュー。
   final List<MenuConfig> menu;
 
-  /// 権限ごとのメニュー。
-  final Map<String, List<MenuConfig>> roleMenu;
-
   /// サブメニュー。
   final List<MenuConfig> subMenu;
 
@@ -89,11 +88,17 @@ class HomeModule extends PageModule {
   /// メインカラー。
   final Color? color;
 
+  /// フィーチャーアイコン。
+  final String? featureIcon;
+
   /// フィーチャー画像。
   final String? featureImage;
 
-  /// フィーチャー画像の配置。
+  /// フィーチャー画像のサイズ。
   final BoxFit featureImageFit;
+
+  /// フィーチャー画像の配置。
+  final Alignment featureImageAlignment;
 
   /// タイトルのテキストスタイル。
   final TextStyle? titleTextStyle;
@@ -113,18 +118,14 @@ class HomeModule extends PageModule {
   /// ユーザーのデータパス。
   final String userPath;
 
+  /// プロフィールページへのパス。
+  final String profileRoutePath;
+
   /// 名前のキー。
   final String nameKey;
 
   /// 権限のキー。
   final String roleKey;
-
-  List<MenuConfig> menuByRole(RoleConfig? role) {
-    if (role == null || !roleMenu.containsKey(role.id)) {
-      return menu;
-    }
-    return roleMenu[role.id] ?? [];
-  }
 
   @override
   HomeModule? fromMap(DynamicMap map) => _$HomeModuleFromMap(map, this);
