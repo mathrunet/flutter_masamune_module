@@ -13,7 +13,7 @@ enum HomeType {
 
 @module
 @immutable
-class HomeModule extends PageModule {
+class HomeModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const HomeModule({
     bool enabled = true,
     String? title = "",
@@ -38,12 +38,17 @@ class HomeModule extends PageModule {
     this.subMenu = const [],
     this.profileRoutePath = "user",
     Permission permission = const Permission(),
+    RerouteConfig? rerouteConfig,
     this.home,
     this.tileMenuHome,
     this.tileMenuHomeInformation,
     this.tileMenuHomeCalendar,
-    this.designType = DesignType.modern,
-  }) : super(enabled: enabled, title: title, permission: permission);
+  }) : super(
+          enabled: enabled,
+          title: title,
+          permission: permission,
+          rerouteConfig: rerouteConfig,
+        );
 
   @override
   Map<String, RouteConfig>? get routeSettings {
@@ -63,9 +68,6 @@ class HomeModule extends PageModule {
   final Widget? tileMenuHome;
   final Widget? tileMenuHomeInformation;
   final Widget? tileMenuHomeCalendar;
-
-  /// デザインタイプ。
-  final DesignType designType;
 
   /// お知らせの設定。
   final HomeInformationModule info;
@@ -141,23 +143,23 @@ class HomeInformationModule extends PostModule {
     bool enabled = true,
     String? title,
     String routePath = "info",
-    String postPath = "info",
+    String queryPath = "info",
     this.icon = Icons.info_rounded,
     String nameKey = Const.name,
     String createdTimeKey = Const.createdTime,
-    DesignType designType = DesignType.modern,
     Permission permission = const Permission(),
     Widget? view,
+    Widget? edit,
     this.widget,
   }) : super(
           enabled: enabled,
           title: title,
-          postPath: postPath,
+          queryPath: queryPath,
           routePath: routePath,
           editingType: PostEditingType.planeText,
           permission: permission,
-          designType: designType,
           view: view,
+          edit: edit,
           nameKey: nameKey,
           createdTimeKey: createdTimeKey,
         );
@@ -169,6 +171,8 @@ class HomeInformationModule extends PostModule {
     }
     final route = {
       "/$routePath/{post_id}": RouteConfig((_) => view ?? PostModuleView(this)),
+      "/$routePath/{post_id}/edit":
+          RouteConfig((_) => view ?? PostModuleEdit(this)),
     };
     return route;
   }
@@ -194,7 +198,7 @@ class HomeCalendarModule extends CalendarModule {
     bool enabled = true,
     String? title,
     String routePath = "calendar",
-    String eventPath = "event",
+    String queryPath = "event",
     String startTimeKey = Const.startTime,
     String endTimeKey = Const.endTime,
     String allDayKey = "allDay",
@@ -205,7 +209,7 @@ class HomeCalendarModule extends CalendarModule {
           enabled: enabled,
           title: title,
           routePath: routePath,
-          eventPath: eventPath,
+          queryPath: queryPath,
           detail: detail,
           startTimeKey: startTimeKey,
           endTimeKey: endTimeKey,

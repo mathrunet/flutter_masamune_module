@@ -38,11 +38,13 @@ extension _QuenstionFormTypeExtension on _QuenstionFormType {
 
 @module
 @immutable
-class QuestionnaireModule extends PageModule {
+class QuestionnaireModule extends PageModule
+    with VerifyAppReroutePageModuleMixin {
   const QuestionnaireModule({
     bool enabled = true,
     String? title = "",
     this.routePath = "question",
+    this.queryPath = "question",
     this.questionPath = "question",
     this.answerPath = "answer",
     this.userPath = "user",
@@ -56,8 +58,8 @@ class QuestionnaireModule extends PageModule {
     this.endTimeKey = Const.endTime,
     this.answerKey = Const.answer,
     Permission permission = const Permission(),
+    RerouteConfig? rerouteConfig,
     this.questionnaireQuery,
-    this.designType = DesignType.modern,
     this.home,
     this.edit,
     this.view,
@@ -65,7 +67,12 @@ class QuestionnaireModule extends PageModule {
     this.answerDetail,
     this.questionView,
     this.questionEdit,
-  }) : super(enabled: enabled, title: title, permission: permission);
+  }) : super(
+          enabled: enabled,
+          title: title,
+          permission: permission,
+          rerouteConfig: rerouteConfig,
+        );
 
   @override
   Map<String, RouteConfig>? get routeSettings {
@@ -86,7 +93,7 @@ class QuestionnaireModule extends PageModule {
       "/$routePath/{question_id}/answer/empty":
           RouteConfig((_) => const EmptyPage()),
       "/$routePath/{question_id}/answer/{answer_id}": RouteConfig(
-          (_) => answerDetail ?? QuestionnaireModuleAanswerDetail(this)),
+          (_) => answerDetail ?? QuestionnaireModuleAnswerDetail(this)),
       "/$routePath/{question_id}/question/edit": RouteConfig(
           (_) => questionEdit ?? QuestionnaireModuleQuestionEdit(this)),
       "/$routePath/{question_id}/question/{item_id}": RouteConfig(
@@ -103,11 +110,11 @@ class QuestionnaireModule extends PageModule {
   final Widget? answerDetail;
   final Widget? questionEdit;
 
-  /// デザインタイプ。
-  final DesignType designType;
-
   /// ルートのパス。
   final String routePath;
+
+  /// クエリーのパス。
+  final String queryPath;
 
   /// アンケートデータのパス。
   final String questionPath;
@@ -146,7 +153,7 @@ class QuestionnaireModule extends PageModule {
   final String endTimeKey;
 
   /// クエリー。
-  final CollectionQuery? questionnaireQuery;
+  final ModelQuery? questionnaireQuery;
 
   @override
   QuestionnaireModule? fromMap(DynamicMap map) =>
@@ -164,7 +171,7 @@ class QuestionnaireModuleHome extends PageHookWidget {
   Widget build(BuildContext context) {
     final now = useNow();
     final question = useCollectionModel(
-        config.questionnaireQuery?.value ?? config.questionPath);
+        config.questionnaireQuery?.value ?? config.queryPath);
     final answered = useCollectionModel(
         "${config.userPath}/${context.model?.userId}/${config.answerPath}");
 
@@ -186,7 +193,6 @@ class QuestionnaireModuleHome extends PageHookWidget {
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       loadingFutures: [
         question.future,
         user.future,
@@ -270,14 +276,14 @@ class QuestionnaireAanswerView extends PageHookWidget {
   Widget build(BuildContext context) {
     final now = useNow();
     final question = useDocumentModel(
-        "${config.questionPath}/${context.get("question_id", "")}");
+        "${config.queryPath}/${context.get("question_id", "")}");
     final questions = useCollectionModel(
-        "${config.questionPath}/${context.get("question_id", "")}/${config.questionPath}");
+        "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}");
     final answers = useCollectionModel(
-      "${config.questionPath}/${context.get("question_id", "")}/${config.answerPath}",
+      "${config.queryPath}/${context.get("question_id", "")}/${config.answerPath}",
     );
     final users = useCollectionModel(
-      CollectionQuery(config.userPath,
+      ModelQuery(config.userPath,
               key: Const.uid,
               whereIn: answers.map((e) => e.get(Const.user, "")).toList())
           .value,
@@ -297,7 +303,6 @@ class QuestionnaireAanswerView extends PageHookWidget {
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       appBar: UIAppBar(
         title: Text(name),
         actions: [
@@ -393,24 +398,28 @@ class QuestionnaireAanswerView extends PageHookWidget {
   }
 }
 
-class QuestionnaireModuleAanswerDetail extends PageHookWidget {
-  const QuestionnaireModuleAanswerDetail(this.config);
+class QuestionnaireModuleAnswerDetail extends PageHookWidget {
+  const QuestionnaireModuleAnswerDetail(this.config);
   final QuestionnaireModule config;
 
   @override
   Widget build(BuildContext context) {
     int i = 0;
     final questions = useCollectionModel(
-        "${config.questionPath}/${context.get("question_id", "")}/${config.questionPath}");
+        "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}");
     final answer = useDocumentModel(
-      "${config.questionPath}/${context.get("question_id", "")}/${config.answerPath}/${context.get("answer_id", "")}",
+      "${config.queryPath}/${context.get("question_id", "")}/${config.answerPath}/${context.get("answer_id", "")}",
     );
-    final user =
-        useDocumentModel("${config.userPath}/${answer.get(Const.user, "")}");
+    final user = useDocumentModel(
+        "${config.userPath}/${answer.get(Const.user, "empty")}");
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
+      loadingFutures: [
+        questions.future,
+        answer.future,
+        user.future,
+      ],
       appBar: UIAppBar(
         title: Text(
           "%s answers".localize().format([user.get(config.nameKey, "")]),
@@ -447,11 +456,11 @@ class QuestionnaireModuleQuestionView extends PageHookWidget {
     final form = useForm();
     final user = useUserDocumentModel(config.userPath);
     final question = useDocumentModel(
-        "${config.questionPath}/${context.get("question_id", "")}");
+        "${config.queryPath}/${context.get("question_id", "")}");
     final questions = useCollectionModel(
-        "${config.questionPath}/${context.get("question_id", "")}/${config.questionPath}");
+        "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}");
     final answer = useDocumentModel(
-      "${config.questionPath}/${context.get("question_id", "")}/${config.answerPath}/${context.model?.userId}",
+      "${config.queryPath}/${context.get("question_id", "")}/${config.answerPath}/${context.model?.userId}",
     );
     final name = question.get(config.nameKey, "");
     final text = question.get(config.textKey, "");
@@ -460,7 +469,6 @@ class QuestionnaireModuleQuestionView extends PageHookWidget {
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       appBar: UIAppBar(
         title: Text(name),
         actions: [
@@ -696,7 +704,7 @@ class QuestionnaireModuleQuestionEdit extends PageHookWidget {
   Widget build(BuildContext context) {
     final form = useForm("item_id");
     final item = useDocumentModel(
-        "${config.questionPath}/${context.get("question_id", "")}/${config.questionPath}/${form.uid}");
+        "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}/${form.uid}");
     final user = useUserDocumentModel(config.userPath);
     final name = item.get(config.nameKey, "");
     final type = item.get(config.typeKey, Const.text);
@@ -708,7 +716,6 @@ class QuestionnaireModuleQuestionEdit extends PageHookWidget {
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       appBar: UIAppBar(
         sliverLayoutWhenModernDesign: false,
         title: Text(form.select(
@@ -864,7 +871,7 @@ class QuestionnaireModuleEdit extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final form = useForm("question_id");
-    final item = useDocumentModel("${config.questionPath}/${form.uid}");
+    final item = useDocumentModel("${config.queryPath}/${form.uid}");
     final user = useUserDocumentModel(config.userPath);
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
@@ -872,7 +879,6 @@ class QuestionnaireModuleEdit extends PageHookWidget {
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       appBar: UIAppBar(
         sliverLayoutWhenModernDesign: false,
         title: Text(form.select(

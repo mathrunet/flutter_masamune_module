@@ -14,7 +14,7 @@ PostModule? _$PostModuleFromMap(DynamicMap map, PostModule ref) {
       enabled: map.get<bool>("enabled", true),
       title: map.get<String?>("title", "") ?? "",
       routePath: map.get<String>("routePath", "post"),
-      postPath: map.get<String>("postPath", "post"),
+      queryPath: map.get<String>("queryPath", "post"),
       userPath: map.get<String>("userPath", "user"),
       nameKey: map.get<String>("nameKey", Const.name),
       textKey: map.get<String>("textKey", Const.text),
@@ -26,10 +26,10 @@ PostModule? _$PostModuleFromMap(DynamicMap map, PostModule ref) {
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
-      postQuery: map.get<DynamicMap>(
-          "postQuery", <String, dynamic>{}).toCollectionQuery(),
-      designType: DesignType.values.firstWhere((e) =>
-          e.index == map.get<int>("designType", DesignType.modern.index)));
+      rerouteConfig: map.get<DynamicMap>(
+          "rerouteConfig", <String, dynamic>{}).toRerouteConfig(),
+      postQuery:
+          map.get<DynamicMap>("postQuery", <String, dynamic>{}).toModelQuery());
 }
 
 DynamicMap _$PostModuleToMap(PostModule ref) {
@@ -38,7 +38,7 @@ DynamicMap _$PostModuleToMap(PostModule ref) {
     "enabled": ref.enabled,
     if (ref.title.isNotEmpty) "title": ref.title,
     if (ref.routePath.isNotEmpty) "routePath": ref.routePath,
-    if (ref.postPath.isNotEmpty) "postPath": ref.postPath,
+    if (ref.queryPath.isNotEmpty) "queryPath": ref.queryPath,
     if (ref.userPath.isNotEmpty) "userPath": ref.userPath,
     if (ref.nameKey.isNotEmpty) "nameKey": ref.nameKey,
     if (ref.textKey.isNotEmpty) "textKey": ref.textKey,
@@ -46,7 +46,7 @@ DynamicMap _$PostModuleToMap(PostModule ref) {
     if (ref.createdTimeKey.isNotEmpty) "createdTimeKey": ref.createdTimeKey,
     "editingType": ref.editingType.index,
     "permission": ref.permission.toMap(),
-    if (ref.postQuery != null) "postQuery": ref.postQuery?.toMap(),
-    "designType": ref.designType.index
+    if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap(),
+    if (ref.postQuery != null) "postQuery": ref.postQuery?.toMap()
   };
 }

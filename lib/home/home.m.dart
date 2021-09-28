@@ -50,7 +50,7 @@ HomeModule? _$HomeModuleFromMap(DynamicMap map, HomeModule ref) {
       subMenu: map.get<List>("subMenu", const []).cast<DynamicMap>().map((e) => e.toMenuConfig()).removeEmpty(),
       profileRoutePath: map.get<String>("profileRoutePath", "user"),
       permission: map.get<DynamicMap>("permission", <String, dynamic>{}).toPermission() ?? const Permission(),
-      designType: DesignType.values.firstWhere((e) => e.index == map.get<int>("designType", DesignType.modern.index)));
+      rerouteConfig: map.get<DynamicMap>("rerouteConfig", <String, dynamic>{}).toRerouteConfig());
 }
 
 DynamicMap _$HomeModuleToMap(HomeModule ref) {
@@ -81,7 +81,7 @@ DynamicMap _$HomeModuleToMap(HomeModule ref) {
     if (ref.profileRoutePath.isNotEmpty)
       "profileRoutePath": ref.profileRoutePath,
     "permission": ref.permission.toMap(),
-    "designType": ref.designType.index
+    if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap()
   };
 }
 
@@ -94,13 +94,11 @@ HomeInformationModule? _$HomeInformationModuleFromMap(
       enabled: map.get<bool>("enabled", true),
       title: map.get<String?>("title", null),
       routePath: map.get<String>("routePath", "info"),
-      postPath: map.get<String>("postPath", "info"),
+      queryPath: map.get<String>("queryPath", "info"),
       icon: map.get<DynamicMap>("icon", <String, dynamic>{}).toIconData() ??
           Icons.info_rounded,
       nameKey: map.get<String>("nameKey", Const.name),
       createdTimeKey: map.get<String>("createdTimeKey", Const.createdTime),
-      designType: DesignType.values.firstWhere((e) =>
-          e.index == map.get<int>("designType", DesignType.modern.index)),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission());
@@ -112,11 +110,10 @@ DynamicMap _$HomeInformationModuleToMap(HomeInformationModule ref) {
     "enabled": ref.enabled,
     if (ref.title.isNotEmpty) "title": ref.title,
     if (ref.routePath.isNotEmpty) "routePath": ref.routePath,
-    if (ref.postPath.isNotEmpty) "postPath": ref.postPath,
+    if (ref.queryPath.isNotEmpty) "queryPath": ref.queryPath,
     "icon": ref.icon.toMap(),
     if (ref.nameKey.isNotEmpty) "nameKey": ref.nameKey,
     if (ref.createdTimeKey.isNotEmpty) "createdTimeKey": ref.createdTimeKey,
-    "designType": ref.designType.index,
     "permission": ref.permission.toMap()
   };
 }
@@ -130,7 +127,7 @@ HomeCalendarModule? _$HomeCalendarModuleFromMap(
       enabled: map.get<bool>("enabled", true),
       title: map.get<String?>("title", null),
       routePath: map.get<String>("routePath", "calendar"),
-      eventPath: map.get<String>("eventPath", "event"),
+      queryPath: map.get<String>("queryPath", "event"),
       startTimeKey: map.get<String>("startTimeKey", Const.startTime),
       endTimeKey: map.get<String>("endTimeKey", Const.endTime),
       allDayKey: map.get<String>("allDayKey", "allDay"),
@@ -144,7 +141,7 @@ DynamicMap _$HomeCalendarModuleToMap(HomeCalendarModule ref) {
     "enabled": ref.enabled,
     if (ref.title.isNotEmpty) "title": ref.title,
     if (ref.routePath.isNotEmpty) "routePath": ref.routePath,
-    if (ref.eventPath.isNotEmpty) "eventPath": ref.eventPath,
+    if (ref.queryPath.isNotEmpty) "queryPath": ref.queryPath,
     if (ref.startTimeKey.isNotEmpty) "startTimeKey": ref.startTimeKey,
     if (ref.endTimeKey.isNotEmpty) "endTimeKey": ref.endTimeKey,
     if (ref.allDayKey.isNotEmpty) "allDayKey": ref.allDayKey,

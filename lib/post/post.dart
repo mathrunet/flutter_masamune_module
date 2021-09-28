@@ -17,12 +17,12 @@ enum PostEditingType { planeText, wysiwyg }
 
 @module
 @immutable
-class PostModule extends PageModule {
+class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const PostModule({
     bool enabled = true,
     String? title = "",
     this.routePath = "post",
-    this.postPath = "post",
+    this.queryPath = "post",
     this.userPath = "user",
     this.nameKey = Const.name,
     this.textKey = Const.text,
@@ -30,12 +30,17 @@ class PostModule extends PageModule {
     this.createdTimeKey = Const.createdTime,
     this.editingType = PostEditingType.planeText,
     Permission permission = const Permission(),
+    RerouteConfig? rerouteConfig,
     this.postQuery,
     this.home,
     this.edit,
     this.view,
-    this.designType = DesignType.modern,
-  }) : super(enabled: enabled, title: title, permission: permission);
+  }) : super(
+          enabled: enabled,
+          title: title,
+          permission: permission,
+          rerouteConfig: rerouteConfig,
+        );
 
   @override
   Map<String, RouteConfig>? get routeSettings {
@@ -57,14 +62,11 @@ class PostModule extends PageModule {
   final Widget? edit;
   final Widget? view;
 
-  /// デザインタイプ。
-  final DesignType designType;
-
   /// ルートのパス。
   final String routePath;
 
   /// 投稿データのパス。
-  final String postPath;
+  final String queryPath;
 
   /// ユーザーのデータパス。
   final String userPath;
@@ -85,7 +87,7 @@ class PostModule extends PageModule {
   final PostEditingType editingType;
 
   /// クエリー。
-  final CollectionQuery? postQuery;
+  final ModelQuery? postQuery;
 
   @override
   PostModule? fromMap(DynamicMap map) => _$PostModuleFromMap(map, this);
@@ -102,9 +104,10 @@ class PostModuleHome extends PageHookWidget {
   Widget build(BuildContext context) {
     final now = useNow();
     final user = useUserDocumentModel(config.userPath);
-    final post = useCollectionModel(config.postQuery?.value ?? config.postPath);
+    final post =
+        useCollectionModel(config.postQuery?.value ?? config.queryPath);
     final users = useCollectionModel(
-      CollectionQuery(
+      ModelQuery(
         config.userPath,
         key: Const.uid,
         whereIn: post.map((e) => e.get(Const.user, "")).distinct(),
@@ -123,7 +126,6 @@ class PostModuleHome extends PageHookWidget {
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       loadingFutures: [
         user.future,
         post.future,
@@ -189,7 +191,7 @@ class PostModuleView extends PageHookWidget {
   Widget build(BuildContext context) {
     final user = useUserDocumentModel(config.userPath);
     final item =
-        useDocumentModel("${config.postPath}/${context.get("post_id", "")}");
+        useDocumentModel("${config.queryPath}/${context.get("post_id", "")}");
     final now = useNow();
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
@@ -230,7 +232,6 @@ class PostModuleView extends PageHookWidget {
 
         return UIScaffold(
           waitTransition: true,
-          designType: config.designType,
           appBar: appBar,
           body: UIListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -270,7 +271,6 @@ class PostModuleView extends PageHookWidget {
       default:
         return UIScaffold(
           waitTransition: true,
-          designType: config.designType,
           appBar: appBar,
           body: UIListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -308,7 +308,7 @@ class PostModuleEdit extends PageHookWidget {
     final form = useForm("post_id");
     final now = useNow();
     final user = useUserDocumentModel(config.userPath);
-    final item = useDocumentModel("${config.postPath}/${form.uid}");
+    final item = useDocumentModel("${config.queryPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final dateTime =
@@ -337,7 +337,9 @@ class PostModuleEdit extends PageHookWidget {
                   await context.model
                       ?.deleteDocument(item)
                       .showIndicator(context);
-                  context.navigator.pop();
+                  context.navigator
+                    ..pop()
+                    ..pop();
                 },
               );
             },
@@ -389,7 +391,6 @@ class PostModuleEdit extends PageHookWidget {
 
         return UIScaffold(
           waitTransition: true,
-          designType: config.designType,
           appBar: appBar,
           body: FormBuilder(
             key: form.key,
@@ -469,7 +470,6 @@ class PostModuleEdit extends PageHookWidget {
       default:
         return UIScaffold(
           waitTransition: true,
-          designType: config.designType,
           appBar: appBar,
           body: FormBuilder(
             key: form.key,

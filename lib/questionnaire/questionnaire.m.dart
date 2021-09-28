@@ -15,6 +15,7 @@ QuestionnaireModule? _$QuestionnaireModuleFromMap(
       enabled: map.get<bool>("enabled", true),
       title: map.get<String?>("title", "") ?? "",
       routePath: map.get<String>("routePath", "question"),
+      queryPath: map.get<String>("queryPath", "question"),
       questionPath: map.get<String>("questionPath", "question"),
       answerPath: map.get<String>("answerPath", "answer"),
       userPath: map.get<String>("userPath", "user"),
@@ -30,10 +31,10 @@ QuestionnaireModule? _$QuestionnaireModuleFromMap(
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
+      rerouteConfig: map.get<DynamicMap>(
+          "rerouteConfig", <String, dynamic>{}).toRerouteConfig(),
       questionnaireQuery: map.get<DynamicMap>(
-          "questionnaireQuery", <String, dynamic>{}).toCollectionQuery(),
-      designType: DesignType.values.firstWhere((e) =>
-          e.index == map.get<int>("designType", DesignType.modern.index)));
+          "questionnaireQuery", <String, dynamic>{}).toModelQuery());
 }
 
 DynamicMap _$QuestionnaireModuleToMap(QuestionnaireModule ref) {
@@ -42,6 +43,7 @@ DynamicMap _$QuestionnaireModuleToMap(QuestionnaireModule ref) {
     "enabled": ref.enabled,
     if (ref.title.isNotEmpty) "title": ref.title,
     if (ref.routePath.isNotEmpty) "routePath": ref.routePath,
+    if (ref.queryPath.isNotEmpty) "queryPath": ref.queryPath,
     if (ref.questionPath.isNotEmpty) "questionPath": ref.questionPath,
     if (ref.answerPath.isNotEmpty) "answerPath": ref.answerPath,
     if (ref.userPath.isNotEmpty) "userPath": ref.userPath,
@@ -55,8 +57,8 @@ DynamicMap _$QuestionnaireModuleToMap(QuestionnaireModule ref) {
     if (ref.endTimeKey.isNotEmpty) "endTimeKey": ref.endTimeKey,
     if (ref.answerKey.isNotEmpty) "answerKey": ref.answerKey,
     "permission": ref.permission.toMap(),
+    if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap(),
     if (ref.questionnaireQuery != null)
-      "questionnaireQuery": ref.questionnaireQuery?.toMap(),
-    "designType": ref.designType.index
+      "questionnaireQuery": ref.questionnaireQuery?.toMap()
   };
 }

@@ -53,8 +53,7 @@ LoginModule? _$LoginModuleFromMap(DynamicMap map, LoginModule ref) {
           const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
       padding: map.get<DynamicMap>("padding", <String, dynamic>{}).toEdgeInsets() ?? const EdgeInsets.all(36),
       redirectTo: map.get<String>("redirectTo", "/"),
-      registerForm: map.get<List>("registerForm", const []).cast<DynamicMap>().map((e) => e.toFormConfig()).removeEmpty(),
-      designType: DesignType.values.firstWhere((e) => e.index == map.get<int>("designType", DesignType.modern.index)));
+      registerForm: map.get<List>("registerForm", const []).cast<DynamicMap>().map((e) => e.toFormConfig()).removeEmpty());
 }
 
 DynamicMap _$LoginModuleToMap(LoginModule ref) {
@@ -94,7 +93,6 @@ DynamicMap _$LoginModuleToMap(LoginModule ref) {
     "padding": ref.padding.toMap(),
     if (ref.redirectTo.isNotEmpty) "redirectTo": ref.redirectTo,
     if (ref.registerForm.isNotEmpty)
-      "registerForm": ref.registerForm.map((e) => e.toMap()),
-    "designType": ref.designType.index
+      "registerForm": ref.registerForm.map((e) => e.toMap())
   };
 }

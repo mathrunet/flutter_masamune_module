@@ -19,7 +19,7 @@ UserModule? _$UserModuleFromMap(DynamicMap map, UserModule ref) {
           .map((e) => e.toModule<UserWidgetModule>())
           .removeEmpty(),
       routePath: map.get<String>("routePath", "user"),
-      userPath: map.get<String>("userPath", "user"),
+      queryPath: map.get<String>("queryPath", "user"),
       reportPath: map.get<String>("reportPath", "report"),
       blockPath: map.get<String>("blockPath", "block"),
       nameKey: map.get<String>("nameKey", Const.name),
@@ -27,8 +27,6 @@ UserModule? _$UserModuleFromMap(DynamicMap map, UserModule ref) {
       imageKey: map.get<String>("imageKey", Const.image),
       iconKey: map.get<String>("iconKey", Const.icon),
       roleKey: map.get<String>("roleKey", Const.role),
-      designType: DesignType.values.firstWhere((e) =>
-          e.index == map.get<int>("designType", DesignType.modern.index)),
       additionalInformation: map
           .get<Map>("additionalInformation", const {}).cast<String, String>(),
       allowImageEditing: map.get<bool>("allowImageEditing", false),
@@ -37,7 +35,9 @@ UserModule? _$UserModuleFromMap(DynamicMap map, UserModule ref) {
       allowReport: map.get<bool>("allowReport", true),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
-          const Permission());
+          const Permission(),
+      rerouteConfig: map.get<DynamicMap>(
+          "rerouteConfig", <String, dynamic>{}).toRerouteConfig());
 }
 
 DynamicMap _$UserModuleToMap(UserModule ref) {
@@ -47,7 +47,7 @@ DynamicMap _$UserModuleToMap(UserModule ref) {
     if (ref.title.isNotEmpty) "title": ref.title,
     if (ref.contents.isNotEmpty) "contents": ref.contents.map((e) => e.toMap()),
     if (ref.routePath.isNotEmpty) "routePath": ref.routePath,
-    if (ref.userPath.isNotEmpty) "userPath": ref.userPath,
+    if (ref.queryPath.isNotEmpty) "queryPath": ref.queryPath,
     if (ref.reportPath.isNotEmpty) "reportPath": ref.reportPath,
     if (ref.blockPath.isNotEmpty) "blockPath": ref.blockPath,
     if (ref.nameKey.isNotEmpty) "nameKey": ref.nameKey,
@@ -55,7 +55,6 @@ DynamicMap _$UserModuleToMap(UserModule ref) {
     if (ref.imageKey.isNotEmpty) "imageKey": ref.imageKey,
     if (ref.iconKey.isNotEmpty) "iconKey": ref.iconKey,
     if (ref.roleKey.isNotEmpty) "roleKey": ref.roleKey,
-    "designType": ref.designType.index,
     if (ref.additionalInformation.isNotEmpty)
       "additionalInformation":
           ref.additionalInformation.map((k, v) => MapEntry(k, v)),
@@ -63,6 +62,7 @@ DynamicMap _$UserModuleToMap(UserModule ref) {
     "allowFollow": ref.allowFollow,
     "allowBlock": ref.allowBlock,
     "allowReport": ref.allowReport,
-    "permission": ref.permission.toMap()
+    "permission": ref.permission.toMap(),
+    if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap()
   };
 }

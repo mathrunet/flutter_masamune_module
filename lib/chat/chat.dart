@@ -21,12 +21,12 @@ extension ChatTypeExtensions on ChatType {
 
 @module
 @immutable
-class ChatModule extends PageModule {
+class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const ChatModule({
     bool enabled = true,
     String? title = "",
     this.routePath = "chat",
-    this.chatPath = "chat",
+    this.queryPath = "chat",
     this.userPath = "user",
     this.mediaType = PlatformMediaType.all,
     this.nameKey = Const.name,
@@ -37,14 +37,19 @@ class ChatModule extends PageModule {
     this.mediaKey = Const.media,
     this.createdTimeKey = Const.createdTime,
     this.modifiedTimeKey = Const.modifiedTime,
-    this.chatQuery,
+    this.chatRoomQuery,
     Permission permission = const Permission(),
-    this.designType = DesignType.modern,
+    RerouteConfig? rerouteConfig,
     this.home,
     this.timeline,
     this.mediaView,
     this.edit,
-  }) : super(enabled: enabled, title: title, permission: permission);
+  }) : super(
+          enabled: enabled,
+          title: title,
+          permission: permission,
+          rerouteConfig: rerouteConfig,
+        );
 
   @override
   Map<String, RouteConfig>? get routeSettings {
@@ -69,14 +74,11 @@ class ChatModule extends PageModule {
   final Widget? mediaView;
   final Widget? edit;
 
-  /// デザインタイプ。
-  final DesignType designType;
-
   /// ルートのパス。
   final String routePath;
 
   /// チャットデータのパス。
-  final String chatPath;
+  final String queryPath;
 
   /// メンバーデータのキー。
   final String memberKey;
@@ -108,8 +110,8 @@ class ChatModule extends PageModule {
   /// 対応するメディアタイプ。
   final PlatformMediaType mediaType;
 
-  /// チャットのクエリ。
-  final CollectionQuery? chatQuery;
+  /// チャットルームのクエリ。
+  final ModelQuery? chatRoomQuery;
 
   @override
   ChatModule? fromMap(DynamicMap map) => _$ChatModuleFromMap(map, this);
@@ -127,18 +129,18 @@ class ChatModuleHome extends PageHookWidget {
     final now = useNow();
     final user = useUserDocumentModel(config.userPath);
     final chat = useCollectionModel(
-      config.chatQuery?.value ??
-          CollectionQuery(
-            config.chatPath,
+      config.chatRoomQuery?.value ??
+          ModelQuery(
+            config.queryPath,
             key: config.memberKey,
             arrayContains: user.get(Const.uid, ""),
           ).value,
     );
     final users = useCollectionModel(
-      CollectionQuery(
+      ModelQuery(
         config.userPath,
         key: Const.uid,
-        order: CollectionQueryOrder.desc,
+        order: ModelQueryOrder.desc,
         orderBy: config.modifiedTimeKey,
         whereIn: chat.map((e) {
           final member = e.get(config.memberKey, []);
@@ -167,7 +169,6 @@ class ChatModuleHome extends PageHookWidget {
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       loadingFutures: [
         chat.future,
         users.future,
@@ -228,11 +229,11 @@ class ChatModuleTimeline extends PageHookWidget {
     final userId = context.model?.userId;
     final user = useUserDocumentModel();
     final chat =
-        useDocumentModel("${config.chatPath}/${context.get("chat_id", "")}");
+        useDocumentModel("${config.queryPath}/${context.get("chat_id", "")}");
     final timeline = useCollectionModel(
-      CollectionQuery(
-              "${config.chatPath}/${context.get("chat_id", "")}/${config.chatPath}",
-              order: CollectionQueryOrder.desc,
+      ModelQuery(
+              "${config.queryPath}/${context.get("chat_id", "")}/${config.queryPath}",
+              order: ModelQueryOrder.desc,
               orderBy: config.createdTimeKey,
               limit: 500)
           .value,
@@ -240,7 +241,7 @@ class ChatModuleTimeline extends PageHookWidget {
     timeline.sort((a, b) =>
         b.get(config.createdTimeKey, 0) - a.get(config.createdTimeKey, 0));
     final users = useCollectionModel(
-      CollectionQuery(
+      ModelQuery(
         config.userPath,
         key: Const.uid,
         whereIn: timeline.map((e) => e.get(Const.user, "")).distinct(),
@@ -253,7 +254,7 @@ class ChatModuleTimeline extends PageHookWidget {
       orElse: (o) => o,
     );
     final members = useCollectionModel(
-      CollectionQuery(
+      ModelQuery(
         config.userPath,
         key: Const.uid,
         whereIn:
@@ -270,7 +271,6 @@ class ChatModuleTimeline extends PageHookWidget {
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       appBar: UIAppBar(
         title: Text(name.isEmpty ? title : name),
         actions: [
@@ -521,13 +521,12 @@ class ChatModuleMediaView extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final item = useDocumentModel(
-        "${config.chatPath}/${context.get("chat_id", "")}/${config.chatPath}/${context.get("timeline_id", "")}");
+        "${config.queryPath}/${context.get("chat_id", "")}/${config.queryPath}/${context.get("timeline_id", "")}");
     final media = item.get(config.mediaKey, "");
     final type = getPlatformMediaType(media);
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       appBar: const UIAppBar(),
       backgroundColor: Colors.black,
       body: media.isEmpty
@@ -566,12 +565,11 @@ class ChatModuleEdit extends PageHookWidget {
   Widget build(BuildContext context) {
     final form = useForm();
     final chat =
-        useDocumentModel("${config.chatPath}/${context.get("chat_id", "")}");
+        useDocumentModel("${config.queryPath}/${context.get("chat_id", "")}");
     final name = chat.get(config.nameKey, "");
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       appBar: UIAppBar(
           sliverLayoutWhenModernDesign: false,
           title: Text("Editing %s".localize().format(["Chat".localize()]))),

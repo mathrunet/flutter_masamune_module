@@ -27,4 +27,4 @@ export 'user/user_account.dart';
 part 'src/exntensions.dart';
 part 'src/form_config.dart';
 part 'src/functions.dart';
-part 'src/tab_config.dart';
+part 'src/group_config.dart';

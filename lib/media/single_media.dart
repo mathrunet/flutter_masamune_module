@@ -9,13 +9,14 @@ part "single_media.m.dart";
 
 @module
 @immutable
-class SingleMediaModule extends PageModule {
+class SingleMediaModule extends PageModule
+    with VerifyAppReroutePageModuleMixin {
   const SingleMediaModule({
     bool enabled = true,
     String title = "",
     this.galleryType = GalleryType.tile,
     this.routePath = "media",
-    this.mediaPath = "app/media",
+    this.queryPath = "app/media",
     this.userPath = "user",
     this.mediaKey = Const.media,
     this.nameKey = Const.name,
@@ -25,10 +26,14 @@ class SingleMediaModule extends PageModule {
     this.createdTimeKey = Const.createdTime,
     this.mediaType = PlatformMediaType.all,
     Permission permission = const Permission(),
+    RerouteConfig? rerouteConfig,
     this.home,
     this.edit,
-    this.designType = DesignType.modern,
-  }) : super(enabled: enabled, title: title, permission: permission);
+  }) : super(
+            enabled: enabled,
+            title: title,
+            permission: permission,
+            rerouteConfig: rerouteConfig);
 
   @override
   Map<String, RouteConfig>? get routeSettings {
@@ -47,9 +52,6 @@ class SingleMediaModule extends PageModule {
   final Widget? home;
   final Widget? edit;
 
-  /// デザインタイプ。
-  final DesignType designType;
-
   /// ルートのパス。
   final String routePath;
 
@@ -57,7 +59,7 @@ class SingleMediaModule extends PageModule {
   final GalleryType galleryType;
 
   /// メディアデータのパス。
-  final String mediaPath;
+  final String queryPath;
 
   /// ユーザーのデータパス。
   final String userPath;
@@ -99,7 +101,7 @@ class SingleMediaModuleHome extends PageHookWidget {
   Widget build(BuildContext context) {
     final now = useNow();
     final user = useUserDocumentModel(config.userPath);
-    final item = useDocumentModel(config.mediaPath);
+    final item = useDocumentModel(config.queryPath);
     final name = item.get(config.nameKey, "");
     final media = item.get(config.mediaKey, "");
     final date = item.get(config.createdTimeKey, now.millisecondsSinceEpoch);
@@ -107,7 +109,6 @@ class SingleMediaModuleHome extends PageHookWidget {
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       appBar: UIAppBar(
         title: Text(
           name.isNotEmpty
@@ -166,13 +167,12 @@ class SingleMediaModuleEdit extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final form = useForm();
-    final item = useDocumentModel(config.mediaPath);
+    final item = useDocumentModel(config.queryPath);
     final name = item.get(config.nameKey, "");
     final media = item.get(config.mediaKey, "");
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       appBar: UIAppBar(
         sliverLayoutWhenModernDesign: false,
         title: Text(

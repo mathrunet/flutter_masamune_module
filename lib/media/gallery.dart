@@ -14,13 +14,13 @@ enum GalleryType {
 
 @module
 @immutable
-class GalleryModule extends PageModule {
+class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const GalleryModule({
     bool enabled = true,
     String title = "",
     this.galleryType = GalleryType.tile,
     this.routePath = "gallery",
-    this.galleryPath = "gallery",
+    this.queryPath = "gallery",
     this.userPath = "user",
     this.mediaKey = Const.media,
     this.nameKey = Const.name,
@@ -34,22 +34,28 @@ class GalleryModule extends PageModule {
     this.childAspectRatioForDesktop = 1,
     this.heightOnDetailView = 200,
     this.tileSpacing = 1,
-    this.tabConfig = const [],
+    this.categoryConfig = const [],
     this.mediaType = PlatformMediaType.all,
     this.skipDetailPage = false,
     Permission permission = const Permission(),
-    this.designType = DesignType.modern,
-    this.galleryQuery,
+    RerouteConfig? rerouteConfig,
+    this.contentQuery,
+    this.categoryQuery,
     this.home,
-    this.tabView,
     this.gridView,
+    this.grid,
     this.edit,
     this.tileView,
     this.tileViewWithTab,
     this.tileViewWithList,
     this.mediaView,
     this.mediaDetail,
-  }) : super(enabled: enabled, title: title, permission: permission);
+  }) : super(
+          enabled: enabled,
+          title: title,
+          permission: permission,
+          rerouteConfig: rerouteConfig,
+        );
 
   @override
   Map<String, RouteConfig>? get routeSettings {
@@ -58,34 +64,29 @@ class GalleryModule extends PageModule {
     }
     final route = {
       "/$routePath": RouteConfig((_) => home ?? GalleryModuleHome(this)),
-      "/$routePath/{category_id}": RouteConfig((context) =>
-          tabView ??
-          GalleryModuleGridView(this,
-              tab: TabConfig(id: context.get("category_id", "")))),
-      "/$routePath/edit": RouteConfig((_) => GalleryModuleEdit(this)),
+      "/$routePath/edit": RouteConfig((_) => edit ?? GalleryModuleEdit(this)),
+      "/$routePath/{category_id}":
+          RouteConfig((context) => gridView ?? GalleryModuleGridView(this)),
       "/$routePath/media/{media_id}":
-          RouteConfig((_) => GalleryModuleMediaDetail(this)),
+          RouteConfig((_) => mediaDetail ?? GalleryModuleMediaDetail(this)),
       "/$routePath/media/{media_id}/view":
-          RouteConfig((_) => GalleryModuleMediaView(this)),
+          RouteConfig((_) => mediaView ?? GalleryModuleMediaView(this)),
       "/$routePath/media/{media_id}/edit":
-          RouteConfig((_) => GalleryModuleEdit(this)),
+          RouteConfig((_) => edit ?? GalleryModuleEdit(this)),
     };
     return route;
   }
 
   // ページ設定。
   final Widget? home;
-  final Widget? tabView;
   final Widget? gridView;
+  final Widget? grid;
   final Widget? edit;
   final Widget? mediaDetail;
   final Widget? mediaView;
   final Widget? tileView;
   final Widget? tileViewWithTab;
   final Widget? tileViewWithList;
-
-  /// デザインタイプ。
-  final DesignType designType;
 
   /// ルートのパス。
   final String routePath;
@@ -94,7 +95,7 @@ class GalleryModule extends PageModule {
   final GalleryType galleryType;
 
   /// ギャラリーデータのパス。
-  final String galleryPath;
+  final String queryPath;
 
   /// ユーザーのデータパス。
   final String userPath;
@@ -117,8 +118,11 @@ class GalleryModule extends PageModule {
   /// 作成日のキー。
   final String createdTimeKey;
 
-  /// クエリ。
-  final CollectionQuery? galleryQuery;
+  /// コンテンツ用のクエリ。
+  final ModelQuery? contentQuery;
+
+  /// カテゴリー用のクエリ。
+  final ModelQuery? categoryQuery;
 
   /// タイルの横方向のサイズ。
   final double maxCrossAxisExtentForMobile;
@@ -137,8 +141,8 @@ class GalleryModule extends PageModule {
   /// 対応するメディアタイプ。
   final PlatformMediaType mediaType;
 
-  /// タブの設定。
-  final List<TabConfig> tabConfig;
+  /// カテゴリーの設定。
+  final List<GroupConfig> categoryConfig;
 
   /// 詳細のページは出さずに直接画像を表示する場合は`true`。
   final bool skipDetailPage;
@@ -161,10 +165,68 @@ class GalleryModuleHome extends PageHookWidget {
       case GalleryType.tileWithTab:
         return config.tileViewWithTab ?? GalleryModuleTileViewWithTab(config);
       case GalleryType.tileWithList:
-        return config.tileViewWithList ?? GalleryModuleTileViewWithTab(config);
+        return config.tileViewWithList ?? GalleryModuleTileViewWithList(config);
       default:
         return const Empty();
     }
+  }
+}
+
+class GalleryModuleTileViewWithList extends PageHookWidget {
+  const GalleryModuleTileViewWithList(this.config);
+  final GalleryModule config;
+
+  List<GroupConfig> _categories(BuildContext context) {
+    if (config.categoryQuery != null) {
+      final categories = useCollectionModel(config.categoryQuery!.value);
+      return categories.mapAndRemoveEmpty((item) =>
+          GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
+        ..addAll(config.categoryConfig);
+    }
+    return config.categoryConfig;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = useUserDocumentModel(config.userPath);
+    final list = _categories(context);
+    final controller = useNavigatorController(
+      "/${config.routePath}/${list.firstOrNull?.id}",
+    );
+
+    return UIScaffold(
+      waitTransition: true,
+      inlineNavigatorControllerOnWeb: controller,
+      appBar: UIAppBar(
+        title: Text(config.title ?? "Gallery".localize()),
+      ),
+      body: UIListBuilder<GroupConfig>(
+        source: list,
+        builder: (context, item) {
+          return [
+            ListItem(
+              title: Text(item.label),
+              onTap: () {
+                context.navigator.pushNamed("/${config.routePath}/${item.id}");
+              },
+            )
+          ];
+        },
+      ),
+      floatingActionButton:
+          config.permission.canEdit(user.get(config.roleKey, ""))
+              ? FloatingActionButton.extended(
+                  label: Text("Add".localize()),
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    context.navigator.pushNamed(
+                      "/${config.routePath}/edit",
+                      arguments: RouteQuery.fullscreenOrModal,
+                    );
+                  },
+                )
+              : null,
+    );
   }
 }
 
@@ -172,26 +234,36 @@ class GalleryModuleTileViewWithTab extends PageHookWidget {
   const GalleryModuleTileViewWithTab(this.config);
   final GalleryModule config;
 
+  List<GroupConfig> _categories(BuildContext context) {
+    if (config.categoryQuery != null) {
+      final categories = useCollectionModel(config.categoryQuery!.value);
+      return categories.mapAndRemoveEmpty((item) =>
+          GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
+        ..addAll(config.categoryConfig);
+    }
+    return config.categoryConfig;
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = useUserDocumentModel(config.userPath);
-    final tab = useTab(config.tabConfig);
+    final list = _categories(context);
+    final tab = useTab(list);
     final controller = useNavigatorController(
-      "/${config.routePath}/${config.tabConfig.firstOrNull?.id}",
+      "/${config.routePath}/${config.categoryConfig.firstOrNull?.id}",
     );
 
     return UIScaffold(
       waitTransition: true,
       inlineNavigatorControllerOnWeb: controller,
-      designType: config.designType,
       appBar: UIAppBar(
         title: Text(config.title ?? "Gallery".localize()),
-        bottom: UITabBar<TabConfig>(tab),
+        bottom: UITabBar<GroupConfig>(tab),
       ),
-      body: UITabView<TabConfig>(
+      body: UITabView<GroupConfig>(
         tab,
         builder: (context, item, key) {
-          return config.gridView ?? GalleryModuleGridView(config, tab: item);
+          return config.grid ?? GalleryModuleGrid(config, category: item);
         },
       ),
       floatingActionButton:
@@ -219,17 +291,16 @@ class GalleryModuleTileView extends PageHookWidget {
   Widget build(BuildContext context) {
     final user = useUserDocumentModel(config.userPath);
     final controller = useNavigatorController(
-      "/${config.routePath}/${config.tabConfig.firstOrNull?.id}",
+      "/${config.routePath}/${config.categoryConfig.firstOrNull?.id}",
     );
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       inlineNavigatorControllerOnWeb: controller,
       appBar: UIAppBar(
         title: Text(config.title ?? "Gallery".localize()),
       ),
-      body: config.gridView ?? GalleryModuleGridView(config),
+      body: config.grid ?? GalleryModuleGrid(config),
       floatingActionButton:
           config.permission.canEdit(user.get(config.roleKey, ""))
               ? FloatingActionButton.extended(
@@ -247,32 +318,76 @@ class GalleryModuleTileView extends PageHookWidget {
   }
 }
 
-class GalleryModuleGridView extends HookWidget {
-  const GalleryModuleGridView(this.config, {this.tab});
+class GalleryModuleGridView extends PageHookWidget {
+  const GalleryModuleGridView(this.config);
   final GalleryModule config;
-  final TabConfig? tab;
 
-  String get path {
-    if (tab == null) {
-      return config.galleryQuery?.value ?? config.galleryPath;
+  List<GroupConfig> _categories(BuildContext context) {
+    if (config.categoryQuery != null) {
+      final categories = useCollectionModel(config.categoryQuery!.value);
+      return categories.mapAndRemoveEmpty((item) =>
+          GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
+        ..addAll(config.categoryConfig);
     }
-    return tab!.query?.value ??
-        CollectionQuery(
-          config.galleryPath,
-          key: config.categoryKey,
-          isEqualTo: tab!.id,
-        ).value;
+    return config.categoryConfig;
   }
 
   @override
   Widget build(BuildContext context) {
-    final gallery = useCollectionModel(path);
+    final list = _categories(context);
+    final category = list
+        .firstWhereOrNull((item) => item.id == context.get("category_id", ""));
+
+    if (category == null) {
+      return UIScaffold(
+        appBar: UIAppBar(
+          title: Text(config.title ?? "Gallery".localize()),
+        ),
+        body: Center(
+          child: Text("No data.".localize()),
+        ),
+      );
+    }
+
+    return UIScaffold(
+      waitTransition: true,
+      appBar: UIAppBar(
+        title: Text(category.label.localize()),
+      ),
+      body: GalleryModuleGrid(config, category: category),
+    );
+  }
+}
+
+class GalleryModuleGrid extends HookWidget {
+  const GalleryModuleGrid(this.config, {this.category});
+  final GalleryModule config;
+  final GroupConfig? category;
+
+  DynamicCollectionModel _gallery(BuildContext context) {
+    if (category == null) {
+      return useCollectionModel(config.contentQuery?.value ?? config.queryPath);
+    }
+    return useCollectionModel(
+      category!.query?.value ??
+          config.contentQuery?.value ??
+          ModelQuery(
+            config.queryPath,
+            key: config.categoryKey,
+            isEqualTo: category!.id,
+          ).value,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final gallery = _gallery(context);
     final filtered = gallery.where(
       (item) {
-        if (tab == null) {
+        if (category == null) {
           return true;
         }
-        return item.get(config.categoryKey, "") == tab!.id;
+        return item.get(config.categoryKey, "") == category!.id;
       },
     );
 
@@ -339,8 +454,8 @@ class GalleryModuleMediaDetail extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final user = useUserDocumentModel(config.userPath);
-    final item = useDocumentModel(
-        "${config.galleryPath}/${context.get("media_id", "")}");
+    final item =
+        useDocumentModel("${config.queryPath}/${context.get("media_id", "")}");
 
     final now = useNow();
     final name = item.get(config.nameKey, "");
@@ -352,7 +467,6 @@ class GalleryModuleMediaDetail extends PageHookWidget {
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       appBar: UIAppBar(
         title: Text(name),
         actions: [
@@ -450,15 +564,14 @@ class GalleryModuleMediaView extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final user = useUserDocumentModel(config.userPath);
-    final item = useDocumentModel(
-        "${config.galleryPath}/${context.get("media_id", "")}");
+    final item =
+        useDocumentModel("${config.queryPath}/${context.get("media_id", "")}");
     final name = item.get(config.nameKey, "");
     final media = item.get(config.mediaKey, "");
     final type = getPlatformMediaType(media);
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       appBar: UIAppBar(
         title: Text(name),
         actions: [
@@ -507,18 +620,28 @@ class GalleryModuleEdit extends PageHookWidget {
   const GalleryModuleEdit(this.config);
   final GalleryModule config;
 
+  List<GroupConfig> _categories(BuildContext context) {
+    if (config.categoryQuery != null) {
+      final categories = useCollectionModel(config.categoryQuery!.value);
+      return categories.mapAndRemoveEmpty((item) =>
+          GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
+        ..addAll(config.categoryConfig);
+    }
+    return config.categoryConfig;
+  }
+
   @override
   Widget build(BuildContext context) {
     final form = useForm("media_id");
     final user = useUserDocumentModel(config.userPath);
-    final item = useDocumentModel("${config.galleryPath}/${form.uid}");
+    final item = useDocumentModel("${config.queryPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final media = item.get(config.mediaKey, "");
+    final categories = _categories(context);
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       appBar: UIAppBar(
         sliverLayoutWhenModernDesign: false,
         title: Text(form.select(
@@ -542,7 +665,7 @@ class GalleryModuleEdit extends PageHookWidget {
                     await context.model
                         ?.deleteDocument(item)
                         .showIndicator(context);
-                    context.navigator.pop();
+                    context.navigator.popUntilNamed("/${config.routePath}");
                   },
                 );
               },
@@ -596,7 +719,7 @@ class GalleryModuleEdit extends PageHookWidget {
               context[config.textKey] = value;
             },
           ),
-          if (config.tabConfig.isNotEmpty) ...[
+          if (categories.isNotEmpty) ...[
             DividHeadline("Category".localize()),
             FormItemDropdownField(
               dense: true,
@@ -604,12 +727,12 @@ class GalleryModuleEdit extends PageHookWidget {
               hintText: "Input %s".localize().format(["Category".localize()]),
               controller: useMemoizedTextEditingController(
                 form.select(
-                  item.get(config.categoryKey, config.tabConfig.first.id),
-                  config.tabConfig.first.id,
+                  item.get(config.categoryKey, categories.first.id),
+                  categories.first.id,
                 ),
               ),
               items: <String, String>{
-                for (final tab in config.tabConfig) tab.id: tab.label
+                for (final category in categories) category.id: category.label
               },
               onSaved: (value) {
                 context[config.categoryKey] = value;

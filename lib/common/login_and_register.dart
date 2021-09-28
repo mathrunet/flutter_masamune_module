@@ -41,7 +41,6 @@ class LoginModule extends PageModule {
     this.padding = const EdgeInsets.all(36),
     this.redirectTo = "/",
     this.registerForm = const [],
-    this.designType = DesignType.modern,
   }) : super(enabled: enabled, title: title);
 
   @override
@@ -58,9 +57,6 @@ class LoginModule extends PageModule {
     };
     return route;
   }
-
-  /// デザインタイプ。
-  final DesignType designType;
 
   /// ログインタイプ。
   final LoginType loginType;
@@ -210,7 +206,6 @@ class Landing extends PageHookWidget {
     switch (config.layoutType) {
       case LoginLayoutType.fixed:
         return UIScaffold(
-          designType: config.designType,
           body: Stack(
             fit: StackFit.expand,
             children: [

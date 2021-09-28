@@ -16,12 +16,12 @@ enum CalendarEditingType { planeText, wysiwyg }
 
 @module
 @immutable
-class CalendarModule extends PageModule {
+class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const CalendarModule({
     bool enabled = true,
     String? title = "",
     this.routePath = "calendar",
-    this.eventPath = "event",
+    this.queryPath = "event",
     this.userPath = "user",
     this.commentPath = "comment",
     this.commentTemplatePath = "commentTemplate",
@@ -41,13 +41,18 @@ class CalendarModule extends PageModule {
     this.editingType = CalendarEditingType.planeText,
     Permission permission = const Permission(),
     this.initialCommentTemplate = const [],
-    this.designType = DesignType.modern,
+    RerouteConfig? rerouteConfig,
     this.home,
     this.dayView,
     this.detail,
     this.template,
     this.edit,
-  }) : super(enabled: enabled, title: title, permission: permission);
+  }) : super(
+          enabled: enabled,
+          title: title,
+          permission: permission,
+          rerouteConfig: rerouteConfig,
+        );
 
   @override
   Map<String, RouteConfig>? get routeSettings {
@@ -83,7 +88,7 @@ class CalendarModule extends PageModule {
   final String routePath;
 
   /// イベントデータのパス。
-  final String eventPath;
+  final String queryPath;
 
   /// ユーザーのデータパス。
   final String userPath;
@@ -117,9 +122,6 @@ class CalendarModule extends PageModule {
 
   /// 更新日のキー。
   final String modifiedTimeKey;
-
-  /// デザインタイプ。
-  final DesignType designType;
 
   /// 開始時間のキー。
   final String startTimeKey;
@@ -156,12 +158,11 @@ class CalendarModuleHome extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final selected = useState(DateTime.now());
-    final events = useCollectionModel(config.eventPath);
+    final events = useCollectionModel(config.queryPath);
     final user = useUserDocumentModel(config.userPath);
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       appBar: UIAppBar(
         title: Text(config.title ?? "Calendar".localize()),
       ),
@@ -211,7 +212,7 @@ class CalendarModuleDayView extends PageHookWidget {
     final startTime = date;
     final endTime = date.add(const Duration(days: 1));
 
-    final events = useCollectionModel(config.eventPath)
+    final events = useCollectionModel(config.queryPath)
         .where(
           (element) => _inEvent(
             sourceStartTime: element.get(config.startTimeKey, 0),
@@ -224,7 +225,6 @@ class CalendarModuleDayView extends PageHookWidget {
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       appBar: UIAppBar(
         title: Text(date.format("yyyy/MM/dd")),
       ),
@@ -282,7 +282,7 @@ class CalendarModuleDetail extends PageHookWidget {
   Widget build(BuildContext context) {
     final user = useUserDocumentModel(config.userPath);
     final event =
-        useDocumentModel("${config.eventPath}/${context.get("event_id", "")}");
+        useDocumentModel("${config.queryPath}/${context.get("event_id", "")}");
     final author = useDocumentModel(
         "${config.userPath}/${event.get(config.userKey, uuid)}");
     final name = event.get(config.nameKey, "");
@@ -298,14 +298,14 @@ class CalendarModuleDetail extends PageHookWidget {
     final commentController = useMemoizedTextEditingController();
 
     final _comments = useCollectionModel(
-      CollectionQuery(
-              "${config.eventPath}/${context.get("event_id", "")}/${config.commentPath}",
-              order: CollectionQueryOrder.desc,
+      ModelQuery(
+              "${config.queryPath}/${context.get("event_id", "")}/${config.commentPath}",
+              order: ModelQueryOrder.desc,
               orderBy: Const.time)
           .value,
     );
     final _commentAuthor = useCollectionModel(
-      CollectionQuery(
+      ModelQuery(
         config.userPath,
         key: Const.uid,
         whereIn: _comments.map((e) => e.get(config.userKey, "")).distinct(),
@@ -415,7 +415,6 @@ class CalendarModuleDetail extends PageHookWidget {
 
         return UIScaffold(
           waitTransition: true,
-          designType: config.designType,
           appBar: appBar,
           body: UIListView(
             children: [
@@ -456,7 +455,6 @@ class CalendarModuleDetail extends PageHookWidget {
       default:
         return UIScaffold(
           waitTransition: true,
-          designType: config.designType,
           appBar: appBar,
           body: UIListView(
             children: [
@@ -501,7 +499,6 @@ class CalendarModuleTemplate extends PageHookWidget {
 
     return UIScaffold(
       waitTransition: true,
-      designType: config.designType,
       appBar: UIAppBar(title: Text("Template".localize())),
       body: UIListBuilder<String>(
         source: [
@@ -582,7 +579,7 @@ class CalendarModuleEdit extends PageHookWidget {
     final now = useDateTime(date);
     final form = useForm("event_id");
     final user = useUserDocumentModel(config.userPath);
-    final item = useDocumentModel("${config.eventPath}/${form.uid}");
+    final item = useDocumentModel("${config.queryPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final startTime = item.getAsDateTime(config.startTimeKey, now);
@@ -727,7 +724,6 @@ class CalendarModuleEdit extends PageHookWidget {
         return UIScaffold(
           waitTransition: true,
           appBar: appBar,
-          designType: config.designType,
           body: FormBuilder(
             key: form.key,
             padding: const EdgeInsets.all(0),
@@ -812,7 +808,6 @@ class CalendarModuleEdit extends PageHookWidget {
         return UIScaffold(
           waitTransition: true,
           appBar: appBar,
-          designType: config.designType,
           body: FormBuilder(
             key: form.key,
             padding: const EdgeInsets.all(0),

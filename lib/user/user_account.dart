@@ -11,20 +11,25 @@ class UserAccountModule extends UserWidgetModule {
     bool enabled = true,
     String? title,
     this.routePath = "user",
-    this.userPath = "user",
+    this.queryPath = "user",
     this.blockPath = "block",
     this.nameKey = Const.name,
     this.allowRoles = const [],
     this.allowUserDeleting = false,
     this.allowEditingBlockList = true,
-    this.designType = DesignType.modern,
     Permission permission = const Permission(),
+    RerouteConfig? rerouteConfig,
     this.home,
     this.reauth,
     this.editEmail,
     this.editPassword,
     this.blockList,
-  }) : super(enabled: enabled, title: title, permission: permission);
+  }) : super(
+          enabled: enabled,
+          title: title,
+          permission: permission,
+          rerouteConfig: rerouteConfig,
+        );
 
   @override
   Map<String, RouteConfig>? get routeSettings {
@@ -66,14 +71,11 @@ class UserAccountModule extends UserWidgetModule {
   /// ブロックリストを編集可能な場合`true`。
   final bool allowEditingBlockList;
 
-  /// デザインタイプ。
-  final DesignType designType;
-
   @override
   final List<String> allowRoles;
 
   /// ユーザーのデータパス。
-  final String userPath;
+  final String queryPath;
 
   /// ブロックユーザーへのパス。
   final String blockPath;
@@ -275,7 +277,6 @@ class UserAccountModuleReauth extends PageHookWidget {
     final showPassword = useState<bool>(false);
 
     return UIScaffold(
-      designType: config.designType,
       appBar: UIAppBar(
         sliverLayoutWhenModernDesign: false,
         title: Text("Reauthentication".localize()),
@@ -365,7 +366,6 @@ class UserAccountModuleEditEmail extends PageHookWidget {
         useMemoizedTextEditingController(context.model?.email ?? "");
 
     return UIScaffold(
-      designType: config.designType,
       appBar: UIAppBar(
         sliverLayoutWhenModernDesign: false,
         title: Text("Change Email".localize()),
@@ -441,7 +441,6 @@ class UserAccountModuleEditPassword extends PageHookWidget {
     final form = useForm();
 
     return UIScaffold(
-      designType: config.designType,
       appBar: UIAppBar(
         sliverLayoutWhenModernDesign: false,
         title: Text("Change Password".localize()),
@@ -536,10 +535,10 @@ class UserAccountModuleBlockList extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final blocks = useCollectionModel(
-        "${config.userPath}/${context.model?.userId}/${config.blockPath}");
+        "${config.queryPath}/${context.model?.userId}/${config.blockPath}");
     final users = useCollectionModel(
-      CollectionQuery(
-        config.userPath,
+      ModelQuery(
+        config.queryPath,
         key: Const.uid,
         whereIn: blocks.map((e) => e.get(Const.user, "")).distinct(),
       ).value,
@@ -555,7 +554,6 @@ class UserAccountModuleBlockList extends PageHookWidget {
         .toList();
 
     return UIScaffold(
-      designType: config.designType,
       loadingFutures: [
         blocks.future,
         users.future,

@@ -1,7 +1,7 @@
 part of masamune_module;
 
-class TabConfig {
-  const TabConfig({
+class GroupConfig {
+  const GroupConfig({
     required this.id,
     this.label = "",
     this.icon,
@@ -11,19 +11,19 @@ class TabConfig {
   final String id;
   final String label;
   final IconData? icon;
-  final CollectionQuery? query;
+  final ModelQuery? query;
   final Object? value;
 
-  static TabConfig? _fromMap(DynamicMap map) {
+  static GroupConfig? _fromMap(DynamicMap map) {
     if (map.isEmpty || !map.containsKey("id") || !map.containsKey("name")) {
       return null;
     }
-    return TabConfig(
+    return GroupConfig(
       id: map.get("id", ""),
       label: map.get("name", ""),
       icon: map.getAsMap("icon").toIconData(),
       value: map.get("value", null),
-      query: map.getAsMap("query").toCollectionQuery(),
+      query: map.getAsMap("query").toModelQuery(),
     );
   }
 
@@ -31,9 +31,9 @@ class TabConfig {
     return <String, dynamic>{
       "id": id,
       "name": label,
-      if (query != null) "query": query!.toMap(),
       if (icon != null) "icon": icon!.toMap(),
       if (value != null) "value": value,
+      if (query != null) "query": query!.toMap(),
     };
   }
 

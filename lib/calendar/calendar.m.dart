@@ -14,7 +14,7 @@ CalendarModule? _$CalendarModuleFromMap(DynamicMap map, CalendarModule ref) {
       enabled: map.get<bool>("enabled", true),
       title: map.get<String?>("title", "") ?? "",
       routePath: map.get<String>("routePath", "calendar"),
-      eventPath: map.get<String>("eventPath", "event"),
+      queryPath: map.get<String>("queryPath", "event"),
       userPath: map.get<String>("userPath", "user"),
       commentPath: map.get<String>("commentPath", "comment"),
       commentTemplatePath:
@@ -40,8 +40,8 @@ CalendarModule? _$CalendarModuleFromMap(DynamicMap map, CalendarModule ref) {
           const Permission(),
       initialCommentTemplate:
           map.get<List>("initialCommentTemplate", const []).cast<String>(),
-      designType: DesignType.values.firstWhere((e) =>
-          e.index == map.get<int>("designType", DesignType.modern.index)));
+      rerouteConfig: map.get<DynamicMap>(
+          "rerouteConfig", <String, dynamic>{}).toRerouteConfig());
 }
 
 DynamicMap _$CalendarModuleToMap(CalendarModule ref) {
@@ -50,7 +50,7 @@ DynamicMap _$CalendarModuleToMap(CalendarModule ref) {
     "enabled": ref.enabled,
     if (ref.title.isNotEmpty) "title": ref.title,
     if (ref.routePath.isNotEmpty) "routePath": ref.routePath,
-    if (ref.eventPath.isNotEmpty) "eventPath": ref.eventPath,
+    if (ref.queryPath.isNotEmpty) "queryPath": ref.queryPath,
     if (ref.userPath.isNotEmpty) "userPath": ref.userPath,
     if (ref.commentPath.isNotEmpty) "commentPath": ref.commentPath,
     if (ref.commentTemplatePath.isNotEmpty)
@@ -72,6 +72,6 @@ DynamicMap _$CalendarModuleToMap(CalendarModule ref) {
     "permission": ref.permission.toMap(),
     if (ref.initialCommentTemplate.isNotEmpty)
       "initialCommentTemplate": ref.initialCommentTemplate.map((e) => e),
-    "designType": ref.designType.index
+    if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap()
   };
 }

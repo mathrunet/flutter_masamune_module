@@ -277,7 +277,7 @@ class HomeModuleTileMenuHomeInformation extends HookWidget {
     }
 
     final now = useNow();
-    final info = useCollectionModel(config.info.postPath);
+    final info = useCollectionModel(config.info.queryPath);
     info.sort((a, b) {
       return b.get(config.info.createdTimeKey, now.millisecondsSinceEpoch) -
           a.get(config.info.createdTimeKey, now.millisecondsSinceEpoch);
@@ -377,7 +377,7 @@ class HomeModuleTileMenuHomeCalendar extends HookWidget {
     final now = useNow();
     final start = now.toDate();
     final event =
-        useCollectionModel(config.calendar.eventPath).where((element) {
+        useCollectionModel(config.calendar.queryPath).where((element) {
       final time = element.getAsDateTime(config.calendar.startTimeKey);
       return time.millisecondsSinceEpoch >= start.millisecondsSinceEpoch;
     }).toList();

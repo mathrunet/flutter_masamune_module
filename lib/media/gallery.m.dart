@@ -16,7 +16,7 @@ GalleryModule? _$GalleryModuleFromMap(DynamicMap map, GalleryModule ref) {
       galleryType: GalleryType.values.firstWhere((e) =>
           e.index == map.get<int>("galleryType", GalleryType.tile.index)),
       routePath: map.get<String>("routePath", "gallery"),
-      galleryPath: map.get<String>("galleryPath", "gallery"),
+      queryPath: map.get<String>("queryPath", "gallery"),
       userPath: map.get<String>("userPath", "user"),
       mediaKey: map.get<String>("mediaKey", Const.media),
       nameKey: map.get<String>("nameKey", Const.name),
@@ -34,10 +34,10 @@ GalleryModule? _$GalleryModuleFromMap(DynamicMap map, GalleryModule ref) {
           map.get<double>("childAspectRatioForDesktop", 1),
       heightOnDetailView: map.get<double>("heightOnDetailView", 200),
       tileSpacing: map.get<double>("tileSpacing", 1),
-      tabConfig: map
-          .get<List>("tabConfig", const [])
+      categoryConfig: map
+          .get<List>("categoryConfig", const [])
           .cast<DynamicMap>()
-          .map((e) => e.toTabConfig())
+          .map((e) => e.toGroupConfig())
           .removeEmpty(),
       mediaType: PlatformMediaType.values.firstWhere((e) =>
           e.index == map.get<int>("mediaType", PlatformMediaType.all.index)),
@@ -45,10 +45,12 @@ GalleryModule? _$GalleryModuleFromMap(DynamicMap map, GalleryModule ref) {
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
-      designType: DesignType.values.firstWhere((e) =>
-          e.index == map.get<int>("designType", DesignType.modern.index)),
-      galleryQuery: map.get<DynamicMap>(
-          "galleryQuery", <String, dynamic>{}).toCollectionQuery());
+      rerouteConfig: map.get<DynamicMap>(
+          "rerouteConfig", <String, dynamic>{}).toRerouteConfig(),
+      contentQuery: map
+          .get<DynamicMap>("contentQuery", <String, dynamic>{}).toModelQuery(),
+      categoryQuery: map.get<DynamicMap>(
+          "categoryQuery", <String, dynamic>{}).toModelQuery());
 }
 
 DynamicMap _$GalleryModuleToMap(GalleryModule ref) {
@@ -58,7 +60,7 @@ DynamicMap _$GalleryModuleToMap(GalleryModule ref) {
     if (ref.title.isNotEmpty) "title": ref.title,
     "galleryType": ref.galleryType.index,
     if (ref.routePath.isNotEmpty) "routePath": ref.routePath,
-    if (ref.galleryPath.isNotEmpty) "galleryPath": ref.galleryPath,
+    if (ref.queryPath.isNotEmpty) "queryPath": ref.queryPath,
     if (ref.userPath.isNotEmpty) "userPath": ref.userPath,
     if (ref.mediaKey.isNotEmpty) "mediaKey": ref.mediaKey,
     if (ref.nameKey.isNotEmpty) "nameKey": ref.nameKey,
@@ -72,12 +74,13 @@ DynamicMap _$GalleryModuleToMap(GalleryModule ref) {
     "childAspectRatioForDesktop": ref.childAspectRatioForDesktop,
     "heightOnDetailView": ref.heightOnDetailView,
     "tileSpacing": ref.tileSpacing,
-    if (ref.tabConfig.isNotEmpty)
-      "tabConfig": ref.tabConfig.map((e) => e.toMap()),
+    if (ref.categoryConfig.isNotEmpty)
+      "categoryConfig": ref.categoryConfig.map((e) => e.toMap()),
     "mediaType": ref.mediaType.index,
     "skipDetailPage": ref.skipDetailPage,
     "permission": ref.permission.toMap(),
-    "designType": ref.designType.index,
-    if (ref.galleryQuery != null) "galleryQuery": ref.galleryQuery?.toMap()
+    if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap(),
+    if (ref.contentQuery != null) "contentQuery": ref.contentQuery?.toMap(),
+    if (ref.categoryQuery != null) "categoryQuery": ref.categoryQuery?.toMap()
   };
 }

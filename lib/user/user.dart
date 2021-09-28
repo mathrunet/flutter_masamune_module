@@ -6,13 +6,13 @@ part 'user.m.dart';
 
 @module
 @immutable
-class UserModule extends PageModule {
+class UserModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const UserModule({
     bool enabled = true,
     String title = "",
     this.contents = const [],
     this.routePath = "user",
-    this.userPath = "user",
+    this.queryPath = "user",
     this.reportPath = "report",
     this.blockPath = "block",
     this.nameKey = Const.name,
@@ -20,16 +20,21 @@ class UserModule extends PageModule {
     this.imageKey = Const.image,
     this.iconKey = Const.icon,
     this.roleKey = Const.role,
-    this.designType = DesignType.modern,
     this.additionalInformation = const {},
     this.allowImageEditing = false,
     this.allowFollow = false,
     this.allowBlock = true,
     this.allowReport = true,
     Permission permission = const Permission(),
+    RerouteConfig? rerouteConfig,
     this.home,
     this.editProfile,
-  }) : super(enabled: enabled, title: title, permission: permission);
+  }) : super(
+          enabled: enabled,
+          title: title,
+          permission: permission,
+          rerouteConfig: rerouteConfig,
+        );
 
   @override
   Map<String, RouteConfig>? get routeSettings {
@@ -62,7 +67,7 @@ class UserModule extends PageModule {
   final String routePath;
 
   /// ユーザーのデータパス。
-  final String userPath;
+  final String queryPath;
 
   /// タイトルのキー。
   final String nameKey;
@@ -85,9 +90,6 @@ class UserModule extends PageModule {
   /// ブロックユーザーへのパス。
   final String blockPath;
 
-  /// デザインタイプ。
-  final DesignType designType;
-
   /// ユーザーのフィーチャー画像が編集可能な場合`true`.
   final bool allowImageEditing;
 
@@ -109,19 +111,24 @@ class UserModule extends PageModule {
   DynamicMap toMap() => _$UserModuleToMap(this);
 }
 
-abstract class UserWidgetModule extends PageModule {
+abstract class UserWidgetModule extends PageModule
+    with VerifyAppReroutePageModuleMixin {
   const UserWidgetModule({
     String? id,
     bool enabled = true,
     String? title,
     Map<String, RouteConfig>? routeSettings,
     Permission permission = const Permission(),
+    RerouteConfig? rerouteConfig,
+    bool verifyAppReroute = false,
   }) : super(
           id: id,
           enabled: enabled,
           title: title,
           routeSettings: routeSettings,
           permission: permission,
+          verifyAppReroute: verifyAppReroute,
+          rerouteConfig: rerouteConfig,
         );
   List<String> get allowRoles;
   Widget build(BuildContext context);
@@ -134,7 +141,7 @@ class UserModuleHome extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final userId = context.get("user_id", context.model?.userId ?? "");
-    final user = useDocumentModel("${config.userPath}/$userId");
+    final user = useDocumentModel("${config.queryPath}/$userId");
     final name = user.get(config.nameKey, "");
     final text = user.get(config.textKey, "");
     final image = user.get(config.imageKey, "");
@@ -146,7 +153,6 @@ class UserModuleHome extends PageHookWidget {
 
     if (userId.isEmpty) {
       return UIScaffold(
-        designType: config.designType,
         appBar: const UIAppBar(),
         body: Center(
           child: Text("No data.".localize()),
@@ -156,11 +162,10 @@ class UserModuleHome extends PageHookWidget {
 
     final report = useDocumentModel("${config.reportPath}/$userId");
     final block = useDocumentModel(
-        "${config.userPath}/${context.model?.userId}/${config.blockPath}/$userId");
+        "${config.queryPath}/${context.model?.userId}/${config.blockPath}/$userId");
 
     if (block.isNotEmpty) {
       return UIScaffold(
-        designType: config.designType,
         appBar: UIAppBar(
           title: Text(name),
         ),
@@ -173,13 +178,13 @@ class UserModuleHome extends PageHookWidget {
     }
 
     return UIScaffold(
-      designType: DesignType.modern,
       waitTransition: true,
+      designType: DesignType.modern,
       loadingFutures: [
         user.future,
       ],
       appBar: UIUserProfileAppBar(
-        // designType: DesignType.modern,
+        designType: DesignType.modern,
         expandedHeight: 160,
         icon: NetworkOrAsset.image(icon),
         backgroundImage: image.isNotEmpty ? NetworkOrAsset.image(image) : null,
@@ -343,14 +348,13 @@ class UserModuleEditProfile extends PageHookWidget {
   Widget build(BuildContext context) {
     final form = useForm();
     final user =
-        useDocumentModel("${config.userPath}/${context.model?.userId}");
+        useDocumentModel("${config.queryPath}/${context.model?.userId}");
     final name = user.get(config.nameKey, "");
     final text = user.get(config.textKey, "");
     final image = user.get(config.imageKey, "");
     final icon = user.get(config.iconKey, "");
 
     return UIScaffold(
-      designType: config.designType,
       waitTransition: true,
       loadingFutures: [
         user.future,
