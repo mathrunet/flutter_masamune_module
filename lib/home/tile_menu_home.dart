@@ -262,7 +262,25 @@ class HomeModuleTileMenuHome extends HookWidget {
           ],
         ),
       ),
+      bottomNavigationBar: _banner(context),
     );
+  }
+
+  Widget? _banner(BuildContext context){
+    if(context.app == null || !context.app!.enableAds){
+      return null;
+    }
+    if(Config.isAndroid){
+      if(context.app!.androidAdmobUnitId.isEmpty){
+        return null;
+      }
+      return UIBottomBanner(unitId: context.app!.androidAdmobUnitId);
+    } else if(Config.isIOS) {
+      if(context.app!.iosAdmobUnitId.isEmpty){
+        return null;
+      }
+      return UIBottomBanner(unitId: context.app!.iosAdmobUnitId);
+    }
   }
 }
 

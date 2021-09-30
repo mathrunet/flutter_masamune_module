@@ -450,6 +450,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
+  google_mobile_ads:
+    dependency: transitive
+    description:
+      name: google_mobile_ads
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.13.5"
   graphs:
     dependency: transitive
     description:
@@ -547,14 +554,14 @@ packages:
       name: katana
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.5+9"
+    version: "0.8.5+10"
   katana_module:
     dependency: transitive
     description:
       name: katana_module
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.5+24"
+    version: "0.8.5+26"
   katana_module_builder:
     dependency: "direct dev"
     description:
@@ -575,7 +582,7 @@ packages:
       name: katana_routing
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.5+8"
+    version: "0.8.5+9"
   loading_animations:
     dependency: transitive
     description:
@@ -610,7 +617,14 @@ packages:
       name: masamune
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.5+21"
+    version: "0.8.5+22"
+  masamune_ads:
+    dependency: "direct main"
+    description:
+      name: masamune_ads
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.8.5+2"
   matcher:
     dependency: transitive
     description:
@@ -638,7 +652,7 @@ packages:
       name: model_notifier
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.5+15"
+    version: "0.8.5+16"
   octo_image:
     dependency: transitive
     description:

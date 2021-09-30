@@ -1,4 +1,5 @@
 import 'package:masamune/masamune.dart';
+import 'package:masamune_ads/masamune_ads.dart';
 import 'package:masamune_module/calendar/calendar.dart';
 import 'package:masamune_module/masamune_module.dart';
 
