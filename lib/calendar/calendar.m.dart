@@ -35,6 +35,10 @@ CalendarModule? _$CalendarModuleFromMap(DynamicMap map, CalendarModule ref) {
       editingType: CalendarEditingType.values.firstWhere((e) =>
           e.index ==
           map.get<int>("editingType", CalendarEditingType.planeText.index)),
+      markerType: UICalendarMarkerType.values.firstWhere((e) =>
+          e.index ==
+          map.get<int>("markerType", UICalendarMarkerType.count.index)),
+      showAddingButton: map.get<bool>("showAddingButton", true),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
@@ -69,6 +73,8 @@ DynamicMap _$CalendarModuleToMap(CalendarModule ref) {
     if (ref.detailLabel.isNotEmpty) "detailLabel": ref.detailLabel,
     if (ref.commentLabel.isNotEmpty) "commentLabel": ref.commentLabel,
     "editingType": ref.editingType.index,
+    "markerType": ref.markerType.index,
+    "showAddingButton": ref.showAddingButton,
     "permission": ref.permission.toMap(),
     if (ref.initialCommentTemplate.isNotEmpty)
       "initialCommentTemplate": ref.initialCommentTemplate.map((e) => e),

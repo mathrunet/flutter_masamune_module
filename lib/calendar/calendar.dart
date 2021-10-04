@@ -39,6 +39,9 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.detailLabel = "Detail",
     this.commentLabel = "Comment",
     this.editingType = CalendarEditingType.planeText,
+    this.markerType = UICalendarMarkerType.count,
+    this.showAddingButton = true,
+    this.markerIcon,
     Permission permission = const Permission(),
     this.initialCommentTemplate = const [],
     RerouteConfig? rerouteConfig,
@@ -138,11 +141,20 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
   /// コメントのラベル。
   final String commentLabel;
 
+  /// カレンダーのマーカータイプ。
+  final UICalendarMarkerType markerType;
+
+  /// マーカーアイコン。
+  final Widget? markerIcon;
+
   /// エディターのタイプ。
   final CalendarEditingType editingType;
 
   /// コメントテンプレートの設定。
   final List<String> initialCommentTemplate;
+
+  /// 追加ボタンを表示する場合True.
+  final bool showAddingButton;
 
   @override
   CalendarModule? fromMap(DynamicMap map) => _$CalendarModuleFromMap(map, this);
@@ -167,8 +179,8 @@ class CalendarModuleHome extends PageHookWidget {
         title: Text(config.title ?? "Calendar".localize()),
       ),
       body: UICalendar(
-        markerType: UICalendarMarkerType.count,
-        markerIcon: const Icon(Icons.access_alarm),
+        markerType: config.markerType,
+        markerIcon: config.markerIcon ?? const Icon(Icons.access_alarm),
         events: events,
         expand: true,
         onDaySelect: (day, events, holidays) {
@@ -179,23 +191,23 @@ class CalendarModuleHome extends PageHookWidget {
           );
         },
       ),
-      floatingActionButton:
-          config.permission.canEdit(user.get(config.roleKey, ""))
-              ? FloatingActionButton.extended(
-                  label: Text("Add".localize()),
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    final dateId = selected.value
-                        .combine(TimeOfDay.now())
-                        .round(const Duration(minutes: 15))
-                        .toDateTimeID();
-                    context.navigator.pushNamed(
-                      "/${config.routePath}/edit/$dateId}",
-                      arguments: RouteQuery.fullscreen,
-                    );
-                  },
-                )
-              : null,
+      floatingActionButton: config.showAddingButton &&
+              config.permission.canEdit(user.get(config.roleKey, ""))
+          ? FloatingActionButton.extended(
+              label: Text("Add".localize()),
+              icon: const Icon(Icons.add),
+              onPressed: () {
+                final dateId = selected.value
+                    .combine(TimeOfDay.now())
+                    .round(const Duration(minutes: 15))
+                    .toDateTimeID();
+                context.navigator.pushNamed(
+                  "/${config.routePath}/edit/$dateId}",
+                  arguments: RouteQuery.fullscreen,
+                );
+              },
+            )
+          : null,
     );
   }
 }
@@ -253,7 +265,7 @@ class CalendarModuleDayView extends PageHookWidget {
           );
         },
       ),
-      floatingActionButton:
+      floatingActionButton: config.showAddingButton &&
           config.permission.canEdit(user.get(config.roleKey, ""))
               ? FloatingActionButton.extended(
                   label: Text("Add".localize()),
