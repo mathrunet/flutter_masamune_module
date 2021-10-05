@@ -266,17 +266,17 @@ class HomeModuleTileMenuHome extends HookWidget {
     );
   }
 
-  Widget? _banner(BuildContext context){
-    if(context.app == null || !context.app!.enableAds){
+  Widget? _banner(BuildContext context) {
+    if (context.app == null || !context.app!.enableAds) {
       return null;
     }
-    if(Config.isAndroid){
-      if(context.app!.androidAdmobUnitId.isEmpty){
+    if (Config.isAndroid) {
+      if (context.app!.androidAdmobUnitId.isEmpty) {
         return null;
       }
       return UIBottomBanner(unitId: context.app!.androidAdmobUnitId);
-    } else if(Config.isIOS) {
-      if(context.app!.iosAdmobUnitId.isEmpty){
+    } else if (Config.isIOS) {
+      if (context.app!.iosAdmobUnitId.isEmpty) {
         return null;
       }
       return UIBottomBanner(unitId: context.app!.iosAdmobUnitId);
@@ -321,7 +321,7 @@ class HomeModuleTileMenuHomeInformation extends HookWidget {
               crossAxisSpacing: 4,
               childAspectRatio: 2,
               children: [
-                ...info.limitEnd(4).mapListenable((item) {
+                ...info.limitEnd(config.info.limit).mapListenable((item) {
                   final dateTime = DateTime.fromMillisecondsSinceEpoch(
                     item.get(
                         config.info.createdTimeKey, now.millisecondsSinceEpoch),

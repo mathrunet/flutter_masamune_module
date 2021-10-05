@@ -50,6 +50,7 @@ class CalendarModuleUserOrder extends PageHookWidget {
     }
 
     return UIScaffold(
+      waitTransition: true,
       appBar: UIAppBar(
         title: Text(title),
         subtitle: subtitle != null ? Text(subtitle!) : null,

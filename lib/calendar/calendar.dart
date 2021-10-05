@@ -30,7 +30,7 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.textKey = Const.text,
     this.roleKey = Const.role,
     this.typeKey = Const.type,
-    this.iamgeKey = Const.media,
+    this.imageKey = Const.media,
     this.createdTimeKey = Const.createdTime,
     this.modifiedTimeKey = Const.modifiedTime,
     this.startTimeKey = Const.startTime,
@@ -112,7 +112,7 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
   final String textKey;
 
   /// 画像のキー。
-  final String iamgeKey;
+  final String imageKey;
 
   /// チャットタイプのキー。
   final String typeKey;
@@ -266,22 +266,22 @@ class CalendarModuleDayView extends PageHookWidget {
         },
       ),
       floatingActionButton: config.showAddingButton &&
-          config.permission.canEdit(user.get(config.roleKey, ""))
-              ? FloatingActionButton.extended(
-                  label: Text("Add".localize()),
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    final dateId = date
-                        .combine(TimeOfDay.now())
-                        .round(const Duration(minutes: 15))
-                        .toDateTimeID();
-                    context.navigator.pushNamed(
-                      "/${config.routePath}/edit/$dateId",
-                      arguments: RouteQuery.fullscreen,
-                    );
-                  },
-                )
-              : null,
+              config.permission.canEdit(user.get(config.roleKey, ""))
+          ? FloatingActionButton.extended(
+              label: Text("Add".localize()),
+              icon: const Icon(Icons.add),
+              onPressed: () {
+                final dateId = date
+                    .combine(TimeOfDay.now())
+                    .round(const Duration(minutes: 15))
+                    .toDateTimeID();
+                context.navigator.pushNamed(
+                  "/${config.routePath}/edit/$dateId",
+                  arguments: RouteQuery.fullscreen,
+                );
+              },
+            )
+          : null,
     );
   }
 }
@@ -454,7 +454,7 @@ class CalendarModuleDetail extends PageHookWidget {
               ...comments.mapListenable((item) {
                 return CommentTile(
                   avatar: NetworkOrAsset.image(
-                      item.get("${Const.user}${config.iamgeKey}", "")),
+                      item.get("${Const.user}${config.imageKey}", "")),
                   name: item.get("${Const.user}${config.nameKey}", ""),
                   date: item.getAsDateTime(Const.time),
                   text: item.get(config.textKey, ""),
@@ -485,7 +485,7 @@ class CalendarModuleDetail extends PageHookWidget {
               ...comments.mapListenable((item) {
                 return CommentTile(
                   avatar: NetworkOrAsset.image(
-                      item.get("${Const.user}${config.iamgeKey}", "")),
+                      item.get("${Const.user}${config.imageKey}", "")),
                   name: item.get("${Const.user}${config.nameKey}", ""),
                   date: item.getAsDateTime(Const.time),
                   text: item.get(config.textKey, ""),

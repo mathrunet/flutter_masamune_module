@@ -152,6 +152,7 @@ class HomeInformationModule extends PostModule {
     Widget? view,
     Widget? edit,
     this.widget,
+    this.limit = 10,
   }) : super(
           enabled: enabled,
           title: title,
@@ -177,6 +178,9 @@ class HomeInformationModule extends PostModule {
     };
     return route;
   }
+
+  /// 表示数。
+  final int limit;
 
   /// アイコン。
   final IconData icon;

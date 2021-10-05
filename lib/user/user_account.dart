@@ -122,8 +122,8 @@ class UserAccountModuleContent extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        SubHeadline("Information".localize()),
         if (own) ...[
+          SubHeadline("Information".localize()),
           ListItem(
             title: Text("Email".localize()),
             textWidth: 150,
@@ -178,71 +178,32 @@ class UserAccountModuleContent extends StatelessWidget {
               },
             ),
           ),
-        ],
-        SubHeadline("Menu".localize()),
-        if (config.allowEditingBlockList)
-          ListItem(
-            title: Text("Block list".localize()),
-            onTap: () {
-              context.navigator.pushNamed("/${config.routePath}/account/block");
-            },
-          ),
-        ListItem(
-          title: Text(
-            "Logout".localize(),
-            style: TextStyle(color: context.theme.errorColor),
-          ),
-          onTap: () {
-            UIConfirm.show(
-              context,
-              title: "Confirmation".localize(),
-              text: "You're logging out. Are you sure?".localize(),
-              onSubmit: () async {
-                try {
-                  await context.model?.signOut();
-                  UIDialog.show(
-                    context,
-                    title: "Success".localize(),
-                    text: "Logout is complete.".localize(),
-                    onSubmit: () {
-                      context.navigator.resetAndPushNamed("/");
-                    },
-                    submitText: "Back".localize(),
-                  );
-                } catch (e) {
-                  UIDialog.show(
-                    context,
-                    title: "Error".localize(),
-                    text: "Unknown error.".localize(),
-                    submitText: "Close".localize(),
-                  );
-                }
+          SubHeadline("Menu".localize()),
+          if (config.allowEditingBlockList)
+            ListItem(
+              title: Text("%s list".localize().format(["Block".localize()])),
+              onTap: () {
+                context.navigator
+                    .pushNamed("/${config.routePath}/account/block");
               },
-              submitText: "Yes".localize(),
-              cacnelText: "No".localize(),
-            );
-          },
-        ),
-        if (config.allowUserDeleting)
+            ),
           ListItem(
             title: Text(
-              "Account deletion".localize(),
+              "Logout".localize(),
               style: TextStyle(color: context.theme.errorColor),
             ),
             onTap: () {
               UIConfirm.show(
                 context,
                 title: "Confirmation".localize(),
-                text:
-                    "The account is deleted. After deleting the account, it cannot be restored. Are you sure?"
-                        .localize(),
+                text: "You're logging out. Are you sure?".localize(),
                 onSubmit: () async {
                   try {
-                    await context.model?.deleteAccount();
+                    await context.model?.signOut();
                     UIDialog.show(
                       context,
                       title: "Success".localize(),
-                      text: "Account deletion is complete.".localize(),
+                      text: "Logout is complete.".localize(),
                       onSubmit: () {
                         context.navigator.resetAndPushNamed("/");
                       },
@@ -261,7 +222,47 @@ class UserAccountModuleContent extends StatelessWidget {
                 cacnelText: "No".localize(),
               );
             },
-          )
+          ),
+          if (config.allowUserDeleting)
+            ListItem(
+              title: Text(
+                "Account deletion".localize(),
+                style: TextStyle(color: context.theme.errorColor),
+              ),
+              onTap: () {
+                UIConfirm.show(
+                  context,
+                  title: "Confirmation".localize(),
+                  text:
+                      "The account is deleted. After deleting the account, it cannot be restored. Are you sure?"
+                          .localize(),
+                  onSubmit: () async {
+                    try {
+                      await context.model?.deleteAccount();
+                      UIDialog.show(
+                        context,
+                        title: "Success".localize(),
+                        text: "Account deletion is complete.".localize(),
+                        onSubmit: () {
+                          context.navigator.resetAndPushNamed("/");
+                        },
+                        submitText: "Back".localize(),
+                      );
+                    } catch (e) {
+                      UIDialog.show(
+                        context,
+                        title: "Error".localize(),
+                        text: "Unknown error.".localize(),
+                        submitText: "Close".localize(),
+                      );
+                    }
+                  },
+                  submitText: "Yes".localize(),
+                  cacnelText: "No".localize(),
+                );
+              },
+            )
+        ],
       ],
     );
   }
@@ -560,7 +561,7 @@ class UserAccountModuleBlockList extends PageHookWidget {
       ],
       waitTransition: true,
       appBar: UIAppBar(
-        title: Text("Block list".localize()),
+        title: Text("%s list".localize().format(["Block".localize()])),
       ),
       body: UIListBuilder<DynamicMap>(
         source: blockWithUsers,

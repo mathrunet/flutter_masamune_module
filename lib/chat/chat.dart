@@ -362,7 +362,8 @@ class ChatModuleTimeline extends PageHookWidget {
                               config,
                               data: item,
                               color: context.theme.colorScheme.onSecondary,
-                              backgroundColor: context.theme.accentColor,
+                              backgroundColor:
+                                  context.theme.colorScheme.secondary,
                             ),
                           ),
                           const Space.width(4),

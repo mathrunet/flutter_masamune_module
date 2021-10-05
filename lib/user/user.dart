@@ -171,7 +171,9 @@ class UserModuleHome extends PageHookWidget {
         ),
         body: Center(
           child: Text(
-            "This user has already been blocked.".localize(),
+            "This %s has already been blocked."
+                .localize()
+                .format(["User".localize()]),
           ),
         ),
       );
@@ -228,7 +230,9 @@ class UserModuleHome extends PageHookWidget {
                     UIDialog.show(
                       context,
                       title: "Error".localize(),
-                      text: "This user has already been blocked.".localize(),
+                      text: "This %s has already been blocked."
+                          .localize()
+                          .format(["User".localize()]),
                       submitText: "Back".localize(),
                       onSubmit: () {
                         context.navigator.pop();
@@ -239,7 +243,9 @@ class UserModuleHome extends PageHookWidget {
                   UIConfirm.show(
                     context,
                     title: "Confirmation".localize(),
-                    text: "You will block this user. Are you sure?".localize(),
+                    text: "You will block this %s. Are you sure?"
+                        .localize()
+                        .format(["User".localize()]),
                     submitText: "Yes".localize(),
                     cacnelText: "No".localize(),
                     onSubmit: () async {
@@ -251,7 +257,9 @@ class UserModuleHome extends PageHookWidget {
                         UIDialog.show(
                           context,
                           title: "Success".localize(),
-                          text: "You have blocked this user.".localize(),
+                          text: "You have blocked this %s."
+                              .localize()
+                              .format(["User".localize()]),
                           submitText: "Back".localize(),
                           onSubmit: () {
                             context.navigator.pop();
@@ -276,7 +284,9 @@ class UserModuleHome extends PageHookWidget {
                   UIConfirm.show(
                     context,
                     title: "Confirmation".localize(),
-                    text: "You will report this user. Are you sure?".localize(),
+                    text: "You will report this %s. Are you sure?"
+                        .localize()
+                        .format(["User".localize()]),
                     submitText: "Yes".localize(),
                     cacnelText: "No".localize(),
                     onSubmit: () async {
@@ -289,7 +299,9 @@ class UserModuleHome extends PageHookWidget {
                         UIDialog.show(
                           context,
                           title: "Success".localize(),
-                          text: "You have reported this user.".localize(),
+                          text: "You have reported this %s."
+                              .localize()
+                              .format(["User".localize()]),
                           submitText: "Close".localize(),
                         );
                       } catch (e) {
