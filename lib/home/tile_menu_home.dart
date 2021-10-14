@@ -156,6 +156,10 @@ class HomeModuleTileMenuHome extends HookWidget {
                 ),
               ),
             ),
+            if (config.header != null) ...[
+              const Space.height(8),
+              config.header!,
+            ],
             const Space.height(8),
             if (config.info.enabled) ...[
               config.tileMenuHomeInformation ??
@@ -180,46 +184,49 @@ class HomeModuleTileMenuHome extends HookWidget {
               crossAxisSpacing: 4,
               mainAxisSpacing: 4,
               children: [
-                ...config.menu.mapAndRemoveEmpty((item) {
-                  if (role != null &&
-                      role.id.isNotEmpty &&
-                      item.availableRole.isNotEmpty &&
-                      !item.availableRole.contains(role.id)) {
-                    return null;
-                  }
-                  return ClickableBox(
-                    color: config.color ?? context.theme.primaryColor,
-                    onTap: item.path.isEmpty
-                        ? null
-                        : () {
-                            context.open(item.path!);
-                          },
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Icon(
-                            item.icon ?? Icons.info,
-                            size: context.isMobileOrSmall ? 64 : 78,
-                            color: config.textColor ??
-                                context.theme.textColorOnPrimary,
-                          ),
-                          const Space.height(8),
-                          Text(
-                            item.name,
-                            style: TextStyle(
-                                color: config.textColor ??
-                                    context.theme.textColorOnPrimary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: context.isMobileOrSmall ? null : 15),
-                          ),
-                        ],
+                ...config.menu.mapAndRemoveEmpty(
+                  (item) {
+                    if (role != null &&
+                        role.id.isNotEmpty &&
+                        item.availableRole.isNotEmpty &&
+                        !item.availableRole.contains(role.id)) {
+                      return null;
+                    }
+                    return ClickableBox(
+                      color: config.color ?? context.theme.primaryColor,
+                      onTap: item.path.isEmpty
+                          ? null
+                          : () {
+                              context.open(item.path!);
+                            },
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Icon(
+                              item.icon ?? Icons.info,
+                              size: context.isMobileOrSmall ? 64 : 78,
+                              color: config.textColor ??
+                                  context.theme.textColorOnPrimary,
+                            ),
+                            const Space.height(8),
+                            Text(
+                              item.name,
+                              style: TextStyle(
+                                  color: config.textColor ??
+                                      context.theme.textColorOnPrimary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize:
+                                      context.isMobileOrSmall ? null : 15),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                }),
+                    );
+                  },
+                ),
               ],
             ),
             const Space.height(8),
@@ -258,7 +265,11 @@ class HomeModuleTileMenuHome extends HookWidget {
                   );
                 }),
               ],
-            )
+            ),
+            if (config.footer != null) ...[
+              const Space.height(8),
+              config.footer!,
+            ],
           ],
         ),
       ),
@@ -540,6 +551,187 @@ class HomeModuleTileMenuHomeHeadline extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class HomeModuleChangeAffiliation extends HookWidget {
+  const HomeModuleChangeAffiliation({
+    required this.title,
+    this.roleKey = Const.role,
+    this.affiliationKey = "affiliation",
+    this.targetPath = "user",
+    this.namekey = Const.name,
+    this.imageKey = Const.icon,
+    this.availableRole = const [],
+    this.affiliationListKey = "affiliations",
+  });
+  final String title;
+  final String namekey;
+  final String roleKey;
+  final String imageKey;
+  final String affiliationKey;
+  final String affiliationListKey;
+  final List<String> availableRole;
+  final String targetPath;
+
+  @override
+  Widget build(BuildContext context) {
+    final user = useUserDocumentModel();
+    final affiliationId = user.get(affiliationKey, "");
+    final role = context.roles.firstWhereOrNull(
+      (item) => item.id == user.get(roleKey, ""),
+    );
+    final affiliation = useCollectionModel(
+      ModelQuery(targetPath, key: Const.uid, isEqualTo: affiliationId).value,
+    ).firstOrNull;
+    final name = affiliation?.get(namekey, "") ?? "";
+    final enabled = role == null ||
+        role.id.isEmpty ||
+        availableRole.isEmpty ||
+        availableRole.contains(role.id);
+
+    return DefaultTextStyle(
+      style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: context.theme.colorScheme.onPrimary),
+      child: SizedBox(
+        height: 50,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (title.isNotEmpty)
+              Expanded(
+                flex: 1,
+                child: Container(
+                  color: context.theme.primaryColor,
+                  child: Text(title),
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.all(8),
+                ),
+              ),
+            const Space.width(4),
+            Expanded(
+              flex: 3,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(12, 4, 0, 4),
+                color: context.theme.primaryColor,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        name,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    if (affiliation != null && enabled)
+                      IconButton(
+                        color: context.theme.colorScheme.onPrimary,
+                        onPressed: () async {
+                          final uid = await context.navigator.push<String>(
+                            UIPageRoute<String>(
+                              builder: (context) =>
+                                  HomeModuleChangeAffiliationSelection(
+                                title: title,
+                                roleKey: roleKey,
+                                affiliationKey: affiliationKey,
+                                targetPath: targetPath,
+                                imageKey: imageKey,
+                                namekey: namekey,
+                                availableRole: availableRole,
+                                affiliationListKey: affiliationListKey,
+                              ),
+                              transition: PageTransition.fullscreen,
+                            ),
+                          );
+                          if (uid.isEmpty) {
+                            return;
+                          }
+                          user[affiliationKey] = uid;
+                          context.model
+                              ?.saveDocument(user)
+                              .showIndicator(context);
+                          UIDialog.show(
+                            context,
+                            title: "Success".localize(),
+                            text: "%s is completed."
+                                .localize()
+                                .format(["Editing".localize()]),
+                            submitText: "Close".localize(),
+                          );
+                        },
+                        icon: const Icon(Icons.change_circle),
+                      )
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class HomeModuleChangeAffiliationSelection extends PageHookWidget {
+  const HomeModuleChangeAffiliationSelection({
+    required this.title,
+    this.roleKey = Const.role,
+    this.affiliationKey = "affiliation",
+    this.targetPath = "user",
+    this.imageKey = Const.icon,
+    this.namekey = Const.name,
+    this.availableRole = const [],
+    this.affiliationListKey = "affiliations",
+  });
+  final String title;
+  final String namekey;
+  final String imageKey;
+  final String roleKey;
+  final String affiliationKey;
+  final String affiliationListKey;
+  final List<String> availableRole;
+  final String targetPath;
+
+  @override
+  Widget build(BuildContext context) {
+    final user = useUserDocumentModel();
+    final affiliationId = user.get(affiliationKey, "");
+    final affiliationList = user.getAsList<String>(affiliationListKey, []);
+    final affiliation = useCollectionModel(
+      ModelQuery(targetPath, key: Const.uid, whereIn: affiliationList).value,
+    );
+
+    return UIScaffold(
+      waitTransition: true,
+      loadingFutures: [
+        user.future,
+        affiliation.future,
+      ],
+      appBar: UIAppBar(title: Text("Select %s".localize().format([title]))),
+      body: UIListBuilder<DynamicMap>(
+        source: affiliation,
+        builder: (context, item, index) {
+          return [
+            ListItem(
+              leading: CircleAvatar(
+                backgroundImage: NetworkOrAsset.image(item.get(imageKey, "")),
+              ),
+              onTap: affiliationId == item.uid
+                  ? null
+                  : () {
+                      context.navigator.pop(item.uid);
+                    },
+              title: Text(item.get(namekey, "")),
+              trailing: affiliationId == item.uid
+                  ? Icon(Icons.check_circle, color: context.theme.primaryColor)
+                  : null,
+            )
+          ];
+        },
       ),
     );
   }

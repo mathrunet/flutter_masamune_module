@@ -137,7 +137,7 @@ class PostModuleHome extends PageHookWidget {
       ),
       body: UIListBuilder<DynamicMap>(
         source: postWithUser.toList(),
-        builder: (context, item) {
+        builder: (context, item, index) {
           return [
             ListItem(
               selected: !context.isMobileOrModal &&
@@ -459,7 +459,9 @@ class PostModuleEdit extends PageHookWidget {
                 UIDialog.show(
                   context,
                   title: "Error".localize(),
-                  text: "Editing is not completed.".localize(),
+                  text: "%s is not completed."
+                      .localize()
+                      .format(["Editing".localize()]),
                 );
               }
             },
@@ -514,7 +516,9 @@ class PostModuleEdit extends PageHookWidget {
                 UIDialog.show(
                   context,
                   title: "Error".localize(),
-                  text: "Editing is not completed.".localize(),
+                  text: "%s is not completed."
+                      .localize()
+                      .format(["Editing".localize()]),
                 );
               }
             },

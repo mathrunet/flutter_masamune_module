@@ -202,7 +202,7 @@ class QuestionnaireModuleHome extends PageHookWidget {
       ),
       body: UIListBuilder<DynamicMap>(
         source: questionWithAnswer.toList(),
-        builder: (context, item) {
+        builder: (context, item, index) {
           return [
             ListItem(
               selected: !context.isMobileOrModal &&
@@ -374,7 +374,7 @@ class QuestionnaireAanswerView extends PageHookWidget {
                 "List of %s answers".localize().format([name]),
               ),
           ],
-          builder: (context, item) {
+          builder: (context, item, index) {
             return [
               ListItem(
                 title: Text(item.get("${Const.user}${config.nameKey}", "")),
@@ -428,7 +428,7 @@ class QuestionnaireModuleAnswerDetail extends PageHookWidget {
       body: UIListBuilder<DynamicDocumentModel>(
         padding: const EdgeInsets.only(top: 12),
         source: questions,
-        builder: (contex, item) {
+        builder: (contex, item, index) {
           i++;
           return [
             QuestionnaireModuleListTile(
@@ -490,8 +490,10 @@ class QuestionnaireModuleQuestionView extends PageHookWidget {
               child: Center(
                 child: Text(
                   canEdit
-                      ? "設問は空です。新規追加ボタンから新しく設問を設定してください。"
-                      : "まだ設問が設定されていません。設問が設定されるまでしばらくお待ち下さい。",
+                      ? "The question is empty. Please set a new question by clicking the 'Add New' button."
+                          .localize()
+                      : "The question has not been set yet. Please wait for a while until the question is set."
+                          .localize(),
                 ),
               ),
             )
@@ -507,7 +509,7 @@ class QuestionnaireModuleQuestionView extends PageHookWidget {
                   ),
                 if (answer.isNotEmpty)
                   MessageBox(
-                    "Already responding",
+                    "Already responding".localize(),
                     icon: Icons.check_circle,
                     color: context.theme.primaryColor,
                     margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
@@ -537,27 +539,48 @@ class QuestionnaireModuleQuestionView extends PageHookWidget {
                 const Space.height(100),
               ],
             ),
-      floatingActionButton: !canEdit || context.isMobileOrModal
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                if (canEdit) {
-                  context.navigator.pushNamed(
-                    "/${config.routePath}/${context.get("question_id", "")}/question/edit",
-                    arguments: RouteQuery.fullscreenOrModal,
-                  );
-                } else {}
-              },
-              icon: Icon(canEdit ? Icons.add : Icons.check),
-              label: Text(
-                canEdit ? "Add".localize() : "Submit".localize(),
-              ),
-            )
-          : null,
+      floatingActionButton: () {
+        if (!canEdit && questions.isEmpty) {
+          return null;
+        }
+        if (!context.isMobileOrModal) {
+          return null;
+        }
+        return FloatingActionButton.extended(
+          onPressed: () async {
+            if (canEdit) {
+              context.navigator.pushNamed(
+                "/${config.routePath}/${context.get("question_id", "")}/question/edit",
+                arguments: RouteQuery.fullscreenOrModal,
+              );
+            } else {
+              if (!form.validate()) {
+                return;
+              }
+              await context.model?.saveDocument(answer).showIndicator(context);
+              UIDialog.show(
+                context,
+                title: "Success".localize(),
+                text:
+                    "%s is completed.".localize().format(["Answer".localize()]),
+                submitText: "Back".localize(),
+                onSubmit: () {
+                  context.navigator.pop();
+                },
+              );
+            }
+          },
+          icon: Icon(canEdit ? Icons.add : Icons.check),
+          label: Text(
+            canEdit ? "Add".localize() : "Submit".localize(),
+          ),
+        );
+      }(),
     );
   }
 }
 
-class QuestionnaireModuleListTile extends PageHookWidget {
+class QuestionnaireModuleListTile extends HookWidget {
   const QuestionnaireModuleListTile(
     this.config, {
     required this.index,
@@ -615,12 +638,16 @@ class QuestionnaireModuleListTile extends PageHookWidget {
                   dense: true,
                   allowEmpty: !required,
                   items: {...select},
-                  hintText: "Please select your answer".localize(),
+                  hintText: "Please select your %s"
+                      .localize()
+                      .format(["Answer".localize().toLowerCase()]),
                   controller:
                       useMemoizedTextEditingController(answers.get(uid, "")),
                   onSaved: (value) {
-                    final answers = context.get("answer", {});
+                    final answers =
+                        Map<String, dynamic>.from(answer.get("answer", {}));
                     answers[uid] = value;
+                    answer["answer"] = answers;
                   },
                 ),
               ] else if (onlyView) ...[
@@ -668,14 +695,18 @@ class QuestionnaireModuleListTile extends PageHookWidget {
                 FormItemTextField(
                   dense: true,
                   allowEmpty: !required,
-                  hintText: "Please enter your answer".localize(),
+                  hintText: "Please input your %s"
+                      .localize()
+                      .format(["Answer".localize().toLowerCase()]),
                   errorText:
                       "No input %s".localize().format(["Answer".localize()]),
                   controller:
                       useMemoizedTextEditingController(answers.get(uid, "")),
                   onSaved: (value) {
-                    final answers = context.get("answer", {});
+                    final answers =
+                        Map<String, dynamic>.from(answer.get("answer", {}));
                     answers[uid] = value;
+                    answer["answer"] = answers;
                   },
                 ),
               ] else if (onlyView) ...[

@@ -403,7 +403,9 @@ class UserModuleEditProfile extends PageHookWidget {
                           onTap: () async {
                             final media = await context.platform?.mediaDialog(
                               context,
-                              title: "Please select your media".localize(),
+                              title: "Please select your %s"
+                                  .localize()
+                                  .format(["Media".localize().toLowerCase()]),
                               type: PlatformMediaType.image,
                             );
                             if (media?.path == null) {
@@ -446,7 +448,9 @@ class UserModuleEditProfile extends PageHookWidget {
                         onTap: () async {
                           final media = await context.platform?.mediaDialog(
                             context,
-                            title: "Please select your media".localize(),
+                            title: "Please select your %s"
+                                .localize()
+                                .format(["Media".localize().toLowerCase()]),
                             type: PlatformMediaType.image,
                           );
                           if (media?.path == null) {
@@ -519,7 +523,8 @@ class UserModuleEditProfile extends PageHookWidget {
             UIDialog.show(
               context,
               title: "Success".localize(),
-              text: "Editing is completed.".localize(),
+              text:
+                  "%s is completed.".localize().format(["Editing".localize()]),
               submitText: "Back".localize(),
               onSubmit: () {
                 context.navigator.pop();
@@ -529,7 +534,9 @@ class UserModuleEditProfile extends PageHookWidget {
             UIDialog.show(
               context,
               title: "Error".localize(),
-              text: "Editing is not completed.".localize(),
+              text: "%s is not completed."
+                  .localize()
+                  .format(["Editing".localize()]),
               submitText: "Close".localize(),
             );
           }

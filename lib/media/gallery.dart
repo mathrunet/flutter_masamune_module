@@ -202,7 +202,7 @@ class GalleryModuleTileViewWithList extends PageHookWidget {
       ),
       body: UIListBuilder<GroupConfig>(
         source: list,
-        builder: (context, item) {
+        builder: (context, item, index) {
           return [
             ListItem(
               title: Text(item.label),
@@ -686,7 +686,9 @@ class GalleryModuleEdit extends PageHookWidget {
             onTap: (onUpdate) async {
               final media = await context.platform?.mediaDialog(
                 context,
-                title: "Please select your media".localize(),
+                title: "Please select your %s"
+                    .localize()
+                    .format(["Media".localize().toLowerCase()]),
                 type: config.mediaType,
               );
               onUpdate(media?.path);

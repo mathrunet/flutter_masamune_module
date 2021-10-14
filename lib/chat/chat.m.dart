@@ -16,6 +16,8 @@ ChatModule? _$ChatModuleFromMap(DynamicMap map, ChatModule ref) {
       routePath: map.get<String>("routePath", "chat"),
       queryPath: map.get<String>("queryPath", "chat"),
       userPath: map.get<String>("userPath", "user"),
+      availableMemberPath:
+          map.get<String?>("availableMemberPath", "user") ?? "user",
       mediaType: PlatformMediaType.values.firstWhere((e) =>
           e.index == map.get<int>("mediaType", PlatformMediaType.all.index)),
       nameKey: map.get<String>("nameKey", Const.name),
@@ -28,6 +30,8 @@ ChatModule? _$ChatModuleFromMap(DynamicMap map, ChatModule ref) {
       modifiedTimeKey: map.get<String>("modifiedTimeKey", Const.modifiedTime),
       chatRoomQuery: map
           .get<DynamicMap>("chatRoomQuery", <String, dynamic>{}).toModelQuery(),
+      availableMemberQuery: map.get<DynamicMap>(
+          "availableMemberQuery", <String, dynamic>{}).toModelQuery(),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
@@ -43,6 +47,8 @@ DynamicMap _$ChatModuleToMap(ChatModule ref) {
     if (ref.routePath.isNotEmpty) "routePath": ref.routePath,
     if (ref.queryPath.isNotEmpty) "queryPath": ref.queryPath,
     if (ref.userPath.isNotEmpty) "userPath": ref.userPath,
+    if (ref.availableMemberPath.isNotEmpty)
+      "availableMemberPath": ref.availableMemberPath,
     "mediaType": ref.mediaType.index,
     if (ref.nameKey.isNotEmpty) "nameKey": ref.nameKey,
     if (ref.textKey.isNotEmpty) "textKey": ref.textKey,
@@ -53,6 +59,8 @@ DynamicMap _$ChatModuleToMap(ChatModule ref) {
     if (ref.createdTimeKey.isNotEmpty) "createdTimeKey": ref.createdTimeKey,
     if (ref.modifiedTimeKey.isNotEmpty) "modifiedTimeKey": ref.modifiedTimeKey,
     if (ref.chatRoomQuery != null) "chatRoomQuery": ref.chatRoomQuery?.toMap(),
+    if (ref.availableMemberQuery != null)
+      "availableMemberQuery": ref.availableMemberQuery?.toMap(),
     "permission": ref.permission.toMap(),
     if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap()
   };

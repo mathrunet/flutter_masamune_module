@@ -154,7 +154,7 @@ packages:
       name: cli_util
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.4"
+    version: "0.3.5"
   clock:
     dependency: transitive
     description:
@@ -238,7 +238,7 @@ packages:
       name: csslib
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.17.0"
+    version: "0.17.1"
   csv:
     dependency: transitive
     description:
@@ -383,7 +383,7 @@ packages:
       name: flutter_markdown
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.6.6"
+    version: "0.6.7"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -397,14 +397,14 @@ packages:
       name: flutter_quill
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.5"
+    version: "2.0.6"
   flutter_riverpod:
     dependency: transitive
     description:
       name: flutter_riverpod
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0-dev.8"
+    version: "1.0.0-dev.11"
   flutter_sequence_animation:
     dependency: transitive
     description:
@@ -463,7 +463,7 @@ packages:
       name: hooks_riverpod
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0-dev.7"
+    version: "1.0.0-dev.11"
   html:
     dependency: transitive
     description:
@@ -554,7 +554,7 @@ packages:
       name: katana_module
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.5+26"
+    version: "0.8.5+27"
   katana_module_builder:
     dependency: "direct dev"
     description:
@@ -575,9 +575,9 @@ packages:
       name: katana_routing
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.5+9"
+    version: "0.8.5+12"
   loading_animations:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: loading_animations
       url: "https://pub.dartlang.org"
@@ -610,7 +610,7 @@ packages:
       name: masamune
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.5+27"
+    version: "0.8.5+30"
   masamune_ads:
     dependency: "direct main"
     description:
@@ -645,7 +645,7 @@ packages:
       name: model_notifier
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.5+16"
+    version: "0.8.5+17"
   octo_image:
     dependency: transitive
     description:
@@ -666,7 +666,7 @@ packages:
       name: package_info_plus
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.2.1"
+    version: "1.3.0"
   package_info_plus_linux:
     dependency: transitive
     description:
@@ -820,7 +820,7 @@ packages:
       name: riverpod
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0-dev.8"
+    version: "1.0.0-dev.10"
   rxdart:
     dependency: transitive
     description:

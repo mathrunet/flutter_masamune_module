@@ -410,7 +410,9 @@ class UserAccountModuleEditEmail extends PageHookWidget {
                   UIDialog.show(
                     context,
                     title: "Success".localize(),
-                    text: "Editing is completed.".localize(),
+                    text: "%s is completed."
+                        .localize()
+                        .format(["Editing".localize()]),
                     onSubmit: () {
                       context.navigator.pop();
                     },
@@ -420,7 +422,9 @@ class UserAccountModuleEditEmail extends PageHookWidget {
                   UIDialog.show(
                     context,
                     title: "Error".localize(),
-                    text: "Editing is not completed.".localize(),
+                    text: "%s is not completed."
+                        .localize()
+                        .format(["Editing".localize()]),
                     submitText: "Close".localize(),
                   );
                 }
@@ -506,7 +510,9 @@ class UserAccountModuleEditPassword extends PageHookWidget {
                   UIDialog.show(
                     context,
                     title: "Success".localize(),
-                    text: "Editing is completed.".localize(),
+                    text: "%s is completed."
+                        .localize()
+                        .format(["Editing".localize()]),
                     onSubmit: () {
                       context.navigator.pop();
                     },
@@ -516,7 +522,9 @@ class UserAccountModuleEditPassword extends PageHookWidget {
                   UIDialog.show(
                     context,
                     title: "Error".localize(),
-                    text: "Editing is not completed.".localize(),
+                    text: "%s is not completed."
+                        .localize()
+                        .format(["Editing".localize()]),
                     submitText: "Close".localize(),
                   );
                 }
@@ -565,7 +573,7 @@ class UserAccountModuleBlockList extends PageHookWidget {
       ),
       body: UIListBuilder<DynamicMap>(
         source: blockWithUsers,
-        builder: (context, item) {
+        builder: (context, item, index) {
           return [
             ListItem(
               title: Text(item.get("${Const.user}${config.nameKey}", "")),

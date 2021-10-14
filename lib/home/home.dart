@@ -40,6 +40,8 @@ class HomeModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.profileRoutePath = "user",
     Permission permission = const Permission(),
     RerouteConfig? rerouteConfig,
+    this.header,
+    this.footer,
     this.home,
     this.tileMenuHome,
     this.tileMenuHomeInformation,
@@ -69,6 +71,10 @@ class HomeModule extends PageModule with VerifyAppReroutePageModuleMixin {
   final Widget? tileMenuHome;
   final Widget? tileMenuHomeInformation;
   final Widget? tileMenuHomeCalendar;
+
+  // ホームのパーツ。
+  final Widget? header;
+  final Widget? footer;
 
   /// お知らせの設定。
   final HomeInformationModule info;

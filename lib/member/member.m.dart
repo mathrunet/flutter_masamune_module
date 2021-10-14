@@ -20,6 +20,9 @@ MemberModule? _$MemberModuleFromMap(DynamicMap map, MemberModule ref) {
       iconKey: map.get<String>("iconKey", Const.icon),
       roleKey: map.get<String>("roleKey", Const.role),
       profilePath: map.get<String>("profilePath", Const.user),
+      formMessage: map.get<String?>("formMessage", null),
+      groupId: map.get<String?>("groupId", null),
+      affiliationKey: map.get<String>("affiliationKey", "affiliation"),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
@@ -44,6 +47,9 @@ DynamicMap _$MemberModuleToMap(MemberModule ref) {
     if (ref.iconKey.isNotEmpty) "iconKey": ref.iconKey,
     if (ref.roleKey.isNotEmpty) "roleKey": ref.roleKey,
     if (ref.profilePath.isNotEmpty) "profilePath": ref.profilePath,
+    if (ref.formMessage.isNotEmpty) "formMessage": ref.formMessage,
+    if (ref.groupId.isNotEmpty) "groupId": ref.groupId,
+    if (ref.affiliationKey.isNotEmpty) "affiliationKey": ref.affiliationKey,
     "permission": ref.permission.toMap(),
     if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap(),
     "designType": ref.designType.index,

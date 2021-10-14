@@ -130,7 +130,7 @@ class MemberModuleHome extends PageHookWidget {
       ),
       body: UIListBuilder<DynamicMap>(
         source: members,
-        builder: (context, item) {
+        builder: (context, item, index) {
           return [
             ListItem(
               leading: CircleAvatar(

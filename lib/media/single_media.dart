@@ -193,7 +193,9 @@ class SingleMediaModuleEdit extends PageHookWidget {
             onTap: (onUpdate) async {
               final media = await context.platform?.mediaDialog(
                 context,
-                title: "Please select your media".localize(),
+                title: "Please select your %s"
+                    .localize()
+                    .format(["Media".localize().toLowerCase()]),
                 type: config.mediaType,
               );
               onUpdate(media?.path);

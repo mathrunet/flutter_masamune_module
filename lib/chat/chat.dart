@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:masamune/masamune.dart';
 import 'package:masamune/ui/ui.dart';
 import 'package:masamune_module/masamune_module.dart';
@@ -28,6 +29,7 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.routePath = "chat",
     this.queryPath = "chat",
     this.userPath = "user",
+    this.availableMemberPath = "user",
     this.mediaType = PlatformMediaType.all,
     this.nameKey = Const.name,
     this.textKey = Const.text,
@@ -38,6 +40,7 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.createdTimeKey = Const.createdTime,
     this.modifiedTimeKey = Const.modifiedTime,
     this.chatRoomQuery,
+    this.availableMemberQuery,
     Permission permission = const Permission(),
     RerouteConfig? rerouteConfig,
     this.home,
@@ -83,6 +86,9 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
   /// メンバーデータのキー。
   final String memberKey;
 
+  /// ルームを作成可能なメンバーのリスト。
+  final String? availableMemberPath;
+
   /// ユーザーのデータパス。
   final String userPath;
 
@@ -113,6 +119,9 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
   /// チャットルームのクエリ。
   final ModelQuery? chatRoomQuery;
 
+  /// ルームを作成可能なメンバーのリスト。
+  final ModelQuery? availableMemberQuery;
+
   @override
   ChatModule? fromMap(DynamicMap map) => _$ChatModuleFromMap(map, this);
 
@@ -136,6 +145,22 @@ class ChatModuleHome extends PageHookWidget {
             arrayContains: user.get(Const.uid, ""),
           ).value,
     );
+    final membersPath =
+        config.availableMemberQuery?.value ?? config.availableMemberPath;
+    final members =
+        membersPath == null ? null : useCollectionModel(membersPath);
+    final filteredMembers = members?.where((m) {
+      if (context.model?.userId == m.uid) {
+        return false;
+      }
+      return !chat.any((e) {
+        final members = e.get(config.memberKey, []);
+        if (members.length > 2) {
+          return false;
+        }
+        return members.any((member) => member.toString() == m.uid);
+      });
+    }).toList();
     final users = useCollectionModel(
       ModelQuery(
         config.userPath,
@@ -155,7 +180,7 @@ class ChatModuleHome extends PageHookWidget {
       test: (o, a) {
         final member = o.get(config.memberKey, []);
         final u = member.firstWhereOrNull(
-            (item) => item.toString() != a.get(Const.uid, ""));
+            (item) => item.toString() == a.get(Const.uid, ""));
         return u != null;
       },
       apply: (o, a) =>
@@ -188,6 +213,10 @@ class ChatModuleHome extends PageHookWidget {
                 selectedColor: context.theme.textColorOnPrimary,
                 selectedTileColor: context.theme.primaryColor.withOpacity(0.8),
                 disabledTapOnSelected: true,
+                trailing: Icon(
+                  Icons.check_circle,
+                  color: context.theme.primaryColor,
+                ),
                 title: Text(
                   name.isNotEmpty
                       ? name
@@ -213,6 +242,57 @@ class ChatModuleHome extends PageHookWidget {
               );
             },
           ),
+          if (filteredMembers != null)
+            ...filteredMembers.mapListenable(
+              (item) {
+                final name = item.get(config.nameKey, "");
+                return ListItem(
+                  selected: !context.isMobileOrModal &&
+                      controller.route?.name.last() == item.get(Const.uid, ""),
+                  selectedColor: context.theme.textColorOnPrimary,
+                  selectedTileColor:
+                      context.theme.primaryColor.withOpacity(0.8),
+                  disabledTapOnSelected: true,
+                  title: Text(
+                    name.isNotEmpty
+                        ? name
+                        : item.get("${Const.user}${config.nameKey}", ""),
+                  ),
+                  subtitle: Text(
+                    DateTime.fromMillisecondsSinceEpoch(
+                      item.get(
+                          config.createdTimeKey, now.millisecondsSinceEpoch),
+                    ).format("yyyy/MM/dd HH:mm"),
+                  ),
+                  onTap: () async {
+                    final uid = uuid;
+                    final memberId = item.uid;
+                    final userId = context.model?.userId;
+                    final doc = context.model?.createDocument(chat, uid);
+                    if (doc == null || userId.isEmpty) {
+                      return;
+                    }
+                    doc[config.memberKey] = [
+                      userId,
+                      memberId,
+                    ];
+                    await context.model
+                        ?.saveDocument(doc)
+                        .showIndicator(context);
+                    if (context.isMobile) {
+                      context.navigator.pushNamed(
+                        "/${config.routePath}/$uid",
+                        arguments: RouteQuery.fullscreen,
+                      );
+                    } else {
+                      controller.navigator.pushNamed(
+                        "/${config.routePath}/$uid",
+                      );
+                    }
+                  },
+                );
+              },
+            )
         ],
       ),
     );
@@ -300,7 +380,7 @@ class ChatModuleTimeline extends PageHookWidget {
         padding: const EdgeInsets.fromLTRB(8, 12, 8, 64),
         reverse: true,
         source: timlineWithUser.toList(),
-        builder: (context, item) {
+        builder: (context, item, index) {
           final date = DateTime.fromMillisecondsSinceEpoch(
             item.get(config.createdTimeKey, now.millisecondsSinceEpoch),
           );
@@ -414,7 +494,9 @@ class ChatModuleTimeline extends PageHookWidget {
         onTapMediaIcon: () async {
           final media = await context.platform?.mediaDialog(
             context,
-            title: "Please select your media".localize(),
+            title: "Please select your %s"
+                .localize()
+                .format(["Media".localize().toLowerCase()]),
             type: config.mediaType,
           );
           if (media?.path == null) {

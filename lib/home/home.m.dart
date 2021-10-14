@@ -101,7 +101,8 @@ HomeInformationModule? _$HomeInformationModuleFromMap(
       createdTimeKey: map.get<String>("createdTimeKey", Const.createdTime),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
-          const Permission());
+          const Permission(),
+      limit: map.get<int>("limit", 10));
 }
 
 DynamicMap _$HomeInformationModuleToMap(HomeInformationModule ref) {
@@ -114,7 +115,8 @@ DynamicMap _$HomeInformationModuleToMap(HomeInformationModule ref) {
     "icon": ref.icon.toMap(),
     if (ref.nameKey.isNotEmpty) "nameKey": ref.nameKey,
     if (ref.createdTimeKey.isNotEmpty) "createdTimeKey": ref.createdTimeKey,
-    "permission": ref.permission.toMap()
+    "permission": ref.permission.toMap(),
+    "limit": ref.limit
   };
 }
 

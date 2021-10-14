@@ -537,13 +537,15 @@ class CalendarModuleTemplate extends PageHookWidget {
                 UIDialog.show(
                   context,
                   title: "Error".localize(),
-                  text: "Editing is not completed.".localize(),
+                  text: "%s is not completed."
+                      .localize()
+                      .format(["Editing".localize()]),
                 );
               }
             },
           ),
         ],
-        builder: (context, item) {
+        builder: (context, item, index) {
           return [
             ListItem(
               title: Text(item),
@@ -565,7 +567,9 @@ class CalendarModuleTemplate extends PageHookWidget {
                           UIDialog.show(
                             context,
                             title: "Error".localize(),
-                            text: "Editing is not completed.".localize(),
+                            text: "%s is not completed."
+                                .localize()
+                                .format(["Editing".localize()]),
                           );
                         }
                       },
@@ -808,7 +812,9 @@ class CalendarModuleEdit extends PageHookWidget {
                 UIDialog.show(
                   context,
                   title: "Error".localize(),
-                  text: "Editing is not completed.".localize(),
+                  text: "%s is not completed."
+                      .localize()
+                      .format(["Editing".localize()]),
                 );
               }
             },
@@ -867,7 +873,9 @@ class CalendarModuleEdit extends PageHookWidget {
                 UIDialog.show(
                   context,
                   title: "Error".localize(),
-                  text: "Editing is not completed.".localize(),
+                  text: "%s is not completed."
+                      .localize()
+                      .format(["Editing".localize()]),
                 );
               }
             },
