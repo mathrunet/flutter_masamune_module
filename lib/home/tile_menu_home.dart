@@ -278,20 +278,10 @@ class HomeModuleTileMenuHome extends HookWidget {
   }
 
   Widget? _banner(BuildContext context) {
-    if (context.app == null || !context.app!.enableAds) {
+    if (context.ads == null || !context.ads!.enabled) {
       return null;
     }
-    if (Config.isAndroid) {
-      if (context.app!.androidAdmobUnitId.isEmpty) {
-        return null;
-      }
-      return UIBottomBanner(unitId: context.app!.androidAdmobUnitId);
-    } else if (Config.isIOS) {
-      if (context.app!.iosAdmobUnitId.isEmpty) {
-        return null;
-      }
-      return UIBottomBanner(unitId: context.app!.iosAdmobUnitId);
-    }
+    return context.ads!.banner(context);
   }
 }
 
