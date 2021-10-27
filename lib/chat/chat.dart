@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:masamune/masamune.dart';
 import 'package:masamune/ui/ui.dart';
 import 'package:masamune_module/masamune_module.dart';

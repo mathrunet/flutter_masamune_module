@@ -17,6 +17,13 @@ DynamicCollectionModel useCollectionModel(String path) {
   );
 }
 
+DynamicSearchableCollectionModel useSearchableCollectionModel(String path) {
+  final context = useContext();
+
+  return useProvider(context.model!
+      .searchableCollectionProvider(context.applyModuleTag(path)));
+}
+
 DynamicDocumentModel useUserDocumentModel([String userPath = Const.user]) {
   final context = useContext();
 

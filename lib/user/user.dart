@@ -20,6 +20,7 @@ class UserModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.imageKey = Const.image,
     this.iconKey = Const.icon,
     this.roleKey = Const.role,
+    this.expandedHeight = 160,
     this.additionalInformation = const {},
     this.allowImageEditing = false,
     this.allowFollow = false,
@@ -59,6 +60,9 @@ class UserModule extends PageModule with VerifyAppReroutePageModuleMixin {
   /// ページ設定。
   final Widget? home;
   final Widget? editProfile;
+
+  /// ツールバーの高さ
+  final double expandedHeight;
 
   /// メインコンテンツ。
   final List<UserWidgetModule> contents;
@@ -187,7 +191,7 @@ class UserModuleHome extends PageHookWidget {
       ],
       appBar: UIUserProfileAppBar(
         designType: DesignType.modern,
-        expandedHeight: 160,
+        expandedHeight: config.expandedHeight,
         icon: NetworkOrAsset.image(icon),
         backgroundImage: image.isNotEmpty ? NetworkOrAsset.image(image) : null,
         bottomActions: [
@@ -365,148 +369,190 @@ class UserModuleEditProfile extends PageHookWidget {
     final text = user.get(config.textKey, "");
     final image = user.get(config.imageKey, "");
     final icon = user.get(config.iconKey, "");
+    final nameController = useMemoizedTextEditingController(name);
+    final textController = useMemoizedTextEditingController(text);
 
     return UIScaffold(
-      waitTransition: true,
-      loadingFutures: [
-        user.future,
-      ],
       appBar: UIAppBar(
         sliverLayoutWhenModernDesign: false,
         title: Text("Edit Profile".localize()),
       ),
-      body: FormBuilder(
-        key: form.key,
-        padding: const EdgeInsets.all(0),
-        children: [
-          ConstrainedBox(
-            constraints: const BoxConstraints.expand(height: 160),
-            child: Stack(
-              children: [
-                Container(
-                  constraints: const BoxConstraints.expand(height: 120),
-                  decoration: BoxDecoration(
-                    color: context.theme.disabledColor,
-                    image: config.allowImageEditing
-                        ? DecorationImage(
-                            image: NetworkOrAsset.image(image),
-                            fit: BoxFit.cover,
-                            colorFilter: const ColorFilter.mode(
-                              Colors.black87,
-                              BlendMode.color,
-                            ),
-                          )
-                        : null,
+      body: FutureBuilder(
+        future: Future.value(user.future),
+        builder: (context, state) {
+          if (state.connectionState != ConnectionState.done) {
+            return ConstrainedBox(
+              constraints:
+                  BoxConstraints.expand(height: config.expandedHeight - 16),
+              child: Stack(
+                children: [
+                  Container(
+                    constraints: BoxConstraints.expand(
+                        height: config.expandedHeight - 56),
+                        color: config.allowImageEditing
+                            ? context.theme.disabledColor
+                            : (context.theme.appBarTheme.backgroundColor ??
+                                context.theme.primaryColor),
                   ),
-                  child: config.allowImageEditing
-                      ? InkWell(
-                          onTap: () async {
-                            final media = await context.platform?.mediaDialog(
-                              context,
-                              title: "Please select your %s"
-                                  .localize()
-                                  .format(["Media".localize().toLowerCase()]),
-                              type: PlatformMediaType.image,
-                            );
-                            if (media?.path == null) {
-                              return;
-                            }
-
-                            final url = await context.model
-                                ?.uploadMedia(media?.path)
-                                .showIndicator(context);
-                            user[config.iconKey] = url;
-                            await context.model
-                                ?.saveDocument(user)
-                                .showIndicator(context);
-                          },
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: const [
-                              ColoredBox(color: Colors.black54),
-                              Icon(Icons.add_a_photo,
-                                  color: Colors.white, size: 48),
-                            ],
-                          ),
-                        )
-                      : null,
-                ),
-                Positioned(
-                  left: 24,
-                  bottom: 0,
-                  child: Container(
-                    width: 80,
-                    height: 80,
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: context.theme.scaffoldBackgroundColor,
-                    ),
-                    child: CircleAvatar(
-                      backgroundImage: NetworkOrAsset.image(icon),
-                      child: InkWell(
-                        onTap: () async {
-                          final media = await context.platform?.mediaDialog(
-                            context,
-                            title: "Please select your %s"
-                                .localize()
-                                .format(["Media".localize().toLowerCase()]),
-                            type: PlatformMediaType.image,
-                          );
-                          if (media?.path == null) {
-                            return;
-                          }
-
-                          final url = await context.model
-                              ?.uploadMedia(media?.path)
-                              .showIndicator(context);
-                          user[config.iconKey] = url;
-                          await context.model
-                              ?.saveDocument(user)
-                              .showIndicator(context);
-                        },
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: const [
-                            ClipOval(child: ColoredBox(color: Colors.black54)),
-                            Icon(Icons.add_a_photo,
-                                color: Colors.white, size: 32),
-                          ],
-                        ),
+                  Positioned(
+                    left: 24,
+                    bottom: 0,
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: context.theme.scaffoldBackgroundColor,
                       ),
                     ),
                   ),
+                ],
+              ),
+            );
+          }
+          return FormBuilder(
+            key: form.key,
+            padding: const EdgeInsets.all(0),
+            children: [
+              ConstrainedBox(
+                constraints:
+                    BoxConstraints.expand(height: config.expandedHeight - 16),
+                child: Stack(
+                  children: [
+                    Container(
+                      constraints: BoxConstraints.expand(
+                          height: config.expandedHeight - 56),
+                      decoration: BoxDecoration(
+                        color: config.allowImageEditing
+                            ? context.theme.disabledColor
+                            : (context.theme.appBarTheme.backgroundColor ??
+                                context.theme.primaryColor),
+                        image: config.allowImageEditing
+                            ? DecorationImage(
+                                image: NetworkOrAsset.image(image),
+                                fit: BoxFit.cover,
+                                colorFilter: const ColorFilter.mode(
+                                  Colors.black87,
+                                  BlendMode.color,
+                                ),
+                              )
+                            : null,
+                      ),
+                      child: config.allowImageEditing
+                          ? InkWell(
+                              onTap: () async {
+                                final media =
+                                    await context.platform?.mediaDialog(
+                                  context,
+                                  title: "Please select your %s"
+                                      .localize()
+                                      .format(
+                                          ["Media".localize().toLowerCase()]),
+                                  type: PlatformMediaType.image,
+                                );
+                                if (media?.path == null) {
+                                  return;
+                                }
+
+                                final url = await context.model
+                                    ?.uploadMedia(media?.path)
+                                    .showIndicator(context);
+                                user[config.iconKey] = url;
+                                await context.model
+                                    ?.saveDocument(user)
+                                    .showIndicator(context);
+                              },
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: const [
+                                  ColoredBox(color: Colors.black54),
+                                  Icon(Icons.add_a_photo,
+                                      color: Colors.white, size: 48),
+                                ],
+                              ),
+                            )
+                          : null,
+                    ),
+                    Positioned(
+                      left: 24,
+                      bottom: 0,
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: context.theme.scaffoldBackgroundColor,
+                        ),
+                        child: CircleAvatar(
+                          backgroundImage: NetworkOrAsset.image(icon),
+                          child: InkWell(
+                            onTap: () async {
+                              final media = await context.platform?.mediaDialog(
+                                context,
+                                title: "Please select your %s"
+                                    .localize()
+                                    .format(["Media".localize().toLowerCase()]),
+                                type: PlatformMediaType.image,
+                              );
+                              if (media?.path == null) {
+                                return;
+                              }
+
+                              final url = await context.model
+                                  ?.uploadMedia(media?.path)
+                                  .showIndicator(context);
+                              user[config.iconKey] = url;
+                              await context.model
+                                  ?.saveDocument(user)
+                                  .showIndicator(context);
+                            },
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: const [
+                                ClipOval(
+                                    child: ColoredBox(color: Colors.black54)),
+                                Icon(Icons.add_a_photo,
+                                    color: Colors.white, size: 32),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          const Space.height(24),
-          DividHeadline("Name".localize()),
-          FormItemTextField(
-            dense: true,
-            controller: useMemoizedTextEditingController(name),
-            hintText: "Input %s".localize().format(["Name".localize()]),
-            errorText: "No input %s".localize().format(["Name".localize()]),
-            onSaved: (value) {
-              context[config.nameKey] = value;
-            },
-          ),
-          DividHeadline("Text".localize()),
-          FormItemTextField(
-            dense: true,
-            controller: useMemoizedTextEditingController(text),
-            hintText: "Input %s".localize().format(["Text".localize()]),
-            errorText: "No input %s".localize().format(["Text".localize()]),
-            allowEmpty: true,
-            minLines: 5,
-            maxLines: 10,
-            onSaved: (value) {
-              context[config.textKey] = value;
-            },
-          ),
-          const Divid(),
-          const Space.height(240),
-        ],
+              ),
+              const Space.height(24),
+              DividHeadline("Name".localize()),
+              FormItemTextField(
+                dense: true,
+                controller: nameController,
+                hintText: "Input %s".localize().format(["Name".localize()]),
+                errorText: "No input %s".localize().format(["Name".localize()]),
+                onSaved: (value) {
+                  context[config.nameKey] = value;
+                },
+              ),
+              DividHeadline("Text".localize()),
+              FormItemTextField(
+                dense: true,
+                controller: textController,
+                hintText: "Input %s".localize().format(["Text".localize()]),
+                errorText: "No input %s".localize().format(["Text".localize()]),
+                allowEmpty: true,
+                minLines: 5,
+                maxLines: 10,
+                onSaved: (value) {
+                  context[config.textKey] = value;
+                },
+              ),
+              const Divid(),
+              const Space.height(240),
+            ],
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.check),

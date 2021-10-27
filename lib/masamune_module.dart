@@ -10,7 +10,6 @@ library masamune_module;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:loading_animations/loading_animations.dart';
 import 'package:masamune/masamune.dart';
 
 export 'package:masamune/masamune.dart';

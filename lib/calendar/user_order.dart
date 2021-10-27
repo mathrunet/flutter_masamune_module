@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:masamune_module/masamune_module.dart';
 
 class CalendarModuleUserOrder extends PageHookWidget {
