@@ -389,10 +389,10 @@ class UserModuleEditProfile extends PageHookWidget {
                   Container(
                     constraints: BoxConstraints.expand(
                         height: config.expandedHeight - 56),
-                        color: config.allowImageEditing
-                            ? context.theme.disabledColor
-                            : (context.theme.appBarTheme.backgroundColor ??
-                                context.theme.primaryColor),
+                    color: config.allowImageEditing
+                        ? context.theme.disabledColor
+                        : (context.theme.appBarTheme.backgroundColor ??
+                            context.theme.primaryColor),
                   ),
                   Positioned(
                     left: 24,
