@@ -170,9 +170,9 @@ class QuestionnaireModuleHome extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final now = useNow();
-    final question = useCollectionModel(
+    final question = useWatchCollectionModel(
         config.questionnaireQuery?.value ?? config.queryPath);
-    final answered = useCollectionModel(
+    final answered = useWatchCollectionModel(
         "${config.userPath}/${context.model?.userId}/${config.answerPath}");
 
     final questionWithAnswer = question.map((e) {
@@ -185,7 +185,7 @@ class QuestionnaireModuleHome extends PageHookWidget {
       }
       return e;
     });
-    final user = useUserDocumentModel(config.userPath);
+    final user = useWatchUserDocumentModel(config.userPath);
     final controller = useNavigatorController(
       "${config.routePath}/${questionWithAnswer.firstOrNull.get(Const.uid, "")}",
       (route) => questionWithAnswer.isEmpty,
@@ -194,8 +194,8 @@ class QuestionnaireModuleHome extends PageHookWidget {
     return UIScaffold(
       waitTransition: true,
       loadingFutures: [
-        question.future,
-        user.future,
+        question.loading,
+        user.loading,
       ],
       appBar: UIAppBar(
         title: Text(config.title ?? "Questionnaire".localize()),
@@ -259,7 +259,7 @@ class QuestionnaireModuleView extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = useUserDocumentModel();
+    final user = useWatchUserDocumentModel();
     if (config.permission.canEdit(user.get(config.roleKey, ""))) {
       return QuestionnaireAanswerView(config);
     } else {
@@ -275,14 +275,14 @@ class QuestionnaireAanswerView extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final now = useNow();
-    final question = useDocumentModel(
+    final question = useWatchDocumentModel(
         "${config.queryPath}/${context.get("question_id", "")}");
-    final questions = useCollectionModel(
+    final questions = useWatchCollectionModel(
         "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}");
-    final answers = useCollectionModel(
+    final answers = useWatchCollectionModel(
       "${config.queryPath}/${context.get("question_id", "")}/${config.answerPath}",
     );
-    final users = useCollectionModel(
+    final users = useWatchCollectionModel(
       ModelQuery(config.userPath,
               key: Const.uid,
               whereIn: answers.map((e) => e.get(Const.user, "")).toList())
@@ -405,20 +405,20 @@ class QuestionnaireModuleAnswerDetail extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     int i = 0;
-    final questions = useCollectionModel(
+    final questions = useWatchCollectionModel(
         "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}");
-    final answer = useDocumentModel(
+    final answer = useWatchDocumentModel(
       "${config.queryPath}/${context.get("question_id", "")}/${config.answerPath}/${context.get("answer_id", "")}",
     );
-    final user = useDocumentModel(
+    final user = useWatchDocumentModel(
         "${config.userPath}/${answer.get(Const.user, "empty")}");
 
     return UIScaffold(
       waitTransition: true,
       loadingFutures: [
-        questions.future,
-        answer.future,
-        user.future,
+        questions.loading,
+        answer.loading,
+        user.loading,
       ],
       appBar: UIAppBar(
         title: Text(
@@ -454,12 +454,12 @@ class QuestionnaireModuleQuestionView extends PageHookWidget {
   Widget build(BuildContext context) {
     int i = 0;
     final form = useForm();
-    final user = useUserDocumentModel(config.userPath);
-    final question = useDocumentModel(
+    final user = useWatchUserDocumentModel(config.userPath);
+    final question = useWatchDocumentModel(
         "${config.queryPath}/${context.get("question_id", "")}");
-    final questions = useCollectionModel(
+    final questions = useWatchCollectionModel(
         "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}");
-    final answer = useDocumentModel(
+    final answer = useWatchDocumentModel(
       "${config.queryPath}/${context.get("question_id", "")}/${config.answerPath}/${context.model?.userId}",
     );
     final name = question.get(config.nameKey, "");
@@ -734,9 +734,9 @@ class QuestionnaireModuleQuestionEdit extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final form = useForm("item_id");
-    final item = useDocumentModel(
+    final item = useWatchDocumentModel(
         "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}/${form.uid}");
-    final user = useUserDocumentModel(config.userPath);
+    final user = useWatchUserDocumentModel(config.userPath);
     final name = item.get(config.nameKey, "");
     final type = item.get(config.typeKey, Const.text);
     final required = item.get(config.requiredKey, false);
@@ -902,8 +902,8 @@ class QuestionnaireModuleEdit extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final form = useForm("question_id");
-    final item = useDocumentModel("${config.queryPath}/${form.uid}");
-    final user = useUserDocumentModel(config.userPath);
+    final item = useWatchDocumentModel("${config.queryPath}/${form.uid}");
+    final user = useWatchUserDocumentModel(config.userPath);
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final endTime = item.get(config.endTimeKey, 0);

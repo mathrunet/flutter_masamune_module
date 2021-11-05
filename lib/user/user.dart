@@ -145,7 +145,7 @@ class UserModuleHome extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final userId = context.get("user_id", context.model?.userId ?? "");
-    final user = useDocumentModel("${config.queryPath}/$userId");
+    final user = useWatchDocumentModel("${config.queryPath}/$userId");
     final name = user.get(config.nameKey, "");
     final text = user.get(config.textKey, "");
     final image = user.get(config.imageKey, "");
@@ -164,8 +164,8 @@ class UserModuleHome extends PageHookWidget {
       );
     }
 
-    final report = useDocumentModel("${config.reportPath}/$userId");
-    final block = useDocumentModel(
+    final report = useWatchDocumentModel("${config.reportPath}/$userId");
+    final block = useWatchDocumentModel(
         "${config.queryPath}/${context.model?.userId}/${config.blockPath}/$userId");
 
     if (block.isNotEmpty) {
@@ -187,7 +187,7 @@ class UserModuleHome extends PageHookWidget {
       waitTransition: true,
       designType: DesignType.modern,
       loadingFutures: [
-        user.future,
+        user.loading,
       ],
       appBar: UIUserProfileAppBar(
         designType: DesignType.modern,
@@ -364,7 +364,7 @@ class UserModuleEditProfile extends PageHookWidget {
   Widget build(BuildContext context) {
     final form = useForm();
     final user =
-        useDocumentModel("${config.queryPath}/${context.model?.userId}");
+        useWatchDocumentModel("${config.queryPath}/${context.model?.userId}");
     final name = user.get(config.nameKey, "");
     final text = user.get(config.textKey, "");
     final image = user.get(config.imageKey, "");
@@ -378,7 +378,7 @@ class UserModuleEditProfile extends PageHookWidget {
         title: Text("Edit Profile".localize()),
       ),
       body: FutureBuilder(
-        future: Future.value(user.future),
+        future: Future.value(user.loading),
         builder: (context, state) {
           if (state.connectionState != ConnectionState.done) {
             return ConstrainedBox(

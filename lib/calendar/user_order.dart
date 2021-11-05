@@ -28,15 +28,15 @@ class CalendarModuleUserOrder extends PageHookWidget {
   Widget build(BuildContext context) {
     final now = useNow();
     final orderList = <DynamicMap>[];
-    final user = useUserDocumentModel();
+    final user = useWatchUserDocumentModel();
     final role = context.roles.firstWhereOrNull(
       (item) => item.id == user.get(roleKey, ""),
     );
     final date = context.get("date_id", now.toDateID()).toDateTime();
-    final users = useCollectionModel(userQuery?.value ?? userPath);
+    final users = useWatchCollectionModel(userQuery?.value ?? userPath);
 
     final canEdit = permission.canEdit(role?.id ?? "");
-    final orders = useCollectionModel(queryPath);
+    final orders = useWatchCollectionModel(queryPath);
     orders.sort((a, b) => b.get(startTimeKey, 0) - a.get(startTimeKey, 0));
     final order = orders.firstWhereOrNull((element) {
           return element.get(startTimeKey, 0) <= date.millisecondsSinceEpoch;
@@ -65,8 +65,8 @@ class CalendarModuleUserOrder extends PageHookWidget {
         subtitle: subtitle != null ? Text(subtitle!) : null,
       ),
       loadingFutures: [
-        orders.future,
-        users.future,
+        orders.loading,
+        users.loading,
       ],
       body: canEdit
           ? ReorderableListBuilder<DynamicMap>(

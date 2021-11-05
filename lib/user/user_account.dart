@@ -543,9 +543,9 @@ class UserAccountModuleBlockList extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final blocks = useCollectionModel(
+    final blocks = useWatchCollectionModel(
         "${config.queryPath}/${context.model?.userId}/${config.blockPath}");
-    final users = useCollectionModel(
+    final users = useWatchCollectionModel(
       ModelQuery(
         config.queryPath,
         key: Const.uid,
@@ -564,8 +564,8 @@ class UserAccountModuleBlockList extends PageHookWidget {
 
     return UIScaffold(
       loadingFutures: [
-        blocks.future,
-        users.future,
+        blocks.loading,
+        users.loading,
       ],
       waitTransition: true,
       appBar: UIAppBar(

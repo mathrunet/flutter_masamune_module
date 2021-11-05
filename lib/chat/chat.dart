@@ -135,8 +135,8 @@ class ChatModuleHome extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final now = useNow();
-    final user = useUserDocumentModel(config.userPath);
-    final chat = useCollectionModel(
+    final user = useWatchUserDocumentModel(config.userPath);
+    final chat = useWatchCollectionModel(
       config.chatRoomQuery?.value ??
           ModelQuery(
             config.queryPath,
@@ -147,7 +147,7 @@ class ChatModuleHome extends PageHookWidget {
     final membersPath =
         config.availableMemberQuery?.value ?? config.availableMemberPath;
     final members =
-        membersPath == null ? null : useCollectionModel(membersPath);
+        membersPath == null ? null : useWatchCollectionModel(membersPath);
     final filteredMembers = members?.where((m) {
       if (context.model?.userId == m.uid) {
         return false;
@@ -160,7 +160,7 @@ class ChatModuleHome extends PageHookWidget {
         return members.any((member) => member.toString() == m.uid);
       });
     }).toList();
-    final users = useCollectionModel(
+    final users = useWatchCollectionModel(
       ModelQuery(
         config.userPath,
         key: Const.uid,
@@ -194,8 +194,8 @@ class ChatModuleHome extends PageHookWidget {
     return UIScaffold(
       waitTransition: true,
       loadingFutures: [
-        chat.future,
-        users.future,
+        chat.loading,
+        users.loading,
       ],
       inlineNavigatorControllerOnWeb: controller,
       appBar: UIAppBar(
@@ -306,10 +306,10 @@ class ChatModuleTimeline extends PageHookWidget {
   Widget build(BuildContext context) {
     final now = useNow();
     final userId = context.model?.userId;
-    final user = useUserDocumentModel();
-    final chat =
-        useDocumentModel("${config.queryPath}/${context.get("chat_id", "")}");
-    final timeline = useCollectionModel(
+    final user = useWatchUserDocumentModel();
+    final chat = useWatchDocumentModel(
+        "${config.queryPath}/${context.get("chat_id", "")}");
+    final timeline = useWatchCollectionModel(
       ModelQuery(
               "${config.queryPath}/${context.get("chat_id", "")}/${config.queryPath}",
               order: ModelQueryOrder.desc,
@@ -319,7 +319,7 @@ class ChatModuleTimeline extends PageHookWidget {
     );
     timeline.sort((a, b) =>
         b.get(config.createdTimeKey, 0) - a.get(config.createdTimeKey, 0));
-    final users = useCollectionModel(
+    final users = useWatchCollectionModel(
       ModelQuery(
         config.userPath,
         key: Const.uid,
@@ -332,7 +332,7 @@ class ChatModuleTimeline extends PageHookWidget {
       apply: (o, a) => o.merge(a, convertKeys: (key) => "${Const.user}$key"),
       orElse: (o) => o,
     );
-    final members = useCollectionModel(
+    final members = useWatchCollectionModel(
       ModelQuery(
         config.userPath,
         key: Const.uid,
@@ -602,7 +602,7 @@ class ChatModuleMediaView extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = useDocumentModel(
+    final item = useWatchDocumentModel(
         "${config.queryPath}/${context.get("chat_id", "")}/${config.queryPath}/${context.get("timeline_id", "")}");
     final media = item.get(config.mediaKey, "");
     final type = getPlatformMediaType(media);
@@ -646,8 +646,8 @@ class ChatModuleEdit extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final form = useForm();
-    final chat =
-        useDocumentModel("${config.queryPath}/${context.get("chat_id", "")}");
+    final chat = useWatchDocumentModel(
+        "${config.queryPath}/${context.get("chat_id", "")}");
     final name = chat.get(config.nameKey, "");
 
     return UIScaffold(

@@ -100,8 +100,8 @@ class SingleMediaModuleHome extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final now = useNow();
-    final user = useUserDocumentModel(config.userPath);
-    final item = useDocumentModel(config.queryPath);
+    final user = useWatchUserDocumentModel(config.userPath);
+    final item = useWatchDocumentModel(config.queryPath);
     final name = item.get(config.nameKey, "");
     final media = item.get(config.mediaKey, "");
     final date = item.get(config.createdTimeKey, now.millisecondsSinceEpoch);
@@ -167,7 +167,7 @@ class SingleMediaModuleEdit extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final form = useForm();
-    final item = useDocumentModel(config.queryPath);
+    final item = useWatchDocumentModel(config.queryPath);
     final name = item.get(config.nameKey, "");
     final media = item.get(config.mediaKey, "");
 

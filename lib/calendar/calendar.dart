@@ -170,8 +170,8 @@ class CalendarModuleHome extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final selected = useState(DateTime.now());
-    final events = useCollectionModel(config.queryPath);
-    final user = useUserDocumentModel(config.userPath);
+    final events = useWatchCollectionModel(config.queryPath);
+    final user = useWatchUserDocumentModel(config.userPath);
 
     return UIScaffold(
       waitTransition: true,
@@ -219,12 +219,12 @@ class CalendarModuleDayView extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final now = useNow();
-    final user = useUserDocumentModel(config.userPath);
+    final user = useWatchUserDocumentModel(config.userPath);
     final date = context.get("date_id", now.toDateID()).toDateTime();
     final startTime = date;
     final endTime = date.add(const Duration(days: 1));
 
-    final events = useCollectionModel(config.queryPath)
+    final events = useWatchCollectionModel(config.queryPath)
         .where(
           (element) => _inEvent(
             sourceStartTime: element.get(config.startTimeKey, 0),
@@ -292,10 +292,10 @@ class CalendarModuleDetail extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = useUserDocumentModel(config.userPath);
-    final event =
-        useDocumentModel("${config.queryPath}/${context.get("event_id", "")}");
-    final author = useDocumentModel(
+    final user = useWatchUserDocumentModel(config.userPath);
+    final event = useWatchDocumentModel(
+        "${config.queryPath}/${context.get("event_id", "")}");
+    final author = useWatchDocumentModel(
         "${config.userPath}/${event.get(config.userKey, uuid)}");
     final name = event.get(config.nameKey, "");
     final text = event.get(config.textKey, "");
@@ -309,14 +309,14 @@ class CalendarModuleDetail extends PageHookWidget {
     final userId = context.model?.userId;
     final commentController = useMemoizedTextEditingController();
 
-    final _comments = useCollectionModel(
+    final _comments = useWatchCollectionModel(
       ModelQuery(
               "${config.queryPath}/${context.get("event_id", "")}/${config.commentPath}",
               order: ModelQueryOrder.desc,
               orderBy: Const.time)
           .value,
     );
-    final _commentAuthor = useCollectionModel(
+    final _commentAuthor = useWatchCollectionModel(
       ModelQuery(
         config.userPath,
         key: Const.uid,
@@ -505,7 +505,7 @@ class CalendarModuleTemplate extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final template = useCollectionModel(
+    final template = useWatchCollectionModel(
       "${config.userPath}/${context.model?.userId}/${config.commentTemplatePath}",
     );
 
@@ -594,8 +594,8 @@ class CalendarModuleEdit extends PageHookWidget {
     final date = context.get<String?>("date_id", null)?.toDateTime();
     final now = useDateTime(date);
     final form = useForm("event_id");
-    final user = useUserDocumentModel(config.userPath);
-    final item = useDocumentModel("${config.queryPath}/${form.uid}");
+    final user = useWatchUserDocumentModel(config.userPath);
+    final item = useWatchDocumentModel("${config.queryPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final startTime = item.getAsDateTime(config.startTimeKey, now);

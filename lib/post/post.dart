@@ -103,10 +103,10 @@ class PostModuleHome extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final now = useNow();
-    final user = useUserDocumentModel(config.userPath);
+    final user = useWatchUserDocumentModel(config.userPath);
     final post =
-        useCollectionModel(config.postQuery?.value ?? config.queryPath);
-    final users = useCollectionModel(
+        useWatchCollectionModel(config.postQuery?.value ?? config.queryPath);
+    final users = useWatchCollectionModel(
       ModelQuery(
         config.userPath,
         key: Const.uid,
@@ -127,9 +127,9 @@ class PostModuleHome extends PageHookWidget {
     return UIScaffold(
       waitTransition: true,
       loadingFutures: [
-        user.future,
-        post.future,
-        users.future,
+        user.loading,
+        post.loading,
+        users.loading,
       ],
       inlineNavigatorControllerOnWeb: controller,
       appBar: UIAppBar(
@@ -189,9 +189,9 @@ class PostModuleView extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = useUserDocumentModel(config.userPath);
-    final item =
-        useDocumentModel("${config.queryPath}/${context.get("post_id", "")}");
+    final user = useWatchUserDocumentModel(config.userPath);
+    final item = useWatchDocumentModel(
+        "${config.queryPath}/${context.get("post_id", "")}");
     final now = useNow();
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
@@ -307,8 +307,8 @@ class PostModuleEdit extends PageHookWidget {
   Widget build(BuildContext context) {
     final form = useForm("post_id");
     final now = useNow();
-    final user = useUserDocumentModel(config.userPath);
-    final item = useDocumentModel("${config.queryPath}/${form.uid}");
+    final user = useWatchUserDocumentModel(config.userPath);
+    final item = useWatchDocumentModel("${config.queryPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final dateTime =

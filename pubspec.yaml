@@ -1,6 +1,6 @@
 name: masamune_module
 description: Package in which various functions are modularized.
-version: 0.8.5+16
+version: 0.8.5+19
 homepage: https://mathru.net
 repository: https://github.com/mathrunet/flutter_masamune_module
 

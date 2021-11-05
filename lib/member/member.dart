@@ -104,7 +104,7 @@ class MemberModuleHome extends PageHookWidget {
 
   String _groupId(BuildContext context) {
     if (config.groupId.isEmpty) {
-      final user = useUserDocumentModel();
+      final user = useWatchUserDocumentModel();
       return user.uid;
     }
     return context.applyModuleTag(config.groupId!);
@@ -113,16 +113,17 @@ class MemberModuleHome extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     // Please describe Hook.
-    final members = useCollectionModel(config.query?.value ?? config.queryPath);
+    final members =
+        useWatchCollectionModel(config.query?.value ?? config.queryPath);
     final groupId = _groupId(context);
-    final user = useUserDocumentModel();
+    final user = useWatchUserDocumentModel();
 
     // Please describe the Widget.
     return UIScaffold(
       waitTransition: true,
       loadingFutures: [
-        members.future,
-        user.future,
+        members.loading,
+        user.loading,
       ],
       appBar: UIAppBar(
         title: Text(

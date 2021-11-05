@@ -5,7 +5,7 @@ class HomeModuleTileMenuHome extends HookWidget {
   final HomeModule config;
   @override
   Widget build(BuildContext context) {
-    final user = useUserDocumentModel(config.userPath);
+    final user = useWatchUserDocumentModel(config.userPath);
     final name = user.get(config.nameKey, "Unknown".localize());
     final role = context.roles.firstWhereOrNull(
       (item) => item.id == user.get(config.roleKey, ""),
@@ -278,10 +278,10 @@ class HomeModuleTileMenuHome extends HookWidget {
   }
 
   Widget? _banner(BuildContext context) {
-    if (context.ads == null || !context.ads!.enabled) {
+    if (context.plugin?.ads == null || !context.plugin!.ads!.enabled) {
       return null;
     }
-    return context.ads!.banner(context);
+    return context.plugin!.ads!.banner(context);
   }
 }
 
@@ -296,14 +296,16 @@ class HomeModuleTileMenuHomeInformation extends HookWidget {
     }
 
     final now = useNow();
-    final info = useCollectionModel(config.info.queryPath);
+    final info = useWatchCollectionModel(config.info.queryPath);
     info.sort((a, b) {
       return b.get(config.info.createdTimeKey, now.millisecondsSinceEpoch) -
           a.get(config.info.createdTimeKey, now.millisecondsSinceEpoch);
     });
 
     return LoadingBuilder(
-      futures: [info.future],
+      futures: [
+        info.loading,
+      ],
       builder: (context) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -396,7 +398,7 @@ class HomeModuleTileMenuHomeCalendar extends HookWidget {
     final now = useNow();
     final start = now.toDate();
     final event =
-        useCollectionModel(config.calendar.queryPath).where((element) {
+        useWatchCollectionModel(config.calendar.queryPath).where((element) {
       final time = element.getAsDateTime(config.calendar.startTimeKey);
       return time.millisecondsSinceEpoch >= start.millisecondsSinceEpoch;
     }).toList();
@@ -568,12 +570,12 @@ class HomeModuleChangeAffiliation extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = useUserDocumentModel();
+    final user = useWatchUserDocumentModel();
     final affiliationId = user.get(affiliationKey, "");
     final role = context.roles.firstWhereOrNull(
       (item) => item.id == user.get(roleKey, ""),
     );
-    final affiliation = useCollectionModel(
+    final affiliation = useWatchCollectionModel(
       ModelQuery(targetPath, key: Const.uid, isEqualTo: affiliationId).value,
     ).firstOrNull;
     final name = affiliation?.get(namekey, "") ?? "";
@@ -688,18 +690,18 @@ class HomeModuleChangeAffiliationSelection extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = useUserDocumentModel();
+    final user = useWatchUserDocumentModel();
     final affiliationId = user.get(affiliationKey, "");
     final affiliationList = user.getAsList<String>(affiliationListKey, []);
-    final affiliation = useCollectionModel(
+    final affiliation = useWatchCollectionModel(
       ModelQuery(targetPath, key: Const.uid, whereIn: affiliationList).value,
     );
 
     return UIScaffold(
       waitTransition: true,
       loadingFutures: [
-        user.future,
-        affiliation.future,
+        user.loading,
+        affiliation.loading,
       ],
       appBar: UIAppBar(title: Text("Select %s".localize().format([title]))),
       body: UIListBuilder<DynamicMap>(

@@ -178,7 +178,7 @@ class GalleryModuleTileViewWithList extends PageHookWidget {
 
   List<GroupConfig> _categories(BuildContext context) {
     if (config.categoryQuery != null) {
-      final categories = useCollectionModel(config.categoryQuery!.value);
+      final categories = useWatchCollectionModel(config.categoryQuery!.value);
       return categories.mapAndRemoveEmpty((item) =>
           GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
         ..addAll(config.categoryConfig);
@@ -188,7 +188,7 @@ class GalleryModuleTileViewWithList extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = useUserDocumentModel(config.userPath);
+    final user = useWatchUserDocumentModel(config.userPath);
     final list = _categories(context);
     final controller = useNavigatorController(
       "/${config.routePath}/${list.firstOrNull?.id}",
@@ -236,7 +236,7 @@ class GalleryModuleTileViewWithTab extends PageHookWidget {
 
   List<GroupConfig> _categories(BuildContext context) {
     if (config.categoryQuery != null) {
-      final categories = useCollectionModel(config.categoryQuery!.value);
+      final categories = useWatchCollectionModel(config.categoryQuery!.value);
       return categories.mapAndRemoveEmpty((item) =>
           GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
         ..addAll(config.categoryConfig);
@@ -246,7 +246,7 @@ class GalleryModuleTileViewWithTab extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = useUserDocumentModel(config.userPath);
+    final user = useWatchUserDocumentModel(config.userPath);
     final list = _categories(context);
     final tab = useTab(list);
     final controller = useNavigatorController(
@@ -289,7 +289,7 @@ class GalleryModuleTileView extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = useUserDocumentModel(config.userPath);
+    final user = useWatchUserDocumentModel(config.userPath);
     final controller = useNavigatorController(
       "/${config.routePath}/${config.categoryConfig.firstOrNull?.id}",
     );
@@ -324,7 +324,7 @@ class GalleryModuleGridView extends PageHookWidget {
 
   List<GroupConfig> _categories(BuildContext context) {
     if (config.categoryQuery != null) {
-      final categories = useCollectionModel(config.categoryQuery!.value);
+      final categories = useWatchCollectionModel(config.categoryQuery!.value);
       return categories.mapAndRemoveEmpty((item) =>
           GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
         ..addAll(config.categoryConfig);
@@ -366,9 +366,10 @@ class GalleryModuleGrid extends HookWidget {
 
   DynamicCollectionModel _gallery(BuildContext context) {
     if (category == null) {
-      return useCollectionModel(config.contentQuery?.value ?? config.queryPath);
+      return useWatchCollectionModel(
+          config.contentQuery?.value ?? config.queryPath);
     }
-    return useCollectionModel(
+    return useWatchCollectionModel(
       category!.query?.value ??
           config.contentQuery?.value ??
           ModelQuery(
@@ -392,7 +393,9 @@ class GalleryModuleGrid extends HookWidget {
     );
 
     return LoadingBuilder(
-      futures: [gallery.future],
+      futures: [
+        gallery.loading,
+      ],
       builder: (context) {
         return UIGridBuilder<DynamicDocumentModel>.extent(
           maxCrossAxisExtent: context.isMobile
@@ -453,9 +456,9 @@ class GalleryModuleMediaDetail extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = useUserDocumentModel(config.userPath);
-    final item =
-        useDocumentModel("${config.queryPath}/${context.get("media_id", "")}");
+    final user = useWatchUserDocumentModel(config.userPath);
+    final item = useWatchDocumentModel(
+        "${config.queryPath}/${context.get("media_id", "")}");
 
     final now = useNow();
     final name = item.get(config.nameKey, "");
@@ -563,9 +566,9 @@ class GalleryModuleMediaView extends PageHookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = useUserDocumentModel(config.userPath);
-    final item =
-        useDocumentModel("${config.queryPath}/${context.get("media_id", "")}");
+    final user = useWatchUserDocumentModel(config.userPath);
+    final item = useWatchDocumentModel(
+        "${config.queryPath}/${context.get("media_id", "")}");
     final name = item.get(config.nameKey, "");
     final media = item.get(config.mediaKey, "");
     final type = getPlatformMediaType(media);
@@ -622,7 +625,7 @@ class GalleryModuleEdit extends PageHookWidget {
 
   List<GroupConfig> _categories(BuildContext context) {
     if (config.categoryQuery != null) {
-      final categories = useCollectionModel(config.categoryQuery!.value);
+      final categories = useWatchCollectionModel(config.categoryQuery!.value);
       return categories.mapAndRemoveEmpty((item) =>
           GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
         ..addAll(config.categoryConfig);
@@ -633,8 +636,8 @@ class GalleryModuleEdit extends PageHookWidget {
   @override
   Widget build(BuildContext context) {
     final form = useForm("media_id");
-    final user = useUserDocumentModel(config.userPath);
-    final item = useDocumentModel("${config.queryPath}/${form.uid}");
+    final user = useWatchUserDocumentModel(config.userPath);
+    final item = useWatchDocumentModel("${config.queryPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final media = item.get(config.mediaKey, "");
