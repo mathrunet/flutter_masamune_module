@@ -50,7 +50,8 @@ class FormConfig {
   final bool obscureText;
 
   Widget build(
-    BuildContext context, [
+    BuildContext context,
+    WidgetRef ref, [
     DynamicMap? input,
     void Function()? onSubmit,
   ]) {
@@ -71,7 +72,7 @@ class FormConfig {
         );
       case FormType.textField:
         return FormItemTextField(
-          controller: useMemoizedTextEditingController(input.get(id, "")),
+          controller: ref.useTextEditingController(id, input.get(id, "")),
           labelText: name.localize(),
           keyboardType: keyboardType,
           minLines: minLines ?? 1,

@@ -93,15 +93,15 @@ class SingleMediaModule extends PageModule
   DynamicMap toMap() => _$SingleMediaModuleToMap(this);
 }
 
-class SingleMediaModuleHome extends PageHookWidget {
+class SingleMediaModuleHome extends PageScopedWidget {
   const SingleMediaModuleHome(this.config);
   final SingleMediaModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final now = useNow();
-    final user = useWatchUserDocumentModel(config.userPath);
-    final item = useWatchDocumentModel(config.queryPath);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final now = ref.useNow();
+    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final item = ref.watchAsDocumentModel(config.queryPath);
     final name = item.get(config.nameKey, "");
     final media = item.get(config.mediaKey, "");
     final date = item.get(config.createdTimeKey, now.millisecondsSinceEpoch);
@@ -160,14 +160,14 @@ class SingleMediaModuleHome extends PageHookWidget {
   }
 }
 
-class SingleMediaModuleEdit extends PageHookWidget {
+class SingleMediaModuleEdit extends PageScopedWidget {
   const SingleMediaModuleEdit(this.config);
   final SingleMediaModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final form = useForm();
-    final item = useWatchDocumentModel(config.queryPath);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final form = ref.useForm();
+    final item = ref.watchAsDocumentModel(config.queryPath);
     final name = item.get(config.nameKey, "");
     final media = item.get(config.mediaKey, "");
 
@@ -188,7 +188,10 @@ class SingleMediaModuleEdit extends PageHookWidget {
           FormItemMedia(
             height: 200,
             dense: true,
-            controller: useMemoizedTextEditingController(media),
+            controller: ref.useTextEditingController(
+              config.mediaKey,
+              media,
+            ),
             errorText: "No input %s".localize().format(["Image".localize()]),
             onTap: (onUpdate) async {
               final media = await context.platform?.mediaDialog(
@@ -210,7 +213,10 @@ class SingleMediaModuleEdit extends PageHookWidget {
             dense: true,
             hintText: "Input %s".localize().format(["Title".localize()]),
             errorText: "No input %s".localize().format(["Title".localize()]),
-            controller: useMemoizedTextEditingController(name),
+            controller: ref.useTextEditingController(
+              config.nameKey,
+              name,
+            ),
             onSaved: (value) {
               context[config.nameKey] = value;
             },

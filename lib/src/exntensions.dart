@@ -30,9 +30,11 @@ extension MasamuneModuleDynamicMapExtensions on DynamicMap {
   }
 }
 
-extension ModuleTagsBuildContextExtensions on BuildContext {
+extension ModuleTagsWidgetRefExtensions on WidgetRef {
   static final _converter = RegExp(r"\{([^\{\}]+?)\}");
   String applyModuleTag(String path) {
+    final context = this as BuildContext;
+
     int i = 0;
     while (path.contains("{") || path.contains("}")) {
       path = path.replaceAllMapped(
@@ -46,15 +48,15 @@ extension ModuleTagsBuildContextExtensions on BuildContext {
           final key = split.first;
           switch (key) {
             case "context":
-              return this[split.last]?.toString() ?? "";
+              return context[split.last]?.toString() ?? "";
             case "user":
               switch (split.last) {
                 case "id":
-                  return model?.userId ?? "";
+                  return context.model?.userId ?? "";
                 default:
-                  final doc = model!.loadDocument(
-                    watch(model!
-                        .documentProvider("${Const.user}/${model?.userId}")),
+                  final doc = context.model!.loadDocument(
+                    watch(context.model!.documentProvider(
+                        "${Const.user}/${context.model?.userId}")),
                   );
                   return doc.get<dynamic>(split.last, "").toString();
               }
@@ -62,16 +64,16 @@ extension ModuleTagsBuildContextExtensions on BuildContext {
               if (split.length < 3) {
                 return "";
               }
-              final doc = model!.loadDocument(
-                watch(model!.documentProvider(split[1])),
+              final doc = context.model!.loadDocument(
+                watch(context.model!.documentProvider(split[1])),
               );
               return doc.get<dynamic>(split.last, "").toString();
             case "collection":
               if (split.length < 3) {
                 return "";
               }
-              final col = model!.loadCollection(
-                watch(model!.collectionProvider(split[1])),
+              final col = context.model!.loadCollection(
+                watch(context.model!.collectionProvider(split[1])),
               );
               return col
                   .mapAndRemoveEmpty(

@@ -163,15 +163,15 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
   DynamicMap toMap() => _$CalendarModuleToMap(this);
 }
 
-class CalendarModuleHome extends PageHookWidget {
+class CalendarModuleHome extends PageScopedWidget {
   const CalendarModuleHome(this.config);
   final CalendarModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final selected = useState(DateTime.now());
-    final events = useWatchCollectionModel(config.queryPath);
-    final user = useWatchUserDocumentModel(config.userPath);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selected = ref.useValueNotifier("selected", DateTime.now());
+    final events = ref.watchAsCollectionModel(config.queryPath);
+    final user = ref.watchAsUserDocumentModel(config.userPath);
 
     return UIScaffold(
       waitTransition: true,
@@ -212,19 +212,20 @@ class CalendarModuleHome extends PageHookWidget {
   }
 }
 
-class CalendarModuleDayView extends PageHookWidget {
+class CalendarModuleDayView extends PageScopedWidget {
   const CalendarModuleDayView(this.config);
   final CalendarModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final now = useNow();
-    final user = useWatchUserDocumentModel(config.userPath);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final now = ref.useNow();
+    final user = ref.watchAsUserDocumentModel(config.userPath);
     final date = context.get("date_id", now.toDateID()).toDateTime();
     final startTime = date;
     final endTime = date.add(const Duration(days: 1));
 
-    final events = useWatchCollectionModel(config.queryPath)
+    final events = ref
+        .watchAsCollectionModel(config.queryPath)
         .where(
           (element) => _inEvent(
             sourceStartTime: element.get(config.startTimeKey, 0),
@@ -286,16 +287,16 @@ class CalendarModuleDayView extends PageHookWidget {
   }
 }
 
-class CalendarModuleDetail extends PageHookWidget {
+class CalendarModuleDetail extends PageScopedWidget {
   const CalendarModuleDetail(this.config);
   final CalendarModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final user = useWatchUserDocumentModel(config.userPath);
-    final event = useWatchDocumentModel(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final event = ref.watchAsDocumentModel(
         "${config.queryPath}/${context.get("event_id", "")}");
-    final author = useWatchDocumentModel(
+    final author = ref.watchAsDocumentModel(
         "${config.userPath}/${event.get(config.userKey, uuid)}");
     final name = event.get(config.nameKey, "");
     final text = event.get(config.textKey, "");
@@ -307,16 +308,16 @@ class CalendarModuleDetail extends PageHookWidget {
         ? DateTime.fromMillisecondsSinceEpoch(endTimeValue)
         : null;
     final userId = context.model?.userId;
-    final commentController = useMemoizedTextEditingController();
+    final commentController = ref.useTextEditingController("comment");
 
-    final _comments = useWatchCollectionModel(
+    final _comments = ref.watchAsCollectionModel(
       ModelQuery(
               "${config.queryPath}/${context.get("event_id", "")}/${config.commentPath}",
               order: ModelQueryOrder.desc,
               orderBy: Const.time)
           .value,
     );
-    final _commentAuthor = useWatchCollectionModel(
+    final _commentAuthor = ref.watchAsCollectionModel(
       ModelQuery(
         config.userPath,
         key: Const.uid,
@@ -415,14 +416,15 @@ class CalendarModuleDetail extends PageHookWidget {
 
     switch (editingType) {
       case CalendarEditingType.wysiwyg:
-        final controller = useMemoized(
+        final controller = ref.useMemoized(
+          "controller",
           () => text.isEmpty
               ? QuillController.basic()
               : QuillController(
                   document: Document.fromJson(jsonDecode(text)),
                   selection: const TextSelection.collapsed(offset: 0),
                 ),
-          [text],
+          keys: [text],
         );
 
         return UIScaffold(
@@ -434,7 +436,7 @@ class CalendarModuleDetail extends PageHookWidget {
               QuillEditor(
                 scrollController: ScrollController(),
                 scrollable: false,
-                focusNode: useFocusNode(),
+                focusNode: ref.useFocusNode("text", false),
                 autoFocus: false,
                 controller: controller,
                 placeholder: "Text".localize(),
@@ -477,7 +479,7 @@ class CalendarModuleDetail extends PageHookWidget {
                   text,
                   fontSize: 16,
                   onTapLink: (url) {
-                    context.open(url);
+                    ref.open(url);
                   },
                 ),
               ),
@@ -499,13 +501,13 @@ class CalendarModuleDetail extends PageHookWidget {
   }
 }
 
-class CalendarModuleTemplate extends PageHookWidget {
+class CalendarModuleTemplate extends PageScopedWidget {
   const CalendarModuleTemplate(this.config);
   final CalendarModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final template = useWatchCollectionModel(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final template = ref.watchAsCollectionModel(
       "${config.userPath}/${context.model?.userId}/${config.commentTemplatePath}",
     );
 
@@ -585,17 +587,17 @@ class CalendarModuleTemplate extends PageHookWidget {
   }
 }
 
-class CalendarModuleEdit extends PageHookWidget {
+class CalendarModuleEdit extends PageScopedWidget {
   const CalendarModuleEdit(this.config);
   final CalendarModule config;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final date = context.get<String?>("date_id", null)?.toDateTime();
-    final now = useDateTime(date);
-    final form = useForm("event_id");
-    final user = useWatchUserDocumentModel(config.userPath);
-    final item = useWatchDocumentModel("${config.queryPath}/${form.uid}");
+    final now = ref.useDateTime("now", date ?? DateTime.now());
+    final form = ref.useForm("event_id");
+    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final item = ref.watchAsDocumentModel("${config.queryPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final startTime = item.getAsDateTime(config.startTimeKey, now);
@@ -604,14 +606,16 @@ class CalendarModuleEdit extends PageHookWidget {
     final endTime = endTimeValue != null
         ? DateTime.fromMillisecondsSinceEpoch(endTimeValue)
         : null;
-    final allDayState = useCollapse(allDay);
+    final allDayState = ref.useValueNotifier("allDay", allDay);
     final allDayController =
-        useMemoizedTextEditingController(allDay.toString());
+        ref.useTextEditingController("allDay", allDay.toString());
     final startTimeController =
-        useMemoizedTextEditingController(startTime.toString());
-    final endTimeController = useMemoizedTextEditingController(
-        (endTime ?? startTime.add(const Duration(hours: 1))).toString());
-    final titleController = useMemoizedTextEditingController(name);
+        ref.useTextEditingController("startTime", startTime.toString());
+    final endTimeController = ref.useTextEditingController(
+      "endTime",
+      (endTime ?? startTime.add(const Duration(hours: 1))).toString(),
+    );
+    final titleController = ref.useTextEditingController("title", name);
 
     final editingType = text.isNotEmpty && !text.startsWith(RegExp(r"^(\[|\{)"))
         ? CalendarEditingType.planeText
@@ -664,7 +668,7 @@ class CalendarModuleEdit extends PageHookWidget {
         type: FormItemSwitchType.list,
         controller: allDayController,
         onSaved: (value) {
-          form[config.allDayKey] = value ?? false;
+          context[config.allDayKey] = value ?? false;
         },
         onChanged: (value) {
           allDayState.value = value ?? false;
@@ -681,7 +685,7 @@ class CalendarModuleEdit extends PageHookWidget {
         format: allDayState.value ? "yyyy/MM/dd(E)" : "yyyy/MM/dd(E) HH:mm",
         onSaved: (value) {
           value ??= now;
-          form[config.startTimeKey] = value.millisecondsSinceEpoch;
+          context[config.startTimeKey] = value.millisecondsSinceEpoch;
         },
       ),
       Collapse(
@@ -707,7 +711,7 @@ class CalendarModuleEdit extends PageHookWidget {
             },
             onSaved: (value) {
               value ??= now.add(const Duration(hours: 1));
-              form[config.endTimeKey] = value.millisecondsSinceEpoch;
+              context[config.endTimeKey] = value.millisecondsSinceEpoch;
             },
           ),
         ],
@@ -719,7 +723,7 @@ class CalendarModuleEdit extends PageHookWidget {
         subColor: context.theme.disabledColor,
         controller: titleController,
         onSaved: (value) {
-          form[config.nameKey] = value ?? "";
+          context[config.nameKey] = value ?? "";
         },
       ),
       const Divid(),
@@ -727,14 +731,15 @@ class CalendarModuleEdit extends PageHookWidget {
 
     switch (editingType) {
       case CalendarEditingType.wysiwyg:
-        final controller = useMemoized(
+        final controller = ref.useMemoized(
+          "controller",
           () => text.isEmpty
               ? QuillController.basic()
               : QuillController(
                   document: Document.fromJson(jsonDecode(text)),
                   selection: const TextSelection.collapsed(offset: 0),
                 ),
-          [text],
+          keys: [text],
         );
 
         return UIScaffold(
@@ -771,7 +776,7 @@ class CalendarModuleEdit extends PageHookWidget {
                 child: QuillEditor(
                   scrollController: ScrollController(),
                   scrollable: true,
-                  focusNode: useFocusNode(),
+                  focusNode: ref.useFocusNode("text"),
                   autoFocus: false,
                   controller: controller,
                   placeholder: "Text".localize(),
@@ -844,7 +849,7 @@ class CalendarModuleEdit extends PageHookWidget {
                   keyboardType: TextInputType.multiline,
                   hintText: "Text".localize(),
                   subColor: context.theme.disabledColor,
-                  controller: useMemoizedTextEditingController(text),
+                  controller: ref.useTextEditingController("text", text),
                   onSaved: (value) {
                     context[config.textKey] = value;
                   },

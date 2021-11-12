@@ -1,70 +1,92 @@
 part of masamune_module;
 
-DynamicDocumentModel useReadDocumentModel(String path) {
-  final context = useContext();
+extension WidgetRefModelExtensions on WidgetRef {
+  DynamicDocumentModel readAsDocumentModel(String path) {
+    final context = this as BuildContext;
 
-  return context.model!.loadDocument(
-    useReadProvider(
-        context.model!.documentProvider(context.applyModuleTag(path))),
-  );
-}
+    return context.model!.loadDocument(
+      read(
+        context.model!.documentProvider(applyModuleTag(path)),
+      ),
+    );
+  }
 
-DynamicCollectionModel useReadCollectionModel(String path) {
-  final context = useContext();
+  DynamicCollectionModel readAsCollectionModel(String path) {
+    final context = this as BuildContext;
 
-  return context.model!.loadCollection(
-    useReadProvider(
-        context.model!.collectionProvider(context.applyModuleTag(path))),
-  );
-}
+    return context.model!.loadCollection(
+      read(
+        context.model!.collectionProvider(applyModuleTag(path)),
+      ),
+    );
+  }
 
-DynamicSearchableCollectionModel useReadSearchableCollectionModel(String path) {
-  final context = useContext();
+  DynamicSearchableCollectionModel readAsSearchableCollectionModel(
+      String path) {
+    final context = this as BuildContext;
 
-  return useReadProvider(context.model!
-      .searchableCollectionProvider(context.applyModuleTag(path)));
-}
+    return read(
+      context.model!.searchableCollectionProvider(applyModuleTag(path)),
+    );
+  }
 
-DynamicDocumentModel useReadUserDocumentModel([String userPath = Const.user]) {
-  final context = useContext();
+  DynamicDocumentModel readAsUserDocumentModel([String userPath = Const.user]) {
+    final context = this as BuildContext;
 
-  return context.model!.loadDocument(
-    useReadProvider(context.model!.documentProvider(
-        context.applyModuleTag("$userPath/${context.model?.userId}"))),
-  );
-}
+    return context.model!.loadDocument(
+      read(
+        context.model!.documentProvider(
+          applyModuleTag("$userPath/${context.model?.userId}"),
+        ),
+      ),
+    );
+  }
 
-DynamicDocumentModel useWatchDocumentModel(String path) {
-  final context = useContext();
+  DynamicDocumentModel watchAsDocumentModel(String path) {
+    final context = this as BuildContext;
 
-  return context.model!.loadDocument(
-    useWatchProvider(
-        context.model!.documentProvider(context.applyModuleTag(path))),
-  );
-}
+    return context.model!.loadDocument(
+      watch(
+        context.model!.documentProvider(
+          applyModuleTag(path),
+        ),
+      ),
+    );
+  }
 
-DynamicCollectionModel useWatchCollectionModel(String path) {
-  final context = useContext();
+  DynamicCollectionModel watchAsCollectionModel(String path) {
+    final context = this as BuildContext;
 
-  return context.model!.loadCollection(
-    useWatchProvider(
-        context.model!.collectionProvider(context.applyModuleTag(path))),
-  );
-}
+    return context.model!.loadCollection(
+      watch(
+        context.model!.collectionProvider(
+          applyModuleTag(path),
+        ),
+      ),
+    );
+  }
 
-DynamicSearchableCollectionModel useWatchSearchableCollectionModel(
-    String path) {
-  final context = useContext();
+  DynamicSearchableCollectionModel watchAsSearchableCollectionModel(
+      String path) {
+    final context = this as BuildContext;
 
-  return useWatchProvider(context.model!
-      .searchableCollectionProvider(context.applyModuleTag(path)));
-}
+    return watch(
+      context.model!.searchableCollectionProvider(
+        applyModuleTag(path),
+      ),
+    );
+  }
 
-DynamicDocumentModel useWatchUserDocumentModel([String userPath = Const.user]) {
-  final context = useContext();
+  DynamicDocumentModel watchAsUserDocumentModel(
+      [String userPath = Const.user]) {
+    final context = this as BuildContext;
 
-  return context.model!.loadDocument(
-    useWatchProvider(context.model!.documentProvider(
-        context.applyModuleTag("$userPath/${context.model?.userId}"))),
-  );
+    return context.model!.loadDocument(
+      watch(
+        context.model!.documentProvider(
+          applyModuleTag("$userPath/${context.model?.userId}"),
+        ),
+      ),
+    );
+  }
 }

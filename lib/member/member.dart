@@ -98,25 +98,25 @@ class MemberModule extends PageModule {
   DynamicMap toMap() => _$MemberModuleToMap(this);
 }
 
-class MemberModuleHome extends PageHookWidget {
+class MemberModuleHome extends PageScopedWidget {
   const MemberModuleHome(this.config);
   final MemberModule config;
 
-  String _groupId(BuildContext context) {
+  String _groupId(BuildContext context, WidgetRef ref) {
     if (config.groupId.isEmpty) {
-      final user = useWatchUserDocumentModel();
+      final user = ref.watchAsUserDocumentModel();
       return user.uid;
     }
-    return context.applyModuleTag(config.groupId!);
+    return ref.applyModuleTag(config.groupId!);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // Please describe Hook.
     final members =
-        useWatchCollectionModel(config.query?.value ?? config.queryPath);
-    final groupId = _groupId(context);
-    final user = useWatchUserDocumentModel();
+        ref.watchAsCollectionModel(config.query?.value ?? config.queryPath);
+    final groupId = _groupId(context, ref);
+    final user = ref.watchAsUserDocumentModel();
 
     // Please describe the Widget.
     return UIScaffold(
@@ -217,13 +217,13 @@ class MemberModuleHome extends PageHookWidget {
   }
 }
 
-class MemberModuleInvite extends PageHookWidget {
+class MemberModuleInvite extends PageScopedWidget {
   const MemberModuleInvite(this.config);
   final MemberModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final form = useForm();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final form = ref.useForm();
 
     return UIScaffold(
       waitTransition: true,
@@ -232,7 +232,7 @@ class MemberModuleInvite extends PageHookWidget {
         key: form.key,
         type: _type(context),
         padding: const EdgeInsets.all(0),
-        children: _form(context),
+        children: _form(context, ref),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -255,7 +255,7 @@ class MemberModuleInvite extends PageHookWidget {
     }
   }
 
-  List<Widget> _form(BuildContext context) {
+  List<Widget> _form(BuildContext context, WidgetRef ref) {
     switch (config.inviteType) {
       case MemberModuleInviteType.email:
         return [
@@ -268,7 +268,7 @@ class MemberModuleInvite extends PageHookWidget {
           DividHeadline("Email".localize()),
           FormItemTextField(
             dense: true,
-            controller: useMemoizedTextEditingController(),
+            controller: ref.useTextEditingController("email"),
             hintText: "Input %s".localize().format(["Email".localize()]),
             errorText: "No input %s".localize().format(["Email".localize()]),
             onSaved: (value) {

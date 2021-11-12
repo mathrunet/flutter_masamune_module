@@ -163,16 +163,16 @@ class QuestionnaireModule extends PageModule
   DynamicMap toMap() => _$QuestionnaireModuleToMap(this);
 }
 
-class QuestionnaireModuleHome extends PageHookWidget {
+class QuestionnaireModuleHome extends PageScopedWidget {
   const QuestionnaireModuleHome(this.config);
   final QuestionnaireModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final now = useNow();
-    final question = useWatchCollectionModel(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final now = ref.useNow();
+    final question = ref.watchAsCollectionModel(
         config.questionnaireQuery?.value ?? config.queryPath);
-    final answered = useWatchCollectionModel(
+    final answered = ref.watchAsCollectionModel(
         "${config.userPath}/${context.model?.userId}/${config.answerPath}");
 
     final questionWithAnswer = question.map((e) {
@@ -185,8 +185,8 @@ class QuestionnaireModuleHome extends PageHookWidget {
       }
       return e;
     });
-    final user = useWatchUserDocumentModel(config.userPath);
-    final controller = useNavigatorController(
+    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final controller = ref.useNavigatorController(
       "${config.routePath}/${questionWithAnswer.firstOrNull.get(Const.uid, "")}",
       (route) => questionWithAnswer.isEmpty,
     );
@@ -253,13 +253,13 @@ class QuestionnaireModuleHome extends PageHookWidget {
   }
 }
 
-class QuestionnaireModuleView extends HookWidget {
+class QuestionnaireModuleView extends ScopedWidget {
   const QuestionnaireModuleView(this.config);
   final QuestionnaireModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final user = useWatchUserDocumentModel();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watchAsUserDocumentModel();
     if (config.permission.canEdit(user.get(config.roleKey, ""))) {
       return QuestionnaireAanswerView(config);
     } else {
@@ -268,21 +268,21 @@ class QuestionnaireModuleView extends HookWidget {
   }
 }
 
-class QuestionnaireAanswerView extends PageHookWidget {
+class QuestionnaireAanswerView extends PageScopedWidget {
   const QuestionnaireAanswerView(this.config);
   final QuestionnaireModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final now = useNow();
-    final question = useWatchDocumentModel(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final now = ref.useNow();
+    final question = ref.watchAsDocumentModel(
         "${config.queryPath}/${context.get("question_id", "")}");
-    final questions = useWatchCollectionModel(
+    final questions = ref.watchAsCollectionModel(
         "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}");
-    final answers = useWatchCollectionModel(
+    final answers = ref.watchAsCollectionModel(
       "${config.queryPath}/${context.get("question_id", "")}/${config.answerPath}",
     );
-    final users = useWatchCollectionModel(
+    final users = ref.watchAsCollectionModel(
       ModelQuery(config.userPath,
               key: Const.uid,
               whereIn: answers.map((e) => e.get(Const.user, "")).toList())
@@ -398,19 +398,19 @@ class QuestionnaireAanswerView extends PageHookWidget {
   }
 }
 
-class QuestionnaireModuleAnswerDetail extends PageHookWidget {
+class QuestionnaireModuleAnswerDetail extends PageScopedWidget {
   const QuestionnaireModuleAnswerDetail(this.config);
   final QuestionnaireModule config;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     int i = 0;
-    final questions = useWatchCollectionModel(
+    final questions = ref.watchAsCollectionModel(
         "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}");
-    final answer = useWatchDocumentModel(
+    final answer = ref.watchAsDocumentModel(
       "${config.queryPath}/${context.get("question_id", "")}/${config.answerPath}/${context.get("answer_id", "")}",
     );
-    final user = useWatchDocumentModel(
+    final user = ref.watchAsDocumentModel(
         "${config.userPath}/${answer.get(Const.user, "empty")}");
 
     return UIScaffold(
@@ -446,20 +446,20 @@ class QuestionnaireModuleAnswerDetail extends PageHookWidget {
   }
 }
 
-class QuestionnaireModuleQuestionView extends PageHookWidget {
+class QuestionnaireModuleQuestionView extends PageScopedWidget {
   const QuestionnaireModuleQuestionView(this.config);
   final QuestionnaireModule config;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     int i = 0;
-    final form = useForm();
-    final user = useWatchUserDocumentModel(config.userPath);
-    final question = useWatchDocumentModel(
+    final form = ref.useForm();
+    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final question = ref.watchAsDocumentModel(
         "${config.queryPath}/${context.get("question_id", "")}");
-    final questions = useWatchCollectionModel(
+    final questions = ref.watchAsCollectionModel(
         "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}");
-    final answer = useWatchDocumentModel(
+    final answer = ref.watchAsDocumentModel(
       "${config.queryPath}/${context.get("question_id", "")}/${config.answerPath}/${context.model?.userId}",
     );
     final name = question.get(config.nameKey, "");
@@ -580,7 +580,7 @@ class QuestionnaireModuleQuestionView extends PageHookWidget {
   }
 }
 
-class QuestionnaireModuleListTile extends HookWidget {
+class QuestionnaireModuleListTile extends ScopedWidget {
   const QuestionnaireModuleListTile(
     this.config, {
     required this.index,
@@ -597,7 +597,7 @@ class QuestionnaireModuleListTile extends HookWidget {
   final DynamicDocumentModel answer;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final uid = question.get(Const.uid, "");
     final type = question.get(config.typeKey, "").quenstionFormType;
     final name = question.get(config.nameKey, "");
@@ -641,8 +641,10 @@ class QuestionnaireModuleListTile extends HookWidget {
                   hintText: "Please select your %s"
                       .localize()
                       .format(["Answer".localize().toLowerCase()]),
-                  controller:
-                      useMemoizedTextEditingController(answers.get(uid, "")),
+                  controller: ref.useTextEditingController(
+                    "answer",
+                    answers.get(uid, ""),
+                  ),
                   onSaved: (value) {
                     final answers =
                         Map<String, dynamic>.from(answer.get("answer", {}));
@@ -700,8 +702,10 @@ class QuestionnaireModuleListTile extends HookWidget {
                       .format(["Answer".localize().toLowerCase()]),
                   errorText:
                       "No input %s".localize().format(["Answer".localize()]),
-                  controller:
-                      useMemoizedTextEditingController(answers.get(uid, "")),
+                  controller: ref.useTextEditingController(
+                    "answer",
+                    answers.get(uid, ""),
+                  ),
                   onSaved: (value) {
                     final answers =
                         Map<String, dynamic>.from(answer.get("answer", {}));
@@ -727,23 +731,23 @@ class QuestionnaireModuleListTile extends HookWidget {
   }
 }
 
-class QuestionnaireModuleQuestionEdit extends PageHookWidget {
+class QuestionnaireModuleQuestionEdit extends PageScopedWidget {
   const QuestionnaireModuleQuestionEdit(this.config);
   final QuestionnaireModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final form = useForm("item_id");
-    final item = useWatchDocumentModel(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final form = ref.useForm("item_id");
+    final item = ref.watchAsDocumentModel(
         "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}/${form.uid}");
-    final user = useWatchUserDocumentModel(config.userPath);
+    final user = ref.watchAsUserDocumentModel(config.userPath);
     final name = item.get(config.nameKey, "");
     final type = item.get(config.typeKey, Const.text);
     final required = item.get(config.requiredKey, false);
-    final view = useState(type);
+    final view = ref.useValueNotifier("viewType", type);
     final selection = item.get(config.selectionKey, {});
     final selectionTextEditingControllers =
-        useMemoizedTextEditingControllerMap(selection);
+        ref.useTextEditingControllerMap("selection", selection);
 
     return UIScaffold(
       waitTransition: true,
@@ -788,7 +792,10 @@ class QuestionnaireModuleQuestionEdit extends PageHookWidget {
             hintText: "Input %s".localize().format(["Question".localize()]),
             errorText: "No input %s".localize().format(["Question".localize()]),
             keyboardType: TextInputType.multiline,
-            controller: useMemoizedTextEditingController(name),
+            controller: ref.useTextEditingController(
+              config.nameKey,
+              name,
+            ),
             minLines: 3,
             maxLines: 5,
             onSaved: (value) {
@@ -802,8 +809,10 @@ class QuestionnaireModuleQuestionEdit extends PageHookWidget {
               "yes": "Required".localize(),
               "no": "Optional".localize(),
             },
-            controller:
-                useMemoizedTextEditingController(required ? "yes" : "no"),
+            controller: ref.useTextEditingController(
+              config.requiredKey,
+              required ? "yes" : "no",
+            ),
             onSaved: (value) {
               context[config.requiredKey] = value == "yes";
             },
@@ -817,7 +826,10 @@ class QuestionnaireModuleQuestionEdit extends PageHookWidget {
                 value: (e) => (e as _QuenstionFormType).name,
               )
             },
-            controller: useMemoizedTextEditingController(type),
+            controller: ref.useTextEditingController(
+              config.typeKey,
+              type,
+            ),
             onChanged: (value) {
               view.value = value ?? Const.text;
             },
@@ -895,15 +907,15 @@ class QuestionnaireModuleQuestionEdit extends PageHookWidget {
   }
 }
 
-class QuestionnaireModuleEdit extends PageHookWidget {
+class QuestionnaireModuleEdit extends PageScopedWidget {
   const QuestionnaireModuleEdit(this.config);
   final QuestionnaireModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final form = useForm("question_id");
-    final item = useWatchDocumentModel("${config.queryPath}/${form.uid}");
-    final user = useWatchUserDocumentModel(config.userPath);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final form = ref.useForm("question_id");
+    final item = ref.watchAsDocumentModel("${config.queryPath}/${form.uid}");
+    final user = ref.watchAsUserDocumentModel(config.userPath);
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final endTime = item.get(config.endTimeKey, 0);
@@ -951,7 +963,10 @@ class QuestionnaireModuleEdit extends PageHookWidget {
             dense: true,
             hintText: "Input %s".localize().format(["Title".localize()]),
             errorText: "No input %s".localize().format(["Title".localize()]),
-            controller: useMemoizedTextEditingController(form.select(name, "")),
+            controller: ref.useTextEditingController(
+              config.nameKey,
+              form.select(name, ""),
+            ),
             onSaved: (value) {
               context[config.nameKey] = value;
             },
@@ -964,7 +979,10 @@ class QuestionnaireModuleEdit extends PageHookWidget {
             maxLines: 5,
             hintText: "Input %s".localize().format(["Description".localize()]),
             allowEmpty: true,
-            controller: useMemoizedTextEditingController(form.select(text, "")),
+            controller: ref.useTextEditingController(
+              config.textKey,
+              form.select(text, ""),
+            ),
             onSaved: (value) {
               context[config.textKey] = value;
             },
@@ -975,7 +993,8 @@ class QuestionnaireModuleEdit extends PageHookWidget {
             allowEmpty: true,
             hintText: "Input %s".localize().format(["End date".localize()]),
             errorText: "No input %s".localize().format(["End date".localize()]),
-            controller: useMemoizedTextEditingController(
+            controller: ref.useTextEditingController(
+              config.endTimeKey,
               form.select(FormItemDateTimeField.formatDate(endTime), ""),
             ),
             type: FormItemDateTimeFieldPickerType.date,

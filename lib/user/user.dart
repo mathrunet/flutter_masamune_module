@@ -138,14 +138,14 @@ abstract class UserWidgetModule extends PageModule
   Widget build(BuildContext context);
 }
 
-class UserModuleHome extends PageHookWidget {
+class UserModuleHome extends PageScopedWidget {
   const UserModuleHome(this.config);
   final UserModule config;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final userId = context.get("user_id", context.model?.userId ?? "");
-    final user = useWatchDocumentModel("${config.queryPath}/$userId");
+    final user = ref.watchAsDocumentModel("${config.queryPath}/$userId");
     final name = user.get(config.nameKey, "");
     final text = user.get(config.textKey, "");
     final image = user.get(config.imageKey, "");
@@ -164,8 +164,8 @@ class UserModuleHome extends PageHookWidget {
       );
     }
 
-    final report = useWatchDocumentModel("${config.reportPath}/$userId");
-    final block = useWatchDocumentModel(
+    final report = ref.watchAsDocumentModel("${config.reportPath}/$userId");
+    final block = ref.watchAsDocumentModel(
         "${config.queryPath}/${context.model?.userId}/${config.blockPath}/$userId");
 
     if (block.isNotEmpty) {
@@ -356,21 +356,21 @@ class UserModuleHome extends PageHookWidget {
   }
 }
 
-class UserModuleEditProfile extends PageHookWidget {
+class UserModuleEditProfile extends PageScopedWidget {
   const UserModuleEditProfile(this.config);
   final UserModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final form = useForm();
-    final user =
-        useWatchDocumentModel("${config.queryPath}/${context.model?.userId}");
+  Widget build(BuildContext context, WidgetRef ref) {
+    final form = ref.useForm();
+    final user = ref
+        .watchAsDocumentModel("${config.queryPath}/${context.model?.userId}");
     final name = user.get(config.nameKey, "");
     final text = user.get(config.textKey, "");
     final image = user.get(config.imageKey, "");
     final icon = user.get(config.iconKey, "");
-    final nameController = useMemoizedTextEditingController(name);
-    final textController = useMemoizedTextEditingController(text);
+    final nameController = ref.useTextEditingController("name", name);
+    final textController = ref.useTextEditingController("text", text);
 
     return UIScaffold(
       appBar: UIAppBar(

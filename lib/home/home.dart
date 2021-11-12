@@ -251,11 +251,11 @@ class HomeCalendarModule extends CalendarModule {
   DynamicMap toMap() => _$HomeCalendarModuleToMap(this);
 }
 
-class HomeModuleHome extends PageHookWidget {
+class HomeModuleHome extends PageScopedWidget {
   const HomeModuleHome(this.config);
   final HomeModule config;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     switch (config.homeType) {
       case HomeType.tileMenu:
         return config.tileMenuHome ?? HomeModuleTileMenuHome(config);

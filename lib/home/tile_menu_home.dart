@@ -1,11 +1,11 @@
 part of 'home.dart';
 
-class HomeModuleTileMenuHome extends HookWidget {
+class HomeModuleTileMenuHome extends ScopedWidget {
   const HomeModuleTileMenuHome(this.config);
   final HomeModule config;
   @override
-  Widget build(BuildContext context) {
-    final user = useWatchUserDocumentModel(config.userPath);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watchAsUserDocumentModel(config.userPath);
     final name = user.get(config.nameKey, "Unknown".localize());
     final role = context.roles.firstWhereOrNull(
       (item) => item.id == user.get(config.roleKey, ""),
@@ -197,7 +197,7 @@ class HomeModuleTileMenuHome extends HookWidget {
                       onTap: item.path.isEmpty
                           ? null
                           : () {
-                              context.open(item.path!);
+                              ref.open(item.path!);
                             },
                       child: Padding(
                         padding: const EdgeInsets.all(8),
@@ -248,7 +248,7 @@ class HomeModuleTileMenuHome extends HookWidget {
                     onTap: item.path.isEmpty
                         ? null
                         : () {
-                            context.open(item.path!);
+                            ref.open(item.path!);
                           },
                     child: Container(
                       alignment: Alignment.center,
@@ -285,18 +285,18 @@ class HomeModuleTileMenuHome extends HookWidget {
   }
 }
 
-class HomeModuleTileMenuHomeInformation extends HookWidget {
+class HomeModuleTileMenuHomeInformation extends ScopedWidget {
   const HomeModuleTileMenuHomeInformation(this.config);
   final HomeModule config;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (config.info.widget != null) {
       return config.info.widget!;
     }
 
-    final now = useNow();
-    final info = useWatchCollectionModel(config.info.queryPath);
+    final now = ref.useNow();
+    final info = ref.watchAsCollectionModel(config.info.queryPath);
     info.sort((a, b) {
       return b.get(config.info.createdTimeKey, now.millisecondsSinceEpoch) -
           a.get(config.info.createdTimeKey, now.millisecondsSinceEpoch);
@@ -385,20 +385,20 @@ class HomeModuleTileMenuHomeInformation extends HookWidget {
   }
 }
 
-class HomeModuleTileMenuHomeCalendar extends HookWidget {
+class HomeModuleTileMenuHomeCalendar extends ScopedWidget {
   const HomeModuleTileMenuHomeCalendar(this.config);
   final HomeModule config;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (config.info.widget != null) {
       return config.info.widget!;
     }
 
-    final now = useNow();
+    final now = ref.useNow();
     final start = now.toDate();
     final event =
-        useWatchCollectionModel(config.calendar.queryPath).where((element) {
+        ref.watchAsCollectionModel(config.calendar.queryPath).where((element) {
       final time = element.getAsDateTime(config.calendar.startTimeKey);
       return time.millisecondsSinceEpoch >= start.millisecondsSinceEpoch;
     }).toList();
@@ -548,7 +548,7 @@ class HomeModuleTileMenuHomeHeadline extends StatelessWidget {
   }
 }
 
-class HomeModuleChangeAffiliation extends HookWidget {
+class HomeModuleChangeAffiliation extends ScopedWidget {
   const HomeModuleChangeAffiliation({
     required this.title,
     this.roleKey = Const.role,
@@ -569,15 +569,18 @@ class HomeModuleChangeAffiliation extends HookWidget {
   final String targetPath;
 
   @override
-  Widget build(BuildContext context) {
-    final user = useWatchUserDocumentModel();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watchAsUserDocumentModel();
     final affiliationId = user.get(affiliationKey, "");
     final role = context.roles.firstWhereOrNull(
       (item) => item.id == user.get(roleKey, ""),
     );
-    final affiliation = useWatchCollectionModel(
-      ModelQuery(targetPath, key: Const.uid, isEqualTo: affiliationId).value,
-    ).firstOrNull;
+    final affiliation = ref
+        .watchAsCollectionModel(
+          ModelQuery(targetPath, key: Const.uid, isEqualTo: affiliationId)
+              .value,
+        )
+        .firstOrNull;
     final name = affiliation?.get(namekey, "") ?? "";
     final enabled = role == null ||
         role.id.isEmpty ||
@@ -668,7 +671,7 @@ class HomeModuleChangeAffiliation extends HookWidget {
   }
 }
 
-class HomeModuleChangeAffiliationSelection extends PageHookWidget {
+class HomeModuleChangeAffiliationSelection extends PageScopedWidget {
   const HomeModuleChangeAffiliationSelection({
     required this.title,
     this.roleKey = Const.role,
@@ -689,11 +692,11 @@ class HomeModuleChangeAffiliationSelection extends PageHookWidget {
   final String targetPath;
 
   @override
-  Widget build(BuildContext context) {
-    final user = useWatchUserDocumentModel();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watchAsUserDocumentModel();
     final affiliationId = user.get(affiliationKey, "");
     final affiliationList = user.getAsList<String>(affiliationListKey, []);
-    final affiliation = useWatchCollectionModel(
+    final affiliation = ref.watchAsCollectionModel(
       ModelQuery(targetPath, key: Const.uid, whereIn: affiliationList).value,
     );
 

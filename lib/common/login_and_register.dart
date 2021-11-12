@@ -182,12 +182,13 @@ enum LoginLayoutType {
   fixed,
 }
 
-class Landing extends PageHookWidget {
+class Landing extends PageScopedWidget {
   const Landing(this.config);
   final LoginModule config;
   @override
-  Widget build(BuildContext context) {
-    final animation = useAutoAnimationScenario(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final animation = ref.useAutoAnimationScenario(
+      "main",
       [
         AnimationUnit(
           tween: DoubleTween(begin: 0, end: 1),
@@ -350,16 +351,16 @@ class Landing extends PageHookWidget {
   }
 }
 
-class Login extends PageHookWidget {
+class Login extends PageScopedWidget {
   const Login(this.config);
   final LoginModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final form = useForm();
-    final emailFocus = useAutoFocusNode();
-    final passFocus = useFocusNode();
-    final showPassword = useState<bool>(false);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final form = ref.useForm();
+    final emailFocus = ref.useFocusNode("email");
+    final passFocus = ref.useFocusNode("pass");
+    final showPassword = ref.useValueNotifier("showPassword", false);
 
     final color = config.color ?? Colors.white;
     final buttonColor = config.buttonColor ?? config.color ?? Colors.white;
@@ -465,7 +466,7 @@ class Login extends PageHookWidget {
                 ),
                 suffixIconConstraints:
                     const BoxConstraints(minHeight: 0, minWidth: 0),
-                onSubmitted: (value) => _onSubmitted(context, form),
+                onSubmitted: (value) => _onSubmitted(context, ref, form),
               ),
               Divid(color: color.withOpacity(0.75)),
               const Space.height(16),
@@ -498,7 +499,7 @@ class Login extends PageHookWidget {
                     backgroundColor: buttonBackgroundColor,
                     borderColor: buttonColor,
                     icon: Icons.check,
-                    onPressed: () => _onSubmitted(context, form),
+                    onPressed: () => _onSubmitted(context, ref, form),
                   )
                 ],
               ),
@@ -520,7 +521,11 @@ class Login extends PageHookWidget {
     return null;
   }
 
-  Future<void> _onSubmitted(BuildContext context, FormContext form) async {
+  Future<void> _onSubmitted(
+    BuildContext context,
+    WidgetRef ref,
+    FormContext form,
+  ) async {
     if (!form.validate()) {
       return;
     }
@@ -544,18 +549,19 @@ class Login extends PageHookWidget {
   }
 }
 
-class Register extends PageHookWidget {
+class Register extends PageScopedWidget {
   const Register(this.config);
   final LoginModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final form = useForm();
-    final emailFocus = useAutoFocusNode();
-    final passFocus = useFocusNode();
-    final passConfirmFocus = useFocusNode();
-    final showPassword = useState<bool>(false);
-    final showPasswordConfirm = useState<bool>(false);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final form = ref.useForm();
+    final emailFocus = ref.useFocusNode("email");
+    final passFocus = ref.useFocusNode("pass");
+    final passConfirmFocus = ref.useFocusNode("passConfirm");
+    final showPassword = ref.useValueNotifier("showPassword", false);
+    final showPasswordConfirm =
+        ref.useValueNotifier("showPasswordConfirm", false);
     final role = context.roles.length <= 1
         ? context.roles.first
         : context.roles
@@ -709,10 +715,10 @@ class Register extends PageHookWidget {
                 suffixIconConstraints:
                     const BoxConstraints(minHeight: 0, minWidth: 0),
                 onSubmitted: (value) {
-                  _onSubmitted(context, form, role);
+                  _onSubmitted(context, ref, form, role);
                 },
               ),
-              ...config.registerForm.map((e) => e.build(context)),
+              ...config.registerForm.map((e) => e.build(context, ref)),
               Divid(color: color.withOpacity(0.75)),
               if (context.app?.termsUrl != null)
                 FormItemCheckbox(
@@ -754,7 +760,7 @@ class Register extends PageHookWidget {
                     backgroundColor: buttonBackgroundColor,
                     borderColor: buttonColor,
                     icon: Icons.check,
-                    onPressed: () => _onSubmitted(context, form, role),
+                    onPressed: () => _onSubmitted(context, ref, form, role),
                   )
                 ],
               ),
@@ -777,7 +783,11 @@ class Register extends PageHookWidget {
   }
 
   Future<void> _onSubmitted(
-      BuildContext context, FormContext form, RoleConfig role) async {
+    BuildContext context,
+    WidgetRef ref,
+    FormContext form,
+    RoleConfig role,
+  ) async {
     if (await context.model?.skipRegistration(data: {
           config.roleKey: role.id,
         }) ??
@@ -797,7 +807,7 @@ class Register extends PageHookWidget {
       );
       return;
     }
-    if (context.app?.termsUrl != null && !form.get("terms", false)) {
+    if (context.app?.termsUrl != null && !context.get("terms", false)) {
       UIDialog.show(
         context,
         title: "Error".localize(),
@@ -840,13 +850,13 @@ class Register extends PageHookWidget {
   }
 }
 
-class PasswordReset extends PageHookWidget {
+class PasswordReset extends PageScopedWidget {
   const PasswordReset(this.config);
   final LoginModule config;
   @override
-  Widget build(BuildContext context) {
-    final form = useForm();
-    final emailFocus = useAutoFocusNode();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final form = ref.useForm();
+    final emailFocus = ref.useFocusNode("main");
 
     final color = config.color ?? Colors.white;
     final buttonColor = config.buttonColor ?? config.color ?? Colors.white;
@@ -918,7 +928,7 @@ class PasswordReset extends PageHookWidget {
                 onSaved: (value) {
                   context["email"] = value;
                 },
-                onSubmitted: (value) => _onSubmitted(context, form),
+                onSubmitted: (value) => _onSubmitted(context, ref, form),
               ),
               Divid(color: color.withOpacity(0.75)),
               const Space.height(24),
@@ -935,7 +945,7 @@ class PasswordReset extends PageHookWidget {
                     backgroundColor: buttonBackgroundColor,
                     borderColor: buttonColor,
                     icon: Icons.send,
-                    onPressed: () => _onSubmitted(context, form),
+                    onPressed: () => _onSubmitted(context, ref, form),
                   ),
                 ],
               ),
@@ -957,7 +967,11 @@ class PasswordReset extends PageHookWidget {
     return null;
   }
 
-  Future<void> _onSubmitted(BuildContext context, FormContext form) async {
+  Future<void> _onSubmitted(
+    BuildContext context,
+    WidgetRef ref,
+    FormContext form,
+  ) async {
     if (!form.validate()) {
       return;
     }

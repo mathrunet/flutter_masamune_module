@@ -128,15 +128,15 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
   DynamicMap toMap() => _$ChatModuleToMap(this);
 }
 
-class ChatModuleHome extends PageHookWidget {
+class ChatModuleHome extends PageScopedWidget {
   const ChatModuleHome(this.config);
   final ChatModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final now = useNow();
-    final user = useWatchUserDocumentModel(config.userPath);
-    final chat = useWatchCollectionModel(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final now = ref.useNow();
+    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final chat = ref.watchAsCollectionModel(
       config.chatRoomQuery?.value ??
           ModelQuery(
             config.queryPath,
@@ -147,7 +147,7 @@ class ChatModuleHome extends PageHookWidget {
     final membersPath =
         config.availableMemberQuery?.value ?? config.availableMemberPath;
     final members =
-        membersPath == null ? null : useWatchCollectionModel(membersPath);
+        membersPath == null ? null : ref.watchAsCollectionModel(membersPath);
     final filteredMembers = members?.where((m) {
       if (context.model?.userId == m.uid) {
         return false;
@@ -160,7 +160,7 @@ class ChatModuleHome extends PageHookWidget {
         return members.any((member) => member.toString() == m.uid);
       });
     }).toList();
-    final users = useWatchCollectionModel(
+    final users = ref.watchAsCollectionModel(
       ModelQuery(
         config.userPath,
         key: Const.uid,
@@ -186,7 +186,7 @@ class ChatModuleHome extends PageHookWidget {
           o.mergeListenable(a, convertKeys: (key) => "${Const.user}$key"),
       orElse: (o) => o,
     );
-    final controller = useNavigatorController(
+    final controller = ref.useNavigatorController(
       "/${config.routePath}/${chatWithUser.firstOrNull.get(Const.uid, "")}",
       (route) => chatWithUser.isEmpty,
     );
@@ -298,18 +298,18 @@ class ChatModuleHome extends PageHookWidget {
   }
 }
 
-class ChatModuleTimeline extends PageHookWidget {
+class ChatModuleTimeline extends PageScopedWidget {
   const ChatModuleTimeline(this.config);
   final ChatModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final now = useNow();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final now = ref.useNow();
     final userId = context.model?.userId;
-    final user = useWatchUserDocumentModel();
-    final chat = useWatchDocumentModel(
+    final user = ref.watchAsUserDocumentModel();
+    final chat = ref.watchAsDocumentModel(
         "${config.queryPath}/${context.get("chat_id", "")}");
-    final timeline = useWatchCollectionModel(
+    final timeline = ref.watchAsCollectionModel(
       ModelQuery(
               "${config.queryPath}/${context.get("chat_id", "")}/${config.queryPath}",
               order: ModelQueryOrder.desc,
@@ -319,7 +319,7 @@ class ChatModuleTimeline extends PageHookWidget {
     );
     timeline.sort((a, b) =>
         b.get(config.createdTimeKey, 0) - a.get(config.createdTimeKey, 0));
-    final users = useWatchCollectionModel(
+    final users = ref.watchAsCollectionModel(
       ModelQuery(
         config.userPath,
         key: Const.uid,
@@ -332,7 +332,7 @@ class ChatModuleTimeline extends PageHookWidget {
       apply: (o, a) => o.merge(a, convertKeys: (key) => "${Const.user}$key"),
       orElse: (o) => o,
     );
-    final members = useWatchCollectionModel(
+    final members = ref.watchAsCollectionModel(
       ModelQuery(
         config.userPath,
         key: Const.uid,
@@ -525,7 +525,7 @@ class ChatModuleTimeline extends PageHookWidget {
   }
 }
 
-class ChatModuleTimelineItem extends StatelessWidget {
+class ChatModuleTimelineItem extends ScopedWidget {
   const ChatModuleTimelineItem(
     this.config, {
     required this.data,
@@ -539,7 +539,7 @@ class ChatModuleTimelineItem extends StatelessWidget {
   final Color? backgroundColor;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final media = data.get(config.mediaKey, "");
     if (media.isNotEmpty) {
       final type = getPlatformMediaType(media);
@@ -596,13 +596,13 @@ class ChatModuleTimelineItem extends StatelessWidget {
   }
 }
 
-class ChatModuleMediaView extends PageHookWidget {
+class ChatModuleMediaView extends PageScopedWidget {
   const ChatModuleMediaView(this.config);
   final ChatModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final item = useWatchDocumentModel(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final item = ref.watchAsDocumentModel(
         "${config.queryPath}/${context.get("chat_id", "")}/${config.queryPath}/${context.get("timeline_id", "")}");
     final media = item.get(config.mediaKey, "");
     final type = getPlatformMediaType(media);
@@ -639,14 +639,14 @@ class ChatModuleMediaView extends PageHookWidget {
   }
 }
 
-class ChatModuleEdit extends PageHookWidget {
+class ChatModuleEdit extends PageScopedWidget {
   const ChatModuleEdit(this.config);
   final ChatModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final form = useForm();
-    final chat = useWatchDocumentModel(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final form = ref.useForm();
+    final chat = ref.watchAsDocumentModel(
         "${config.queryPath}/${context.get("chat_id", "")}");
     final name = chat.get(config.nameKey, "");
 
@@ -665,7 +665,7 @@ class ChatModuleEdit extends PageHookWidget {
             dense: true,
             allowEmpty: true,
             hintText: "Input %s".localize().format(["Title".localize()]),
-            controller: useMemoizedTextEditingController(name),
+            controller: ref.useTextEditingController(config.nameKey, name),
             onSaved: (value) {
               context[config.nameKey] = value;
             },

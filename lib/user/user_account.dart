@@ -91,11 +91,11 @@ class UserAccountModule extends UserWidgetModule {
   DynamicMap toMap() => _$UserAccountModuleToMap(this);
 }
 
-class UserAccountModuleHome extends PageHookWidget {
+class UserAccountModuleHome extends PageScopedWidget {
   const UserAccountModuleHome(this.config);
   final UserAccountModule config;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return UIScaffold(
       appBar: UIAppBar(
         title: Text(config.title ?? "Account".localize()),
@@ -109,12 +109,12 @@ class UserAccountModuleHome extends PageHookWidget {
   }
 }
 
-class UserAccountModuleContent extends StatelessWidget {
+class UserAccountModuleContent extends ScopedWidget {
   const UserAccountModuleContent(this.config);
   final UserAccountModule config;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final userId = context.get("user_id", context.model?.userId ?? "");
     final own = userId == context.model?.userId;
 
@@ -268,14 +268,14 @@ class UserAccountModuleContent extends StatelessWidget {
   }
 }
 
-class UserAccountModuleReauth extends PageHookWidget {
+class UserAccountModuleReauth extends PageScopedWidget {
   const UserAccountModuleReauth(this.config);
   final UserAccountModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final form = useForm();
-    final showPassword = useState<bool>(false);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final form = ref.useForm();
+    final showPassword = ref.useValueNotifier("showPassword", false);
 
     return UIScaffold(
       appBar: UIAppBar(
@@ -356,15 +356,17 @@ class UserAccountModuleReauth extends PageHookWidget {
   }
 }
 
-class UserAccountModuleEditEmail extends PageHookWidget {
+class UserAccountModuleEditEmail extends PageScopedWidget {
   const UserAccountModuleEditEmail(this.config);
   final UserAccountModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final form = useForm();
-    final controller =
-        useMemoizedTextEditingController(context.model?.email ?? "");
+  Widget build(BuildContext context, WidgetRef ref) {
+    final form = ref.useForm();
+    final controller = ref.useTextEditingController(
+      "email",
+      context.model?.email ?? "",
+    );
 
     return UIScaffold(
       appBar: UIAppBar(
@@ -437,13 +439,13 @@ class UserAccountModuleEditEmail extends PageHookWidget {
   }
 }
 
-class UserAccountModuleEditPassword extends PageHookWidget {
+class UserAccountModuleEditPassword extends PageScopedWidget {
   const UserAccountModuleEditPassword(this.config);
   final UserAccountModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final form = useForm();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final form = ref.useForm();
 
     return UIScaffold(
       appBar: UIAppBar(
@@ -537,15 +539,15 @@ class UserAccountModuleEditPassword extends PageHookWidget {
   }
 }
 
-class UserAccountModuleBlockList extends PageHookWidget {
+class UserAccountModuleBlockList extends PageScopedWidget {
   const UserAccountModuleBlockList(this.config);
   final UserAccountModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final blocks = useWatchCollectionModel(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final blocks = ref.watchAsCollectionModel(
         "${config.queryPath}/${context.model?.userId}/${config.blockPath}");
-    final users = useWatchCollectionModel(
+    final users = ref.watchAsCollectionModel(
       ModelQuery(
         config.queryPath,
         key: Const.uid,

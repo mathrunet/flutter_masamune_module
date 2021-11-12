@@ -1,6 +1,6 @@
 import 'package:masamune_module/masamune_module.dart';
 
-class CalendarModuleUserOrder extends PageHookWidget {
+class CalendarModuleUserOrder extends PageScopedWidget {
   const CalendarModuleUserOrder({
     required this.title,
     this.subtitle,
@@ -25,18 +25,18 @@ class CalendarModuleUserOrder extends PageHookWidget {
   final String roleKey;
 
   @override
-  Widget build(BuildContext context) {
-    final now = useNow();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final now = ref.useNow();
     final orderList = <DynamicMap>[];
-    final user = useWatchUserDocumentModel();
+    final user = ref.watchAsUserDocumentModel();
     final role = context.roles.firstWhereOrNull(
       (item) => item.id == user.get(roleKey, ""),
     );
     final date = context.get("date_id", now.toDateID()).toDateTime();
-    final users = useWatchCollectionModel(userQuery?.value ?? userPath);
+    final users = ref.watchAsCollectionModel(userQuery?.value ?? userPath);
 
     final canEdit = permission.canEdit(role?.id ?? "");
-    final orders = useWatchCollectionModel(queryPath);
+    final orders = ref.watchAsCollectionModel(queryPath);
     orders.sort((a, b) => b.get(startTimeKey, 0) - a.get(startTimeKey, 0));
     final order = orders.firstWhereOrNull((element) {
           return element.get(startTimeKey, 0) <= date.millisecondsSinceEpoch;

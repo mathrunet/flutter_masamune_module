@@ -154,11 +154,11 @@ class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
   DynamicMap toMap() => _$GalleryModuleToMap(this);
 }
 
-class GalleryModuleHome extends PageHookWidget {
+class GalleryModuleHome extends PageScopedWidget {
   const GalleryModuleHome(this.config);
   final GalleryModule config;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     switch (config.galleryType) {
       case GalleryType.tile:
         return config.tileView ?? GalleryModuleTileView(config);
@@ -172,13 +172,14 @@ class GalleryModuleHome extends PageHookWidget {
   }
 }
 
-class GalleryModuleTileViewWithList extends PageHookWidget {
+class GalleryModuleTileViewWithList extends PageScopedWidget {
   const GalleryModuleTileViewWithList(this.config);
   final GalleryModule config;
 
-  List<GroupConfig> _categories(BuildContext context) {
+  List<GroupConfig> _categories(BuildContext context, WidgetRef ref) {
     if (config.categoryQuery != null) {
-      final categories = useWatchCollectionModel(config.categoryQuery!.value);
+      final categories =
+          ref.watchAsCollectionModel(config.categoryQuery!.value);
       return categories.mapAndRemoveEmpty((item) =>
           GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
         ..addAll(config.categoryConfig);
@@ -187,10 +188,10 @@ class GalleryModuleTileViewWithList extends PageHookWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final user = useWatchUserDocumentModel(config.userPath);
-    final list = _categories(context);
-    final controller = useNavigatorController(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final list = _categories(context, ref);
+    final controller = ref.useNavigatorController(
       "/${config.routePath}/${list.firstOrNull?.id}",
     );
 
@@ -230,13 +231,14 @@ class GalleryModuleTileViewWithList extends PageHookWidget {
   }
 }
 
-class GalleryModuleTileViewWithTab extends PageHookWidget {
+class GalleryModuleTileViewWithTab extends PageScopedWidget {
   const GalleryModuleTileViewWithTab(this.config);
   final GalleryModule config;
 
-  List<GroupConfig> _categories(BuildContext context) {
+  List<GroupConfig> _categories(BuildContext context, WidgetRef ref) {
     if (config.categoryQuery != null) {
-      final categories = useWatchCollectionModel(config.categoryQuery!.value);
+      final categories =
+          ref.watchAsCollectionModel(config.categoryQuery!.value);
       return categories.mapAndRemoveEmpty((item) =>
           GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
         ..addAll(config.categoryConfig);
@@ -245,11 +247,11 @@ class GalleryModuleTileViewWithTab extends PageHookWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final user = useWatchUserDocumentModel(config.userPath);
-    final list = _categories(context);
-    final tab = useTab(list);
-    final controller = useNavigatorController(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final list = _categories(context, ref);
+    final tab = ref.useTab(list);
+    final controller = ref.useNavigatorController(
       "/${config.routePath}/${config.categoryConfig.firstOrNull?.id}",
     );
 
@@ -283,14 +285,14 @@ class GalleryModuleTileViewWithTab extends PageHookWidget {
   }
 }
 
-class GalleryModuleTileView extends PageHookWidget {
+class GalleryModuleTileView extends PageScopedWidget {
   const GalleryModuleTileView(this.config);
   final GalleryModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final user = useWatchUserDocumentModel(config.userPath);
-    final controller = useNavigatorController(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final controller = ref.useNavigatorController(
       "/${config.routePath}/${config.categoryConfig.firstOrNull?.id}",
     );
 
@@ -318,13 +320,14 @@ class GalleryModuleTileView extends PageHookWidget {
   }
 }
 
-class GalleryModuleGridView extends PageHookWidget {
+class GalleryModuleGridView extends PageScopedWidget {
   const GalleryModuleGridView(this.config);
   final GalleryModule config;
 
-  List<GroupConfig> _categories(BuildContext context) {
+  List<GroupConfig> _categories(BuildContext context, WidgetRef ref) {
     if (config.categoryQuery != null) {
-      final categories = useWatchCollectionModel(config.categoryQuery!.value);
+      final categories =
+          ref.watchAsCollectionModel(config.categoryQuery!.value);
       return categories.mapAndRemoveEmpty((item) =>
           GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
         ..addAll(config.categoryConfig);
@@ -333,8 +336,8 @@ class GalleryModuleGridView extends PageHookWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final list = _categories(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final list = _categories(context, ref);
     final category = list
         .firstWhereOrNull((item) => item.id == context.get("category_id", ""));
 
@@ -359,17 +362,17 @@ class GalleryModuleGridView extends PageHookWidget {
   }
 }
 
-class GalleryModuleGrid extends HookWidget {
+class GalleryModuleGrid extends ScopedWidget {
   const GalleryModuleGrid(this.config, {this.category});
   final GalleryModule config;
   final GroupConfig? category;
 
-  DynamicCollectionModel _gallery(BuildContext context) {
+  DynamicCollectionModel _gallery(BuildContext context, WidgetRef ref) {
     if (category == null) {
-      return useWatchCollectionModel(
+      return ref.watchAsCollectionModel(
           config.contentQuery?.value ?? config.queryPath);
     }
-    return useWatchCollectionModel(
+    return ref.watchAsCollectionModel(
       category!.query?.value ??
           config.contentQuery?.value ??
           ModelQuery(
@@ -381,8 +384,8 @@ class GalleryModuleGrid extends HookWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final gallery = _gallery(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final gallery = _gallery(context, ref);
     final filtered = gallery.where(
       (item) {
         if (category == null) {
@@ -450,17 +453,17 @@ class GalleryModuleGrid extends HookWidget {
   }
 }
 
-class GalleryModuleMediaDetail extends PageHookWidget {
+class GalleryModuleMediaDetail extends PageScopedWidget {
   const GalleryModuleMediaDetail(this.config);
   final GalleryModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final user = useWatchUserDocumentModel(config.userPath);
-    final item = useWatchDocumentModel(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final item = ref.watchAsDocumentModel(
         "${config.queryPath}/${context.get("media_id", "")}");
 
-    final now = useNow();
+    final now = ref.useNow();
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final media = item.get(config.mediaKey, "");
@@ -560,14 +563,14 @@ class GalleryModuleMediaDetail extends PageHookWidget {
   }
 }
 
-class GalleryModuleMediaView extends PageHookWidget {
+class GalleryModuleMediaView extends PageScopedWidget {
   const GalleryModuleMediaView(this.config);
   final GalleryModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final user = useWatchUserDocumentModel(config.userPath);
-    final item = useWatchDocumentModel(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final item = ref.watchAsDocumentModel(
         "${config.queryPath}/${context.get("media_id", "")}");
     final name = item.get(config.nameKey, "");
     final media = item.get(config.mediaKey, "");
@@ -619,13 +622,14 @@ class GalleryModuleMediaView extends PageHookWidget {
   }
 }
 
-class GalleryModuleEdit extends PageHookWidget {
+class GalleryModuleEdit extends PageScopedWidget {
   const GalleryModuleEdit(this.config);
   final GalleryModule config;
 
-  List<GroupConfig> _categories(BuildContext context) {
+  List<GroupConfig> _categories(BuildContext context, WidgetRef ref) {
     if (config.categoryQuery != null) {
-      final categories = useWatchCollectionModel(config.categoryQuery!.value);
+      final categories =
+          ref.watchAsCollectionModel(config.categoryQuery!.value);
       return categories.mapAndRemoveEmpty((item) =>
           GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
         ..addAll(config.categoryConfig);
@@ -634,14 +638,14 @@ class GalleryModuleEdit extends PageHookWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final form = useForm("media_id");
-    final user = useWatchUserDocumentModel(config.userPath);
-    final item = useWatchDocumentModel("${config.queryPath}/${form.uid}");
+  Widget build(BuildContext context, WidgetRef ref) {
+    final form = ref.useForm("media_id");
+    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final item = ref.watchAsDocumentModel("${config.queryPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final media = item.get(config.mediaKey, "");
-    final categories = _categories(context);
+    final categories = _categories(context, ref);
 
     return UIScaffold(
       waitTransition: true,
@@ -682,7 +686,8 @@ class GalleryModuleEdit extends PageHookWidget {
           FormItemMedia(
             height: 200,
             dense: true,
-            controller: useMemoizedTextEditingController(
+            controller: ref.useTextEditingController(
+              config.mediaKey,
               form.select(media, ""),
             ),
             errorText: "No input %s".localize().format(["Image".localize()]),
@@ -706,7 +711,10 @@ class GalleryModuleEdit extends PageHookWidget {
             dense: true,
             hintText: "Input %s".localize().format(["Title".localize()]),
             errorText: "No input %s".localize().format(["Title".localize()]),
-            controller: useMemoizedTextEditingController(form.select(name, "")),
+            controller: ref.useTextEditingController(
+              config.nameKey,
+              form.select(name, ""),
+            ),
             onSaved: (value) {
               context[config.nameKey] = value;
             },
@@ -719,7 +727,10 @@ class GalleryModuleEdit extends PageHookWidget {
             maxLines: 5,
             hintText: "Input %s".localize().format(["Description".localize()]),
             allowEmpty: true,
-            controller: useMemoizedTextEditingController(form.select(text, "")),
+            controller: ref.useTextEditingController(
+              config.textKey,
+              form.select(text, ""),
+            ),
             onSaved: (value) {
               context[config.textKey] = value;
             },
@@ -730,7 +741,8 @@ class GalleryModuleEdit extends PageHookWidget {
               dense: true,
               // labelText: "Category".localize(),
               hintText: "Input %s".localize().format(["Category".localize()]),
-              controller: useMemoizedTextEditingController(
+              controller: ref.useTextEditingController(
+                config.categoryKey,
                 form.select(
                   item.get(config.categoryKey, categories.first.id),
                   categories.first.id,

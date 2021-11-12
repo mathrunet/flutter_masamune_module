@@ -96,17 +96,17 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
   DynamicMap toMap() => _$PostModuleToMap(this);
 }
 
-class PostModuleHome extends PageHookWidget {
+class PostModuleHome extends PageScopedWidget {
   const PostModuleHome(this.config);
   final PostModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final now = useNow();
-    final user = useWatchUserDocumentModel(config.userPath);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final now = ref.useNow();
+    final user = ref.watchAsUserDocumentModel(config.userPath);
     final post =
-        useWatchCollectionModel(config.postQuery?.value ?? config.queryPath);
-    final users = useWatchCollectionModel(
+        ref.watchAsCollectionModel(config.postQuery?.value ?? config.queryPath);
+    final users = ref.watchAsCollectionModel(
       ModelQuery(
         config.userPath,
         key: Const.uid,
@@ -119,7 +119,7 @@ class PostModuleHome extends PageHookWidget {
       apply: (o, a) => o.merge(a, convertKeys: (key) => "${Const.user}$key"),
       orElse: (o) => o,
     );
-    final controller = useNavigatorController(
+    final controller = ref.useNavigatorController(
       "/${config.routePath}/${postWithUser.firstOrNull.get(Const.uid, "")}",
       (route) => postWithUser.isEmpty,
     );
@@ -183,16 +183,16 @@ class PostModuleHome extends PageHookWidget {
   }
 }
 
-class PostModuleView extends PageHookWidget {
+class PostModuleView extends PageScopedWidget {
   const PostModuleView(this.config);
   final PostModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final user = useWatchUserDocumentModel(config.userPath);
-    final item = useWatchDocumentModel(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final item = ref.watchAsDocumentModel(
         "${config.queryPath}/${context.get("post_id", "")}");
-    final now = useNow();
+    final now = ref.useNow();
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final createdTime =
@@ -220,14 +220,15 @@ class PostModuleView extends PageHookWidget {
 
     switch (editingType) {
       case PostEditingType.wysiwyg:
-        final controller = useMemoized(
+        final controller = ref.useMemoized(
+          "controller",
           () => text.isEmpty
               ? QuillController.basic()
               : QuillController(
                   document: Document.fromJson(jsonDecode(text)),
                   selection: const TextSelection.collapsed(offset: 0),
                 ),
-          [text],
+          keys: [text],
         );
 
         return UIScaffold(
@@ -249,7 +250,7 @@ class PostModuleView extends PageHookWidget {
               QuillEditor(
                 scrollController: ScrollController(),
                 scrollable: false,
-                focusNode: useFocusNode(),
+                focusNode: ref.useFocusNode("text", false),
                 autoFocus: false,
                 controller: controller,
                 placeholder: "Text".localize(),
@@ -289,7 +290,7 @@ class PostModuleView extends PageHookWidget {
                 text,
                 fontSize: 16,
                 onTapLink: (url) {
-                  context.open(url);
+                  ref.open(url);
                 },
               )
             ],
@@ -299,16 +300,16 @@ class PostModuleView extends PageHookWidget {
   }
 }
 
-class PostModuleEdit extends PageHookWidget {
+class PostModuleEdit extends PageScopedWidget {
   const PostModuleEdit(this.config);
   final PostModule config;
 
   @override
-  Widget build(BuildContext context) {
-    final form = useForm("post_id");
-    final now = useNow();
-    final user = useWatchUserDocumentModel(config.userPath);
-    final item = useWatchDocumentModel("${config.queryPath}/${form.uid}");
+  Widget build(BuildContext context, WidgetRef ref) {
+    final form = ref.useForm("post_id");
+    final now = ref.useNow();
+    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final item = ref.watchAsDocumentModel("${config.queryPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final dateTime =
@@ -357,7 +358,7 @@ class PostModuleEdit extends PageHookWidget {
         hintText: "Title".localize(),
         errorText: "No input %s".localize().format(["Title".localize()]),
         subColor: context.theme.disabledColor,
-        controller: useMemoizedTextEditingController(name),
+        controller: ref.useTextEditingController(config.nameKey, name),
         onSaved: (value) {
           context[config.nameKey] = value;
         },
@@ -367,8 +368,10 @@ class PostModuleEdit extends PageHookWidget {
         dense: true,
         hintText: "Post time".localize(),
         errorText: "No input %s".localize().format(["Post time".localize()]),
-        controller: useMemoizedTextEditingController(
-            FormItemDateTimeField.formatDateTime(dateTime)),
+        controller: ref.useTextEditingController(
+          config.createdTimeKey,
+          FormItemDateTimeField.formatDateTime(dateTime),
+        ),
         onSaved: (value) {
           context[config.createdTimeKey] =
               value?.millisecondsSinceEpoch ?? now.millisecondsSinceEpoch;
@@ -379,14 +382,15 @@ class PostModuleEdit extends PageHookWidget {
 
     switch (editingType) {
       case PostEditingType.wysiwyg:
-        final controller = useMemoized(
+        final controller = ref.useMemoized(
+          "controller",
           () => text.isEmpty
               ? QuillController.basic()
               : QuillController(
                   document: Document.fromJson(jsonDecode(text)),
                   selection: const TextSelection.collapsed(offset: 0),
                 ),
-          [text],
+          keys: [text],
         );
 
         return UIScaffold(
@@ -423,7 +427,7 @@ class PostModuleEdit extends PageHookWidget {
                 child: QuillEditor(
                   scrollController: ScrollController(),
                   scrollable: true,
-                  focusNode: useFocusNode(),
+                  focusNode: ref.useFocusNode("text", false),
                   autoFocus: false,
                   controller: controller,
                   placeholder: "Text".localize(),
@@ -492,7 +496,8 @@ class PostModuleEdit extends PageHookWidget {
                   keyboardType: TextInputType.multiline,
                   hintText: "Text".localize(),
                   subColor: context.theme.disabledColor,
-                  controller: useMemoizedTextEditingController(text),
+                  controller:
+                      ref.useTextEditingController(config.textKey, text),
                   onSaved: (value) {
                     context[config.textKey] = value;
                   },
