@@ -275,7 +275,7 @@ class UserAccountModuleReauth extends PageScopedWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final form = ref.useForm();
-    final showPassword = ref.useValueNotifier("showPassword", false);
+    final showPassword = ref.state("showPassword", false);
 
     return UIScaffold(
       appBar: UIAppBar(

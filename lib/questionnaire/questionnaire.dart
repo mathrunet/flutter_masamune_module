@@ -744,7 +744,7 @@ class QuestionnaireModuleQuestionEdit extends PageScopedWidget {
     final name = item.get(config.nameKey, "");
     final type = item.get(config.typeKey, Const.text);
     final required = item.get(config.requiredKey, false);
-    final view = ref.useValueNotifier("viewType", type);
+    final view = ref.state("viewType", type);
     final selection = item.get(config.selectionKey, {});
     final selectionTextEditingControllers =
         ref.useTextEditingControllerMap("selection", selection);

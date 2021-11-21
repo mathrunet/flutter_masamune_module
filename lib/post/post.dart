@@ -220,7 +220,7 @@ class PostModuleView extends PageScopedWidget {
 
     switch (editingType) {
       case PostEditingType.wysiwyg:
-        final controller = ref.useMemoized(
+        final controller = ref.cache(
           "controller",
           () => text.isEmpty
               ? QuillController.basic()
@@ -382,7 +382,7 @@ class PostModuleEdit extends PageScopedWidget {
 
     switch (editingType) {
       case PostEditingType.wysiwyg:
-        final controller = ref.useMemoized(
+        final controller = ref.cache(
           "controller",
           () => text.isEmpty
               ? QuillController.basic()

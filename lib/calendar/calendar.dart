@@ -37,7 +37,10 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.endTimeKey = Const.endTime,
     this.allDayKey = "allDay",
     this.detailLabel = "Detail",
+    this.noteLabel = "Note",
     this.commentLabel = "Comment",
+    this.noteKey = "note",
+    this.enableNote = false,
     this.editingType = CalendarEditingType.planeText,
     this.markerType = UICalendarMarkerType.count,
     this.showAddingButton = true,
@@ -138,6 +141,15 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
   /// 詳細のラベル。
   final String detailLabel;
 
+  /// ノートのラベル。
+  final String noteLabel;
+
+  /// ノートのキー。
+  final String noteKey;
+
+  /// カレンダーのノートを記載する場合True.
+  final bool enableNote;
+
   /// コメントのラベル。
   final String commentLabel;
 
@@ -169,7 +181,7 @@ class CalendarModuleHome extends PageScopedWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selected = ref.useValueNotifier("selected", DateTime.now());
+    final selected = ref.state("selected", DateTime.now());
     final events = ref.watchAsCollectionModel(config.queryPath);
     final user = ref.watchAsUserDocumentModel(config.userPath);
 
@@ -300,6 +312,10 @@ class CalendarModuleDetail extends PageScopedWidget {
         "${config.userPath}/${event.get(config.userKey, uuid)}");
     final name = event.get(config.nameKey, "");
     final text = event.get(config.textKey, "");
+    final noteValue = event.get(config.noteKey, "");
+    final note = noteValue.isEmpty
+        ? "No %s".localize().format([config.noteLabel.localize()])
+        : noteValue;
     final allDay = event.get(config.allDayKey, false);
     final startTime = event.getAsDateTime(config.startTimeKey);
     final authorName = author.get(config.nameKey, "");
@@ -332,7 +348,7 @@ class CalendarModuleDetail extends PageScopedWidget {
       orElse: (o) => o,
     );
 
-    final editingType = text.isNotEmpty && !text.startsWith(RegExp(r"^(\[|\{)"))
+    final editingType = note.isNotEmpty && !note.startsWith(RegExp(r"^(\[|\{)"))
         ? CalendarEditingType.planeText
         : config.editingType;
 
@@ -377,6 +393,16 @@ class CalendarModuleDetail extends PageScopedWidget {
       const Space.height(16),
       DividHeadline(config.detailLabel.localize()),
       const Space.height(16),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: UIMarkdown(
+          text,
+          fontSize: 16,
+          onTapLink: (url) {
+            ref.open(url);
+          },
+        ),
+      ),
     ];
 
     final footer = [
@@ -414,17 +440,40 @@ class CalendarModuleDetail extends PageScopedWidget {
       const Space.height(16),
     ];
 
+    if (!config.enableNote) {
+      return UIScaffold(
+        waitTransition: true,
+        appBar: appBar,
+        body: UIListView(
+          children: [
+            ...header,
+            ...footer,
+            ...comments.mapListenable((item) {
+              return CommentTile(
+                avatar: NetworkOrAsset.image(
+                    item.get("${Const.user}${config.imageKey}", "")),
+                name: item.get("${Const.user}${config.nameKey}", ""),
+                date: item.getAsDateTime(Const.time),
+                text: item.get(config.textKey, ""),
+              );
+            }),
+            const Space.height(24),
+          ],
+        ),
+      );
+    }
+
     switch (editingType) {
       case CalendarEditingType.wysiwyg:
-        final controller = ref.useMemoized(
+        final controller = ref.cache(
           "controller",
-          () => text.isEmpty
+          () => note.isEmpty
               ? QuillController.basic()
               : QuillController(
-                  document: Document.fromJson(jsonDecode(text)),
+                  document: Document.fromJson(jsonDecode(note)),
                   selection: const TextSelection.collapsed(offset: 0),
                 ),
-          keys: [text],
+          keys: [note],
         );
 
         return UIScaffold(
@@ -433,13 +482,16 @@ class CalendarModuleDetail extends PageScopedWidget {
           body: UIListView(
             children: [
               ...header,
+              const Space.height(16),
+              DividHeadline(config.noteLabel.localize()),
+              const Space.height(16),
               QuillEditor(
                 scrollController: ScrollController(),
                 scrollable: false,
-                focusNode: ref.useFocusNode("text", false),
+                focusNode: ref.useFocusNode("note", false),
                 autoFocus: false,
                 controller: controller,
-                placeholder: "Text".localize(),
+                placeholder: config.noteLabel.localize(),
                 readOnly: true,
                 expands: false,
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -473,10 +525,13 @@ class CalendarModuleDetail extends PageScopedWidget {
           body: UIListView(
             children: [
               ...header,
+              const Space.height(16),
+              DividHeadline(config.noteLabel.localize()),
+              const Space.height(16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: UIMarkdown(
-                  text,
+                  note,
                   fontSize: 16,
                   onTapLink: (url) {
                     ref.open(url);
@@ -600,24 +655,36 @@ class CalendarModuleEdit extends PageScopedWidget {
     final item = ref.watchAsDocumentModel("${config.queryPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
+    final note = item.get(config.noteKey, "");
     final startTime = item.getAsDateTime(config.startTimeKey, now);
     final allDay = item.get(config.allDayKey, false);
     final endTimeValue = item.get<int?>(config.endTimeKey, null);
     final endTime = endTimeValue != null
         ? DateTime.fromMillisecondsSinceEpoch(endTimeValue)
         : null;
-    final allDayState = ref.useValueNotifier("allDay", allDay);
+    final allDayState = ref.state("allDay", allDay);
     final allDayController =
         ref.useTextEditingController("allDay", allDay.toString());
-    final startTimeController =
-        ref.useTextEditingController("startTime", startTime.toString());
+    final startTimeController = ref.useTextEditingController(
+        "startTime",
+        allDayState.value
+            ? FormItemDateTimeField.formatDate(startTime.millisecondsSinceEpoch)
+            : FormItemDateTimeField.formatDateTime(
+                startTime.millisecondsSinceEpoch));
+    final endTimeOrStartTime =
+        endTime ?? startTime.add(const Duration(hours: 1));
     final endTimeController = ref.useTextEditingController(
       "endTime",
-      (endTime ?? startTime.add(const Duration(hours: 1))).toString(),
+      allDayState.value
+          ? FormItemDateTimeField.formatDate(
+              endTimeOrStartTime.millisecondsSinceEpoch)
+          : FormItemDateTimeField.formatDateTime(
+              endTimeOrStartTime.millisecondsSinceEpoch),
     );
     final titleController = ref.useTextEditingController("title", name);
+    final textController = ref.useTextEditingController("text", text);
 
-    final editingType = text.isNotEmpty && !text.startsWith(RegExp(r"^(\[|\{)"))
+    final editingType = note.isNotEmpty && !note.startsWith(RegExp(r"^(\[|\{)"))
         ? CalendarEditingType.planeText
         : config.editingType;
 
@@ -677,12 +744,12 @@ class CalendarModuleEdit extends PageScopedWidget {
       DividHeadline("Start date".localize()),
       FormItemDateTimeField(
         dense: true,
-        errorText: "No input %s".localize().format(["Title".localize()]),
+        errorText: "No input %s".localize().format(["Start date".localize()]),
         type: allDayState.value
             ? FormItemDateTimeFieldPickerType.date
             : FormItemDateTimeFieldPickerType.dateTime,
         controller: startTimeController,
-        format: allDayState.value ? "yyyy/MM/dd(E)" : "yyyy/MM/dd(E) HH:mm",
+        // format: allDayState.value ? "yyyy/MM/dd(E)" : "yyyy/MM/dd(E) HH:mm",
         onSaved: (value) {
           value ??= now;
           context[config.startTimeKey] = value.millisecondsSinceEpoch;
@@ -696,12 +763,21 @@ class CalendarModuleEdit extends PageScopedWidget {
             dense: true,
             controller: endTimeController,
             allowEmpty: true,
-            format: "yyyy/MM/dd(E) HH:mm",
+            // format: "yyyy/MM/dd(E) HH:mm",
             validator: (value) {
               if (value == null || allDayState.value) {
                 return null;
               }
-              final start = DateTime.parse(startTimeController.text);
+              final start = allDayState.value
+                  ? FormItemDateTimeField.tryParseFromDate(
+                      startTimeController.text)
+                  : FormItemDateTimeField.tryParseFromDateTime(
+                      startTimeController.text);
+              if (start == null) {
+                return "No input %s"
+                    .localize()
+                    .format(["Start date".localize()]);
+              }
               if (start.millisecondsSinceEpoch >=
                   value.millisecondsSinceEpoch) {
                 return "The end date and time must be a time after the start date and time."
@@ -726,20 +802,74 @@ class CalendarModuleEdit extends PageScopedWidget {
           context[config.nameKey] = value ?? "";
         },
       ),
-      const Divid(),
+      DividHeadline(config.detailLabel.localize()),
+      FormItemTextField(
+        dense: true,
+        allowEmpty: true,
+        keyboardType: TextInputType.multiline,
+        expands: !config.enableNote,
+        subColor: context.theme.disabledColor,
+        controller: textController,
+        onSaved: (value) {
+          context[config.textKey] = value ?? "";
+        },
+      ),
     ];
+
+    if (!config.enableNote) {
+      return UIScaffold(
+        waitTransition: true,
+        appBar: appBar,
+        body: FormBuilder(
+          key: form.key,
+          padding: const EdgeInsets.all(0),
+          type: FormBuilderType.listView,
+          children: header,
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () async {
+            if (!form.validate()) {
+              return;
+            }
+            try {
+              final allDay = context.get(config.allDayKey, false);
+              item[config.nameKey] = context.get(config.nameKey, "");
+              item[config.textKey] = context.get(config.textKey, "");
+              item[config.allDayKey] = allDay;
+              item[config.userKey] = user.uid;
+              item[config.startTimeKey] =
+                  context.get(config.startTimeKey, now.millisecondsSinceEpoch);
+              item[config.endTimeKey] =
+                  allDay ? null : context.get<int?>(config.endTimeKey, null);
+              await context.model?.saveDocument(item).showIndicator(context);
+              context.navigator.pop();
+            } catch (e) {
+              UIDialog.show(
+                context,
+                title: "Error".localize(),
+                text: "%s is not completed."
+                    .localize()
+                    .format(["Editing".localize()]),
+              );
+            }
+          },
+          label: Text("Submit".localize()),
+          icon: const Icon(Icons.check),
+        ),
+      );
+    }
 
     switch (editingType) {
       case CalendarEditingType.wysiwyg:
-        final controller = ref.useMemoized(
+        final controller = ref.cache(
           "controller",
-          () => text.isEmpty
+          () => note.isEmpty
               ? QuillController.basic()
               : QuillController(
-                  document: Document.fromJson(jsonDecode(text)),
+                  document: Document.fromJson(jsonDecode(note)),
                   selection: const TextSelection.collapsed(offset: 0),
                 ),
-          keys: [text],
+          keys: [note],
         );
 
         return UIScaffold(
@@ -751,6 +881,7 @@ class CalendarModuleEdit extends PageScopedWidget {
             type: FormBuilderType.listView,
             children: [
               ...header,
+              const Divid(),
               Theme(
                 data: context.theme.copyWith(
                     canvasColor: context.theme.scaffoldBackgroundColor),
@@ -776,10 +907,10 @@ class CalendarModuleEdit extends PageScopedWidget {
                 child: QuillEditor(
                   scrollController: ScrollController(),
                   scrollable: true,
-                  focusNode: ref.useFocusNode("text"),
+                  focusNode: ref.useFocusNode("note"),
                   autoFocus: false,
                   controller: controller,
-                  placeholder: "Text".localize(),
+                  placeholder: config.noteLabel.localize(),
                   readOnly: false,
                   expands: false,
                   padding: const EdgeInsets.all(12),
@@ -803,7 +934,8 @@ class CalendarModuleEdit extends PageScopedWidget {
               try {
                 final allDay = context.get(config.allDayKey, false);
                 item[config.nameKey] = context.get(config.nameKey, "");
-                item[config.textKey] =
+                item[config.textKey] = context.get(config.textKey, "");
+                item[config.noteKey] =
                     jsonEncode(controller.document.toDelta().toJson());
                 item[config.allDayKey] = allDay;
                 item[config.userKey] = user.uid;
@@ -837,6 +969,7 @@ class CalendarModuleEdit extends PageScopedWidget {
             type: FormBuilderType.listView,
             children: [
               ...header,
+              const Divid(),
               SizedBox(
                 height: (context.mediaQuery.size.height -
                         context.mediaQuery.viewInsets.bottom -
@@ -847,11 +980,11 @@ class CalendarModuleEdit extends PageScopedWidget {
                   expands: true,
                   textAlignVertical: TextAlignVertical.top,
                   keyboardType: TextInputType.multiline,
-                  hintText: "Text".localize(),
+                  hintText: config.noteLabel.localize(),
                   subColor: context.theme.disabledColor,
-                  controller: ref.useTextEditingController("text", text),
+                  controller: ref.useTextEditingController("note", note),
                   onSaved: (value) {
-                    context[config.textKey] = value;
+                    context[config.noteKey] = value;
                   },
                 ),
               ),
@@ -866,6 +999,7 @@ class CalendarModuleEdit extends PageScopedWidget {
                 final allDay = context.get(config.allDayKey, false);
                 item[config.nameKey] = context.get(config.nameKey, "");
                 item[config.textKey] = context.get(config.textKey, "");
+                item[config.noteKey] = context.get(config.noteKey, "");
                 item[config.allDayKey] = allDay;
                 item[config.userKey] = user.uid;
                 item[config.startTimeKey] = context.get(

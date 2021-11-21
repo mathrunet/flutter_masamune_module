@@ -360,7 +360,7 @@ class Login extends PageScopedWidget {
     final form = ref.useForm();
     final emailFocus = ref.useFocusNode("email");
     final passFocus = ref.useFocusNode("pass");
-    final showPassword = ref.useValueNotifier("showPassword", false);
+    final showPassword = ref.state("showPassword", false);
 
     final color = config.color ?? Colors.white;
     final buttonColor = config.buttonColor ?? config.color ?? Colors.white;
@@ -559,9 +559,8 @@ class Register extends PageScopedWidget {
     final emailFocus = ref.useFocusNode("email");
     final passFocus = ref.useFocusNode("pass");
     final passConfirmFocus = ref.useFocusNode("passConfirm");
-    final showPassword = ref.useValueNotifier("showPassword", false);
-    final showPasswordConfirm =
-        ref.useValueNotifier("showPasswordConfirm", false);
+    final showPassword = ref.state("showPassword", false);
+    final showPasswordConfirm = ref.state("showPasswordConfirm", false);
     final role = context.roles.length <= 1
         ? context.roles.first
         : context.roles
