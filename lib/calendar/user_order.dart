@@ -28,15 +28,15 @@ class CalendarModuleUserOrder extends PageScopedWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final now = ref.useNow();
     final orderList = <DynamicMap>[];
-    final user = ref.watchAsUserDocumentModel();
+    final user = ref.watchUserDocumentModel();
     final role = context.roles.firstWhereOrNull(
       (item) => item.id == user.get(roleKey, ""),
     );
     final date = context.get("date_id", now.toDateID()).toDateTime();
-    final users = ref.watchAsCollectionModel(userQuery?.value ?? userPath);
+    final users = ref.watchCollectionModel(userQuery?.value ?? userPath);
 
     final canEdit = permission.canEdit(role?.id ?? "");
-    final orders = ref.watchAsCollectionModel(queryPath);
+    final orders = ref.watchCollectionModel(queryPath);
     orders.sort((a, b) => b.get(startTimeKey, 0) - a.get(startTimeKey, 0));
     final order = orders.firstWhereOrNull((element) {
           return element.get(startTimeKey, 0) <= date.millisecondsSinceEpoch;

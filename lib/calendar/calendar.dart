@@ -182,8 +182,8 @@ class CalendarModuleHome extends PageScopedWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selected = ref.state("selected", DateTime.now());
-    final events = ref.watchAsCollectionModel(config.queryPath);
-    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final events = ref.watchCollectionModel(config.queryPath);
+    final user = ref.watchUserDocumentModel(config.userPath);
 
     return UIScaffold(
       waitTransition: true,
@@ -231,13 +231,13 @@ class CalendarModuleDayView extends PageScopedWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final now = ref.useNow();
-    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final user = ref.watchUserDocumentModel(config.userPath);
     final date = context.get("date_id", now.toDateID()).toDateTime();
     final startTime = date;
     final endTime = date.add(const Duration(days: 1));
 
     final events = ref
-        .watchAsCollectionModel(config.queryPath)
+        .watchCollectionModel(config.queryPath)
         .where(
           (element) => _inEvent(
             sourceStartTime: element.get(config.startTimeKey, 0),
@@ -305,10 +305,10 @@ class CalendarModuleDetail extends PageScopedWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchAsUserDocumentModel(config.userPath);
-    final event = ref.watchAsDocumentModel(
+    final user = ref.watchUserDocumentModel(config.userPath);
+    final event = ref.watchDocumentModel(
         "${config.queryPath}/${context.get("event_id", "")}");
-    final author = ref.watchAsDocumentModel(
+    final author = ref.watchDocumentModel(
         "${config.userPath}/${event.get(config.userKey, uuid)}");
     final name = event.get(config.nameKey, "");
     final text = event.get(config.textKey, "");
@@ -326,14 +326,14 @@ class CalendarModuleDetail extends PageScopedWidget {
     final userId = context.model?.userId;
     final commentController = ref.useTextEditingController("comment");
 
-    final _comments = ref.watchAsCollectionModel(
+    final _comments = ref.watchCollectionModel(
       ModelQuery(
               "${config.queryPath}/${context.get("event_id", "")}/${config.commentPath}",
               order: ModelQueryOrder.desc,
               orderBy: Const.time)
           .value,
     );
-    final _commentAuthor = ref.watchAsCollectionModel(
+    final _commentAuthor = ref.watchCollectionModel(
       ModelQuery(
         config.userPath,
         key: Const.uid,
@@ -562,7 +562,7 @@ class CalendarModuleTemplate extends PageScopedWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final template = ref.watchAsCollectionModel(
+    final template = ref.watchCollectionModel(
       "${config.userPath}/${context.model?.userId}/${config.commentTemplatePath}",
     );
 
@@ -651,8 +651,8 @@ class CalendarModuleEdit extends PageScopedWidget {
     final date = context.get<String?>("date_id", null)?.toDateTime();
     final now = ref.useDateTime("now", date ?? DateTime.now());
     final form = ref.useForm("event_id");
-    final user = ref.watchAsUserDocumentModel(config.userPath);
-    final item = ref.watchAsDocumentModel("${config.queryPath}/${form.uid}");
+    final user = ref.watchUserDocumentModel(config.userPath);
+    final item = ref.watchDocumentModel("${config.queryPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final note = item.get(config.noteKey, "");

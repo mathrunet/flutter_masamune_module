@@ -145,7 +145,7 @@ class UserModuleHome extends PageScopedWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userId = context.get("user_id", context.model?.userId ?? "");
-    final user = ref.watchAsDocumentModel("${config.queryPath}/$userId");
+    final user = ref.watchDocumentModel("${config.queryPath}/$userId");
     final name = user.get(config.nameKey, "");
     final text = user.get(config.textKey, "");
     final image = user.get(config.imageKey, "");
@@ -164,8 +164,8 @@ class UserModuleHome extends PageScopedWidget {
       );
     }
 
-    final report = ref.watchAsDocumentModel("${config.reportPath}/$userId");
-    final block = ref.watchAsDocumentModel(
+    final report = ref.watchDocumentModel("${config.reportPath}/$userId");
+    final block = ref.watchDocumentModel(
         "${config.queryPath}/${context.model?.userId}/${config.blockPath}/$userId");
 
     if (block.isNotEmpty) {
@@ -189,7 +189,7 @@ class UserModuleHome extends PageScopedWidget {
       loadingFutures: [
         user.loading,
       ],
-      appBar: UIUserProfileAppBar(
+      appBar: UIModernDetailAppBar(
         designType: DesignType.modern,
         expandedHeight: config.expandedHeight,
         icon: NetworkOrAsset.image(icon),
@@ -363,8 +363,8 @@ class UserModuleEditProfile extends PageScopedWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final form = ref.useForm();
-    final user = ref
-        .watchAsDocumentModel("${config.queryPath}/${context.model?.userId}");
+    final user =
+        ref.watchDocumentModel("${config.queryPath}/${context.model?.userId}");
     final name = user.get(config.nameKey, "");
     final text = user.get(config.textKey, "");
     final image = user.get(config.imageKey, "");

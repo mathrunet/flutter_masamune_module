@@ -135,8 +135,8 @@ class ChatModuleHome extends PageScopedWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final now = ref.useNow();
-    final user = ref.watchAsUserDocumentModel(config.userPath);
-    final chat = ref.watchAsCollectionModel(
+    final user = ref.watchUserDocumentModel(config.userPath);
+    final chat = ref.watchCollectionModel(
       config.chatRoomQuery?.value ??
           ModelQuery(
             config.queryPath,
@@ -147,7 +147,7 @@ class ChatModuleHome extends PageScopedWidget {
     final membersPath =
         config.availableMemberQuery?.value ?? config.availableMemberPath;
     final members =
-        membersPath == null ? null : ref.watchAsCollectionModel(membersPath);
+        membersPath == null ? null : ref.watchCollectionModel(membersPath);
     final filteredMembers = members?.where((m) {
       if (context.model?.userId == m.uid) {
         return false;
@@ -160,7 +160,7 @@ class ChatModuleHome extends PageScopedWidget {
         return members.any((member) => member.toString() == m.uid);
       });
     }).toList();
-    final users = ref.watchAsCollectionModel(
+    final users = ref.watchCollectionModel(
       ModelQuery(
         config.userPath,
         key: Const.uid,
@@ -306,10 +306,10 @@ class ChatModuleTimeline extends PageScopedWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final now = ref.useNow();
     final userId = context.model?.userId;
-    final user = ref.watchAsUserDocumentModel();
-    final chat = ref.watchAsDocumentModel(
+    final user = ref.watchUserDocumentModel();
+    final chat = ref.watchDocumentModel(
         "${config.queryPath}/${context.get("chat_id", "")}");
-    final timeline = ref.watchAsCollectionModel(
+    final timeline = ref.watchCollectionModel(
       ModelQuery(
               "${config.queryPath}/${context.get("chat_id", "")}/${config.queryPath}",
               order: ModelQueryOrder.desc,
@@ -319,7 +319,7 @@ class ChatModuleTimeline extends PageScopedWidget {
     );
     timeline.sort((a, b) =>
         b.get(config.createdTimeKey, 0) - a.get(config.createdTimeKey, 0));
-    final users = ref.watchAsCollectionModel(
+    final users = ref.watchCollectionModel(
       ModelQuery(
         config.userPath,
         key: Const.uid,
@@ -332,7 +332,7 @@ class ChatModuleTimeline extends PageScopedWidget {
       apply: (o, a) => o.merge(a, convertKeys: (key) => "${Const.user}$key"),
       orElse: (o) => o,
     );
-    final members = ref.watchAsCollectionModel(
+    final members = ref.watchCollectionModel(
       ModelQuery(
         config.userPath,
         key: Const.uid,
@@ -602,7 +602,7 @@ class ChatModuleMediaView extends PageScopedWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final item = ref.watchAsDocumentModel(
+    final item = ref.watchDocumentModel(
         "${config.queryPath}/${context.get("chat_id", "")}/${config.queryPath}/${context.get("timeline_id", "")}");
     final media = item.get(config.mediaKey, "");
     final type = getPlatformMediaType(media);
@@ -646,7 +646,7 @@ class ChatModuleEdit extends PageScopedWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final form = ref.useForm();
-    final chat = ref.watchAsDocumentModel(
+    final chat = ref.watchDocumentModel(
         "${config.queryPath}/${context.get("chat_id", "")}");
     final name = chat.get(config.nameKey, "");
 

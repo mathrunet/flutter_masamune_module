@@ -104,7 +104,7 @@ class MemberModuleHome extends PageScopedWidget {
 
   String _groupId(BuildContext context, WidgetRef ref) {
     if (config.groupId.isEmpty) {
-      final user = ref.watchAsUserDocumentModel();
+      final user = ref.watchUserDocumentModel();
       return user.uid;
     }
     return ref.applyModuleTag(config.groupId!);
@@ -114,9 +114,9 @@ class MemberModuleHome extends PageScopedWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Please describe Hook.
     final members =
-        ref.watchAsCollectionModel(config.query?.value ?? config.queryPath);
+        ref.watchCollectionModel(config.query?.value ?? config.queryPath);
     final groupId = _groupId(context, ref);
-    final user = ref.watchAsUserDocumentModel();
+    final user = ref.watchUserDocumentModel();
 
     // Please describe the Widget.
     return UIScaffold(

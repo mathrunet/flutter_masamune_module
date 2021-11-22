@@ -103,10 +103,10 @@ class PostModuleHome extends PageScopedWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final now = ref.useNow();
-    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final user = ref.watchUserDocumentModel(config.userPath);
     final post =
-        ref.watchAsCollectionModel(config.postQuery?.value ?? config.queryPath);
-    final users = ref.watchAsCollectionModel(
+        ref.watchCollectionModel(config.postQuery?.value ?? config.queryPath);
+    final users = ref.watchCollectionModel(
       ModelQuery(
         config.userPath,
         key: Const.uid,
@@ -189,8 +189,8 @@ class PostModuleView extends PageScopedWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchAsUserDocumentModel(config.userPath);
-    final item = ref.watchAsDocumentModel(
+    final user = ref.watchUserDocumentModel(config.userPath);
+    final item = ref.watchDocumentModel(
         "${config.queryPath}/${context.get("post_id", "")}");
     final now = ref.useNow();
     final name = item.get(config.nameKey, "");
@@ -308,8 +308,8 @@ class PostModuleEdit extends PageScopedWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final form = ref.useForm("post_id");
     final now = ref.useNow();
-    final user = ref.watchAsUserDocumentModel(config.userPath);
-    final item = ref.watchAsDocumentModel("${config.queryPath}/${form.uid}");
+    final user = ref.watchUserDocumentModel(config.userPath);
+    final item = ref.watchDocumentModel("${config.queryPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final dateTime =

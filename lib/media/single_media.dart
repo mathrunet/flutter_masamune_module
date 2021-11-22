@@ -100,8 +100,8 @@ class SingleMediaModuleHome extends PageScopedWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final now = ref.useNow();
-    final user = ref.watchAsUserDocumentModel(config.userPath);
-    final item = ref.watchAsDocumentModel(config.queryPath);
+    final user = ref.watchUserDocumentModel(config.userPath);
+    final item = ref.watchDocumentModel(config.queryPath);
     final name = item.get(config.nameKey, "");
     final media = item.get(config.mediaKey, "");
     final date = item.get(config.createdTimeKey, now.millisecondsSinceEpoch);
@@ -167,7 +167,7 @@ class SingleMediaModuleEdit extends PageScopedWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final form = ref.useForm();
-    final item = ref.watchAsDocumentModel(config.queryPath);
+    final item = ref.watchDocumentModel(config.queryPath);
     final name = item.get(config.nameKey, "");
     final media = item.get(config.mediaKey, "");
 

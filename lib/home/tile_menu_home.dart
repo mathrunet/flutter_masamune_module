@@ -5,7 +5,7 @@ class HomeModuleTileMenuHome extends ScopedWidget {
   final HomeModule config;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final user = ref.watchUserDocumentModel(config.userPath);
     final name = user.get(config.nameKey, "Unknown".localize());
     final role = context.roles.firstWhereOrNull(
       (item) => item.id == user.get(config.roleKey, ""),
@@ -296,7 +296,7 @@ class HomeModuleTileMenuHomeInformation extends ScopedWidget {
     }
 
     final now = ref.useNow();
-    final info = ref.watchAsCollectionModel(config.info.queryPath);
+    final info = ref.watchCollectionModel(config.info.queryPath);
     info.sort((a, b) {
       return b.get(config.info.createdTimeKey, now.millisecondsSinceEpoch) -
           a.get(config.info.createdTimeKey, now.millisecondsSinceEpoch);
@@ -398,7 +398,7 @@ class HomeModuleTileMenuHomeCalendar extends ScopedWidget {
     final now = ref.useNow();
     final start = now.toDate();
     final event =
-        ref.watchAsCollectionModel(config.calendar.queryPath).where((element) {
+        ref.watchCollectionModel(config.calendar.queryPath).where((element) {
       final time = element.getAsDateTime(config.calendar.startTimeKey);
       return time.millisecondsSinceEpoch >= start.millisecondsSinceEpoch;
     }).toList();
@@ -570,13 +570,13 @@ class HomeModuleChangeAffiliation extends ScopedWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchAsUserDocumentModel();
+    final user = ref.watchUserDocumentModel();
     final affiliationId = user.get(affiliationKey, "");
     final role = context.roles.firstWhereOrNull(
       (item) => item.id == user.get(roleKey, ""),
     );
     final affiliation = ref
-        .watchAsCollectionModel(
+        .watchCollectionModel(
           ModelQuery(targetPath, key: Const.uid, isEqualTo: affiliationId)
               .value,
         )
@@ -693,10 +693,10 @@ class HomeModuleChangeAffiliationSelection extends PageScopedWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchAsUserDocumentModel();
+    final user = ref.watchUserDocumentModel();
     final affiliationId = user.get(affiliationKey, "");
     final affiliationList = user.getAsList<String>(affiliationListKey, []);
-    final affiliation = ref.watchAsCollectionModel(
+    final affiliation = ref.watchCollectionModel(
       ModelQuery(targetPath, key: Const.uid, whereIn: affiliationList).value,
     );
 

@@ -170,9 +170,9 @@ class QuestionnaireModuleHome extends PageScopedWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final now = ref.useNow();
-    final question = ref.watchAsCollectionModel(
+    final question = ref.watchCollectionModel(
         config.questionnaireQuery?.value ?? config.queryPath);
-    final answered = ref.watchAsCollectionModel(
+    final answered = ref.watchCollectionModel(
         "${config.userPath}/${context.model?.userId}/${config.answerPath}");
 
     final questionWithAnswer = question.map((e) {
@@ -185,7 +185,7 @@ class QuestionnaireModuleHome extends PageScopedWidget {
       }
       return e;
     });
-    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final user = ref.watchUserDocumentModel(config.userPath);
     final controller = ref.useNavigatorController(
       "${config.routePath}/${questionWithAnswer.firstOrNull.get(Const.uid, "")}",
       (route) => questionWithAnswer.isEmpty,
@@ -259,7 +259,7 @@ class QuestionnaireModuleView extends ScopedWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchAsUserDocumentModel();
+    final user = ref.watchUserDocumentModel();
     if (config.permission.canEdit(user.get(config.roleKey, ""))) {
       return QuestionnaireAanswerView(config);
     } else {
@@ -275,14 +275,14 @@ class QuestionnaireAanswerView extends PageScopedWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final now = ref.useNow();
-    final question = ref.watchAsDocumentModel(
+    final question = ref.watchDocumentModel(
         "${config.queryPath}/${context.get("question_id", "")}");
-    final questions = ref.watchAsCollectionModel(
+    final questions = ref.watchCollectionModel(
         "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}");
-    final answers = ref.watchAsCollectionModel(
+    final answers = ref.watchCollectionModel(
       "${config.queryPath}/${context.get("question_id", "")}/${config.answerPath}",
     );
-    final users = ref.watchAsCollectionModel(
+    final users = ref.watchCollectionModel(
       ModelQuery(config.userPath,
               key: Const.uid,
               whereIn: answers.map((e) => e.get(Const.user, "")).toList())
@@ -405,12 +405,12 @@ class QuestionnaireModuleAnswerDetail extends PageScopedWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     int i = 0;
-    final questions = ref.watchAsCollectionModel(
+    final questions = ref.watchCollectionModel(
         "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}");
-    final answer = ref.watchAsDocumentModel(
+    final answer = ref.watchDocumentModel(
       "${config.queryPath}/${context.get("question_id", "")}/${config.answerPath}/${context.get("answer_id", "")}",
     );
-    final user = ref.watchAsDocumentModel(
+    final user = ref.watchDocumentModel(
         "${config.userPath}/${answer.get(Const.user, "empty")}");
 
     return UIScaffold(
@@ -454,12 +454,12 @@ class QuestionnaireModuleQuestionView extends PageScopedWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     int i = 0;
     final form = ref.useForm();
-    final user = ref.watchAsUserDocumentModel(config.userPath);
-    final question = ref.watchAsDocumentModel(
+    final user = ref.watchUserDocumentModel(config.userPath);
+    final question = ref.watchDocumentModel(
         "${config.queryPath}/${context.get("question_id", "")}");
-    final questions = ref.watchAsCollectionModel(
+    final questions = ref.watchCollectionModel(
         "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}");
-    final answer = ref.watchAsDocumentModel(
+    final answer = ref.watchDocumentModel(
       "${config.queryPath}/${context.get("question_id", "")}/${config.answerPath}/${context.model?.userId}",
     );
     final name = question.get(config.nameKey, "");
@@ -738,9 +738,9 @@ class QuestionnaireModuleQuestionEdit extends PageScopedWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final form = ref.useForm("item_id");
-    final item = ref.watchAsDocumentModel(
+    final item = ref.watchDocumentModel(
         "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}/${form.uid}");
-    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final user = ref.watchUserDocumentModel(config.userPath);
     final name = item.get(config.nameKey, "");
     final type = item.get(config.typeKey, Const.text);
     final required = item.get(config.requiredKey, false);
@@ -914,8 +914,8 @@ class QuestionnaireModuleEdit extends PageScopedWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final form = ref.useForm("question_id");
-    final item = ref.watchAsDocumentModel("${config.queryPath}/${form.uid}");
-    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final item = ref.watchDocumentModel("${config.queryPath}/${form.uid}");
+    final user = ref.watchUserDocumentModel(config.userPath);
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final endTime = item.get(config.endTimeKey, 0);

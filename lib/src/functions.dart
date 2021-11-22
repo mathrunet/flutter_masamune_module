@@ -1,7 +1,7 @@
 part of masamune_module;
 
 extension WidgetRefModelExtensions on WidgetRef {
-  DynamicDocumentModel readAsDocumentModel(String path) {
+  DynamicDocumentModel readDocumentModel(String path) {
     final context = this as BuildContext;
 
     return context.model!.loadDocument(
@@ -11,7 +11,7 @@ extension WidgetRefModelExtensions on WidgetRef {
     );
   }
 
-  DynamicCollectionModel readAsCollectionModel(String path) {
+  DynamicCollectionModel readCollectionModel(String path) {
     final context = this as BuildContext;
 
     return context.model!.loadCollection(
@@ -21,8 +21,7 @@ extension WidgetRefModelExtensions on WidgetRef {
     );
   }
 
-  DynamicSearchableCollectionModel readAsSearchableCollectionModel(
-      String path) {
+  DynamicSearchableCollectionModel readSearchableCollectionModel(String path) {
     final context = this as BuildContext;
 
     return read(
@@ -30,7 +29,7 @@ extension WidgetRefModelExtensions on WidgetRef {
     );
   }
 
-  DynamicDocumentModel readAsUserDocumentModel([String userPath = Const.user]) {
+  DynamicDocumentModel readUserDocumentModel([String userPath = Const.user]) {
     final context = this as BuildContext;
 
     return context.model!.loadDocument(
@@ -42,7 +41,7 @@ extension WidgetRefModelExtensions on WidgetRef {
     );
   }
 
-  DynamicDocumentModel watchAsDocumentModel(String path) {
+  DynamicDocumentModel watchDocumentModel(String path) {
     final context = this as BuildContext;
 
     return context.model!.loadDocument(
@@ -54,7 +53,7 @@ extension WidgetRefModelExtensions on WidgetRef {
     );
   }
 
-  DynamicCollectionModel watchAsCollectionModel(String path) {
+  DynamicCollectionModel watchCollectionModel(String path) {
     final context = this as BuildContext;
 
     return context.model!.loadCollection(
@@ -66,8 +65,7 @@ extension WidgetRefModelExtensions on WidgetRef {
     );
   }
 
-  DynamicSearchableCollectionModel watchAsSearchableCollectionModel(
-      String path) {
+  DynamicSearchableCollectionModel watchSearchableCollectionModel(String path) {
     final context = this as BuildContext;
 
     return watch(
@@ -77,8 +75,7 @@ extension WidgetRefModelExtensions on WidgetRef {
     );
   }
 
-  DynamicDocumentModel watchAsUserDocumentModel(
-      [String userPath = Const.user]) {
+  DynamicDocumentModel watchUserDocumentModel([String userPath = Const.user]) {
     final context = this as BuildContext;
 
     return context.model!.loadDocument(

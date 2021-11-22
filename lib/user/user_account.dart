@@ -545,9 +545,9 @@ class UserAccountModuleBlockList extends PageScopedWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final blocks = ref.watchAsCollectionModel(
+    final blocks = ref.watchCollectionModel(
         "${config.queryPath}/${context.model?.userId}/${config.blockPath}");
-    final users = ref.watchAsCollectionModel(
+    final users = ref.watchCollectionModel(
       ModelQuery(
         config.queryPath,
         key: Const.uid,

@@ -27,6 +27,7 @@ UserModule? _$UserModuleFromMap(DynamicMap map, UserModule ref) {
       imageKey: map.get<String>("imageKey", Const.image),
       iconKey: map.get<String>("iconKey", Const.icon),
       roleKey: map.get<String>("roleKey", Const.role),
+      expandedHeight: map.get<double>("expandedHeight", 160),
       additionalInformation: map
           .get<Map>("additionalInformation", const {}).cast<String, String>(),
       allowImageEditing: map.get<bool>("allowImageEditing", false),
@@ -55,6 +56,7 @@ DynamicMap _$UserModuleToMap(UserModule ref) {
     if (ref.imageKey.isNotEmpty) "imageKey": ref.imageKey,
     if (ref.iconKey.isNotEmpty) "iconKey": ref.iconKey,
     if (ref.roleKey.isNotEmpty) "roleKey": ref.roleKey,
+    "expandedHeight": ref.expandedHeight,
     if (ref.additionalInformation.isNotEmpty)
       "additionalInformation":
           ref.additionalInformation.map((k, v) => MapEntry(k, v)),

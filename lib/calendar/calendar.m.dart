@@ -31,7 +31,10 @@ CalendarModule? _$CalendarModuleFromMap(DynamicMap map, CalendarModule ref) {
       endTimeKey: map.get<String>("endTimeKey", Const.endTime),
       allDayKey: map.get<String>("allDayKey", "allDay"),
       detailLabel: map.get<String>("detailLabel", "Detail"),
+      noteLabel: map.get<String>("noteLabel", "Note"),
       commentLabel: map.get<String>("commentLabel", "Comment"),
+      noteKey: map.get<String>("noteKey", "note"),
+      enableNote: map.get<bool>("enableNote", false),
       editingType: CalendarEditingType.values.firstWhere((e) =>
           e.index ==
           map.get<int>("editingType", CalendarEditingType.planeText.index)),
@@ -71,7 +74,10 @@ DynamicMap _$CalendarModuleToMap(CalendarModule ref) {
     if (ref.endTimeKey.isNotEmpty) "endTimeKey": ref.endTimeKey,
     if (ref.allDayKey.isNotEmpty) "allDayKey": ref.allDayKey,
     if (ref.detailLabel.isNotEmpty) "detailLabel": ref.detailLabel,
+    if (ref.noteLabel.isNotEmpty) "noteLabel": ref.noteLabel,
     if (ref.commentLabel.isNotEmpty) "commentLabel": ref.commentLabel,
+    if (ref.noteKey.isNotEmpty) "noteKey": ref.noteKey,
+    "enableNote": ref.enableNote,
     "editingType": ref.editingType.index,
     "markerType": ref.markerType.index,
     "showAddingButton": ref.showAddingButton,

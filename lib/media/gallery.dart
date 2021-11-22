@@ -178,8 +178,7 @@ class GalleryModuleTileViewWithList extends PageScopedWidget {
 
   List<GroupConfig> _categories(BuildContext context, WidgetRef ref) {
     if (config.categoryQuery != null) {
-      final categories =
-          ref.watchAsCollectionModel(config.categoryQuery!.value);
+      final categories = ref.watchCollectionModel(config.categoryQuery!.value);
       return categories.mapAndRemoveEmpty((item) =>
           GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
         ..addAll(config.categoryConfig);
@@ -189,7 +188,7 @@ class GalleryModuleTileViewWithList extends PageScopedWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final user = ref.watchUserDocumentModel(config.userPath);
     final list = _categories(context, ref);
     final controller = ref.useNavigatorController(
       "/${config.routePath}/${list.firstOrNull?.id}",
@@ -237,8 +236,7 @@ class GalleryModuleTileViewWithTab extends PageScopedWidget {
 
   List<GroupConfig> _categories(BuildContext context, WidgetRef ref) {
     if (config.categoryQuery != null) {
-      final categories =
-          ref.watchAsCollectionModel(config.categoryQuery!.value);
+      final categories = ref.watchCollectionModel(config.categoryQuery!.value);
       return categories.mapAndRemoveEmpty((item) =>
           GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
         ..addAll(config.categoryConfig);
@@ -248,7 +246,7 @@ class GalleryModuleTileViewWithTab extends PageScopedWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final user = ref.watchUserDocumentModel(config.userPath);
     final list = _categories(context, ref);
     final tab = ref.useTab(list);
     final controller = ref.useNavigatorController(
@@ -291,7 +289,7 @@ class GalleryModuleTileView extends PageScopedWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchAsUserDocumentModel(config.userPath);
+    final user = ref.watchUserDocumentModel(config.userPath);
     final controller = ref.useNavigatorController(
       "/${config.routePath}/${config.categoryConfig.firstOrNull?.id}",
     );
@@ -326,8 +324,7 @@ class GalleryModuleGridView extends PageScopedWidget {
 
   List<GroupConfig> _categories(BuildContext context, WidgetRef ref) {
     if (config.categoryQuery != null) {
-      final categories =
-          ref.watchAsCollectionModel(config.categoryQuery!.value);
+      final categories = ref.watchCollectionModel(config.categoryQuery!.value);
       return categories.mapAndRemoveEmpty((item) =>
           GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
         ..addAll(config.categoryConfig);
@@ -369,10 +366,10 @@ class GalleryModuleGrid extends ScopedWidget {
 
   DynamicCollectionModel _gallery(BuildContext context, WidgetRef ref) {
     if (category == null) {
-      return ref.watchAsCollectionModel(
-          config.contentQuery?.value ?? config.queryPath);
+      return ref
+          .watchCollectionModel(config.contentQuery?.value ?? config.queryPath);
     }
-    return ref.watchAsCollectionModel(
+    return ref.watchCollectionModel(
       category!.query?.value ??
           config.contentQuery?.value ??
           ModelQuery(
@@ -459,8 +456,8 @@ class GalleryModuleMediaDetail extends PageScopedWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchAsUserDocumentModel(config.userPath);
-    final item = ref.watchAsDocumentModel(
+    final user = ref.watchUserDocumentModel(config.userPath);
+    final item = ref.watchDocumentModel(
         "${config.queryPath}/${context.get("media_id", "")}");
 
     final now = ref.useNow();
@@ -569,8 +566,8 @@ class GalleryModuleMediaView extends PageScopedWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchAsUserDocumentModel(config.userPath);
-    final item = ref.watchAsDocumentModel(
+    final user = ref.watchUserDocumentModel(config.userPath);
+    final item = ref.watchDocumentModel(
         "${config.queryPath}/${context.get("media_id", "")}");
     final name = item.get(config.nameKey, "");
     final media = item.get(config.mediaKey, "");
@@ -628,8 +625,7 @@ class GalleryModuleEdit extends PageScopedWidget {
 
   List<GroupConfig> _categories(BuildContext context, WidgetRef ref) {
     if (config.categoryQuery != null) {
-      final categories =
-          ref.watchAsCollectionModel(config.categoryQuery!.value);
+      final categories = ref.watchCollectionModel(config.categoryQuery!.value);
       return categories.mapAndRemoveEmpty((item) =>
           GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
         ..addAll(config.categoryConfig);
@@ -640,8 +636,8 @@ class GalleryModuleEdit extends PageScopedWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final form = ref.useForm("media_id");
-    final user = ref.watchAsUserDocumentModel(config.userPath);
-    final item = ref.watchAsDocumentModel("${config.queryPath}/${form.uid}");
+    final user = ref.watchUserDocumentModel(config.userPath);
+    final item = ref.watchDocumentModel("${config.queryPath}/${form.uid}");
     final name = item.get(config.nameKey, "");
     final text = item.get(config.textKey, "");
     final media = item.get(config.mediaKey, "");
