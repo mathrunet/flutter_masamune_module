@@ -666,11 +666,12 @@ class CalendarModuleEdit extends PageScopedWidget {
     final allDayController =
         ref.useTextEditingController("allDay", allDay.toString());
     final startTimeController = ref.useTextEditingController(
-        "startTime",
-        allDayState.value
-            ? FormItemDateTimeField.formatDate(startTime.millisecondsSinceEpoch)
-            : FormItemDateTimeField.formatDateTime(
-                startTime.millisecondsSinceEpoch));
+      "startTime",
+      allDayState.value
+          ? FormItemDateTimeField.formatDate(startTime.millisecondsSinceEpoch)
+          : FormItemDateTimeField.formatDateTime(
+              startTime.millisecondsSinceEpoch),
+    );
     final endTimeOrStartTime =
         endTime ?? startTime.add(const Duration(hours: 1));
     final endTimeController = ref.useTextEditingController(

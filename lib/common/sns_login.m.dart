@@ -1,20 +1,26 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'login_and_register.dart';
+part of 'sns_login.dart';
 
 // **************************************************************************
 // MasamuneModuleGenerator
 // **************************************************************************
 
-LoginModule? _$LoginModuleFromMap(DynamicMap map, LoginModule ref) {
+SnsLoginModule? _$SnsLoginModuleFromMap(DynamicMap map, SnsLoginModule ref) {
   if (map.isEmpty || map.get("type", "") != ref.type) {
     return null;
   }
-  return LoginModule(
-      enabled: map.get<bool>("enabled", true),
-      title: map.get<String>("title", ""),
+  return SnsLoginModule(
       layoutType: LoginLayoutType.values.firstWhere((e) =>
           e.index == map.get<int>("layoutType", LoginLayoutType.fixed.index)),
+      snsTypes: map
+          .get<List>(
+              "snsTypes", const [SnsLoginType.apple, SnsLoginType.google])
+          .cast<int>()
+          .map((e) => SnsLoginType.values.firstWhere((n) => n.index == e))
+          .removeEmpty(),
+      enabled: map.get<bool>("enabled", true),
+      title: map.get<String?>("title", null),
       color: map.get<DynamicMap>("color", <String, dynamic>{}).toColor(),
       backgroundColor:
           map.get<DynamicMap>("backgroundColor", <String, dynamic>{}).toColor(),
@@ -43,23 +49,25 @@ LoginModule? _$LoginModuleFromMap(DynamicMap map, LoginModule ref) {
       titleAlignment:
           map.get<DynamicMap>("titleAlignment", <String, dynamic>{}).toAlignment() ??
               Alignment.bottomLeft,
-      login: map.get<DynamicMap>("login", <String, dynamic>{}).toLoginConfig() ??
-          const LoginConfig(label: "Login", icon: FontAwesomeIcons.signInAlt),
       guestLogin: map
           .get<DynamicMap>("guestLogin", <String, dynamic>{}).toLoginConfig(),
       titlePadding: map.get<DynamicMap>("titlePadding", <String, dynamic>{}).toEdgeInsets() ??
           const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-      padding: map.get<DynamicMap>("padding", <String, dynamic>{}).toEdgeInsets() ?? const EdgeInsets.all(36),
+      padding: map.get<DynamicMap>("padding", <String, dynamic>{}).toEdgeInsets() ??
+          const EdgeInsets.all(36),
       redirectTo: map.get<String>("redirectTo", "/"),
-      registerForm: map.get<List>("registerForm", const []).cast<DynamicMap>().map((e) => e.toFormConfig()).removeEmpty());
+      registerForm: map.get<List>("registerForm", const []).cast<DynamicMap>().map((e) => e.toFormConfig()).removeEmpty(),
+      permission: map.get<DynamicMap>("permission", <String, dynamic>{}).toPermission() ?? const Permission(),
+      rerouteConfig: map.get<DynamicMap>("rerouteConfig", <String, dynamic>{}).toRerouteConfig());
 }
 
-DynamicMap _$LoginModuleToMap(LoginModule ref) {
+DynamicMap _$SnsLoginModuleToMap(SnsLoginModule ref) {
   return <String, dynamic>{
     "type": ref.type,
+    "layoutType": ref.layoutType.index,
+    if (ref.snsTypes.isNotEmpty) "snsTypes": ref.snsTypes.map((e) => e.index),
     "enabled": ref.enabled,
     if (ref.title.isNotEmpty) "title": ref.title,
-    "layoutType": ref.layoutType.index,
     if (ref.color != null) "color": ref.color?.toMap(),
     if (ref.backgroundColor != null)
       "backgroundColor": ref.backgroundColor?.toMap(),
@@ -84,12 +92,13 @@ DynamicMap _$LoginModuleToMap(LoginModule ref) {
     if (ref.titleTextStyle != null)
       "titleTextStyle": ref.titleTextStyle?.toMap(),
     "titleAlignment": ref.titleAlignment.toMap(),
-    "login": ref.login.toMap(),
     if (ref.guestLogin != null) "guestLogin": ref.guestLogin?.toMap(),
     "titlePadding": ref.titlePadding.toMap(),
     "padding": ref.padding.toMap(),
     if (ref.redirectTo.isNotEmpty) "redirectTo": ref.redirectTo,
     if (ref.registerForm.isNotEmpty)
-      "registerForm": ref.registerForm.map((e) => e.toMap())
+      "registerForm": ref.registerForm.map((e) => e.toMap()),
+    "permission": ref.permission.toMap(),
+    if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap()
   };
 }

@@ -165,39 +165,45 @@ class DetailModuleHome extends PageScopedWidget {
         designType: DesignType.modern,
         expandedHeight: config.expandedHeight,
         background: multipleImage
-            ? ColoredBox(color: context.theme.dividerColor, child:Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.start,
-              mainAxisSize: MainAxisSize.max,
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Image(
-                        image: NetworkOrAsset.image(images.first),
-                        fit: BoxFit.cover),
-                  ),
-                  const Space.height(1),
-                  Expanded(
-                    flex: 1,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        for (int i = 1; i < 4; i++)
-                          if (i < images.length) ...[
-                            Expanded(child:Image(
-                                image: NetworkOrAsset.image(images[i]),
-                                fit: BoxFit.cover),),
-                                const Space.width(1),
-                          ]
-                          else ...[
-                            const Expanded(child: ColoredBox(color: Colors.black),),
-                                const Space.width(1),
-                          ]
-                      ],
+            ? ColoredBox(
+                color: context.theme.dividerColor,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Image(
+                          image: NetworkOrAsset.image(images.first),
+                          fit: BoxFit.cover),
                     ),
-                  )
-                ],
-              ),)
+                    const Space.height(1),
+                    Expanded(
+                      flex: 1,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          for (int i = 1; i < 4; i++)
+                            if (i < images.length) ...[
+                              Expanded(
+                                child: Image(
+                                    image: NetworkOrAsset.image(images[i]),
+                                    fit: BoxFit.cover),
+                              ),
+                              const Space.width(1),
+                            ] else ...[
+                              const Expanded(
+                                child: ColoredBox(color: Colors.black),
+                              ),
+                              const Space.width(1),
+                            ]
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              )
             : null,
         backgroundImage:
             images.isNotEmpty ? NetworkOrAsset.image(images.first) : null,

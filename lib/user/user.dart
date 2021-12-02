@@ -456,7 +456,7 @@ class UserModuleEditProfile extends PageScopedWidget {
                                 }
 
                                 final url = await context.model
-                                    ?.uploadMedia(media?.path)
+                                    ?.uploadMedia(media!.path!)
                                     .showIndicator(context);
                                 user[config.iconKey] = url;
                                 await context.model
@@ -501,7 +501,7 @@ class UserModuleEditProfile extends PageScopedWidget {
                               }
 
                               final url = await context.model
-                                  ?.uploadMedia(media?.path)
+                                  ?.uploadMedia(media!.path!)
                                   .showIndicator(context);
                               user[config.iconKey] = url;
                               await context.model

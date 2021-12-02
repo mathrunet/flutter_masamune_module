@@ -16,6 +16,7 @@ export 'package:masamune/masamune.dart';
 
 export 'chat/chat.dart';
 export 'common/login_and_register.dart';
+export 'common/sns_login.dart';
 export 'home/home.dart';
 export 'media/gallery.dart';
 export 'media/single_media.dart';
@@ -28,3 +29,4 @@ part 'src/exntensions.dart';
 part 'src/form_config.dart';
 part 'src/functions.dart';
 part 'src/group_config.dart';
+part 'src/login_config.dart';

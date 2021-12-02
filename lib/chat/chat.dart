@@ -503,7 +503,7 @@ class ChatModuleTimeline extends PageScopedWidget {
           }
 
           final url = await context.model
-              ?.uploadMedia(media?.path)
+              ?.uploadMedia(media!.path!)
               .showIndicator(context);
           if (url.isEmpty) {
             return;

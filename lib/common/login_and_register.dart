@@ -13,7 +13,6 @@ class LoginModule extends PageModule {
   const LoginModule({
     bool enabled = true,
     String title = "",
-    this.loginType = LoginType.emailAndPassword,
     this.layoutType = LoginLayoutType.fixed,
     this.color,
     this.backgroundColor,
@@ -49,17 +48,14 @@ class LoginModule extends PageModule {
       return const {};
     }
     final route = {
-      "/landing": RouteConfig((_) => Landing(this)),
-      "/login": RouteConfig((_) => Login(this)),
-      "/reset": RouteConfig((_) => PasswordReset(this)),
-      "/register": RouteConfig((_) => Register(this)),
-      "/register/{role_id}": RouteConfig((_) => Register(this)),
+      "/landing": RouteConfig((_) => LoginModuleLanding(this)),
+      "/login": RouteConfig((_) => LoginModuleLogin(this)),
+      "/reset": RouteConfig((_) => LoginModulePasswordReset(this)),
+      "/register": RouteConfig((_) => LoginModuleRegister(this)),
+      "/register/{role_id}": RouteConfig((_) => LoginModuleRegister(this)),
     };
     return route;
   }
-
-  /// ログインタイプ。
-  final LoginType loginType;
 
   /// レイアウトタイプ。
   final LoginLayoutType layoutType;
@@ -136,54 +132,9 @@ class LoginModule extends PageModule {
   DynamicMap toMap() => _$LoginModuleToMap(this);
 }
 
-@immutable
-class LoginConfig {
-  const LoginConfig({
-    this.label,
-    this.color,
-    this.icon,
-  });
-  final String? label;
-  final IconData? icon;
-  final Color? color;
 
-  static LoginConfig? _fromMap(DynamicMap map) {
-    if (map.isEmpty) {
-      return null;
-    }
-    return LoginConfig(
-      label: map.get<String?>("name", null),
-      color: map.getAsMap("color").toColor(),
-      icon: map.getAsMap("icon").toIconData(),
-    );
-  }
-
-  DynamicMap toMap() {
-    return <String, dynamic>{
-      if (label.isNotEmpty) "name": label,
-      if (color != null) "color": color.toMap(),
-      if (icon != null) "icon": icon.toMap(),
-    };
-  }
-}
-
-extension _LoginConfigExtensions on DynamicMap? {
-  LoginConfig? toLoginConfig() {
-    if (this == null) {
-      return null;
-    }
-    return LoginConfig._fromMap(this!);
-  }
-}
-
-enum LoginType { emailAndPassword }
-
-enum LoginLayoutType {
-  fixed,
-}
-
-class Landing extends PageScopedWidget {
-  const Landing(this.config);
+class LoginModuleLanding extends PageScopedWidget {
+  const LoginModuleLanding(this.config);
   final LoginModule config;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -210,7 +161,7 @@ class Landing extends PageScopedWidget {
           body: Stack(
             fit: StackFit.expand,
             children: [
-              _LoginBackgroundImage(config, opacity: 0.75),
+              _LoginModuleBackgroundImage(config, opacity: 0.75),
               AnimationScope(
                 animation: animation,
                 builder: (context, child, animation) {
@@ -312,11 +263,21 @@ class Landing extends PageScopedWidget {
                                       backgroundColor: buttonBackgroundColor,
                                       icon: config.guestLogin!.icon,
                                       onPressed: () async {
-                                        await context.model
-                                            ?.signInAnonymously()
-                                            .showIndicator(context);
-                                        context.navigator
-                                            .pushNamed(config.redirectTo);
+                                        try {
+                                          await context.model
+                                              ?.signInAnonymously()
+                                              .showIndicator(context);
+                                          context.navigator
+                                              .pushNamed(config.redirectTo);
+                                        } catch (e) {
+                                          UIDialog.show(
+                                            context,
+                                            title: "Error".localize(),
+                                            text:
+                                                "Could not login. Please check your information."
+                                                    .localize(),
+                                          );
+                                        }
                                       },
                                     ),
                                   FormItemSubmit(
@@ -351,8 +312,8 @@ class Landing extends PageScopedWidget {
   }
 }
 
-class Login extends PageScopedWidget {
-  const Login(this.config);
+class LoginModuleLogin extends PageScopedWidget {
+  const LoginModuleLogin(this.config);
   final LoginModule config;
 
   @override
@@ -379,7 +340,7 @@ class Login extends PageScopedWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          _LoginBackgroundImage(config, opacity: 0.75),
+          _LoginModuleBackgroundImage(config, opacity: 0.75),
           FormBuilder(
             type: FormBuilderType.center,
             key: form.key,
@@ -549,8 +510,8 @@ class Login extends PageScopedWidget {
   }
 }
 
-class Register extends PageScopedWidget {
-  const Register(this.config);
+class LoginModuleRegister extends PageScopedWidget {
+  const LoginModuleRegister(this.config);
   final LoginModule config;
 
   @override
@@ -583,7 +544,7 @@ class Register extends PageScopedWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          _LoginBackgroundImage(config, opacity: 0.75),
+          _LoginModuleBackgroundImage(config, opacity: 0.75),
           FormBuilder(
             type: FormBuilderType.center,
             key: form.key,
@@ -849,8 +810,8 @@ class Register extends PageScopedWidget {
   }
 }
 
-class PasswordReset extends PageScopedWidget {
-  const PasswordReset(this.config);
+class LoginModulePasswordReset extends PageScopedWidget {
+  const LoginModulePasswordReset(this.config);
   final LoginModule config;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -874,7 +835,7 @@ class PasswordReset extends PageScopedWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          _LoginBackgroundImage(config, opacity: 0.75),
+          _LoginModuleBackgroundImage(config, opacity: 0.75),
           FormBuilder(
             type: FormBuilderType.center,
             key: form.key,
@@ -1004,8 +965,8 @@ class PasswordReset extends PageScopedWidget {
   }
 }
 
-class _LoginBackgroundImage extends StatelessWidget {
-  const _LoginBackgroundImage(
+class _LoginModuleBackgroundImage extends StatelessWidget {
+  const _LoginModuleBackgroundImage(
     this.config, {
     this.opacity = 0.75,
   });
