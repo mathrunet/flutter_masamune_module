@@ -14,16 +14,16 @@ import 'package:masamune/masamune.dart';
 
 export 'package:masamune/masamune.dart';
 
-export 'chat/chat.dart';
-export 'common/login_and_register.dart';
-export 'common/sns_login.dart';
-export 'home/home.dart';
-export 'media/gallery.dart';
-export 'media/single_media.dart';
-export 'post/post.dart';
-export 'questionnaire/questionnaire.dart';
-export 'user/user.dart';
-export 'user/user_account.dart';
+export 'component/chat/chat.dart';
+export 'component/common/login_and_register.dart';
+export 'component/common/sns_login.dart';
+export 'component/home/home.dart';
+export 'component/media/gallery.dart';
+export 'component/media/single_media.dart';
+export 'component/post/post.dart';
+export 'component/questionnaire/questionnaire.dart';
+export 'component/user/user.dart';
+export 'component/user/user_account.dart';
 
 part 'src/exntensions.dart';
 part 'src/form_config.dart';

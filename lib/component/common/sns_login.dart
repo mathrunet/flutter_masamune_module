@@ -137,7 +137,6 @@ class SnsLoginModule extends PageModule {
   DynamicMap toMap() => _$SnsLoginModuleToMap(this);
 }
 
-
 class SnsLoginModuleLanding extends PageScopedWidget {
   const SnsLoginModuleLanding(this.config);
   final SnsLoginModule config;

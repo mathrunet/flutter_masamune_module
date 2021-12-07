@@ -28,7 +28,7 @@ extension MasamuneModuleDynamicMapExtensions on DynamicMap {
   FormConfig? toFormConfig() {
     return FormConfig._fromMap(this);
   }
-  
+
   LoginConfig? toLoginConfig() {
     return LoginConfig._fromMap(this);
   }

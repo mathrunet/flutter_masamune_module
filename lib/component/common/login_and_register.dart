@@ -132,7 +132,6 @@ class LoginModule extends PageModule {
   DynamicMap toMap() => _$LoginModuleToMap(this);
 }
 
-
 class LoginModuleLanding extends PageScopedWidget {
   const LoginModuleLanding(this.config);
   final LoginModule config;
