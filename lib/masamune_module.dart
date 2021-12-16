@@ -24,6 +24,7 @@ export 'component/post/post.dart';
 export 'component/questionnaire/questionnaire.dart';
 export 'component/user/user.dart';
 export 'component/user/user_account.dart';
+export 'component/detail/detail.dart';
 
 part 'src/exntensions.dart';
 part 'src/form_config.dart';

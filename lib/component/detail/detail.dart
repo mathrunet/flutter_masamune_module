@@ -292,7 +292,7 @@ class DetailModuleHome extends PageScopedWidget {
                     style: const TextStyle(fontSize: 18),
                   ),
                 ),
-              if (config.enableBookmark)
+              if (config.enableComment)
                 IconButton(
                   color: context.theme.textColor,
                   icon: const Icon(Icons.comment),
