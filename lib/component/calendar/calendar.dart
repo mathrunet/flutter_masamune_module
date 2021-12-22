@@ -5,7 +5,6 @@ import 'package:flutter_quill/widgets/controller.dart';
 import 'package:flutter_quill/widgets/default_styles.dart';
 import 'package:flutter_quill/widgets/editor.dart';
 import 'package:flutter_quill/widgets/toolbar.dart';
-import 'package:masamune/masamune.dart';
 import 'package:masamune_module/masamune_module.dart';
 import 'package:tuple/tuple.dart';
 
@@ -47,7 +46,7 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.markerIcon,
     Permission permission = const Permission(),
     this.initialCommentTemplate = const [],
-    RerouteConfig? rerouteConfig,
+    List<RerouteConfig> rerouteConfigs = const [],
     this.home,
     this.dayView,
     this.detail,
@@ -57,7 +56,7 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
           enabled: enabled,
           title: title,
           permission: permission,
-          rerouteConfig: rerouteConfig,
+          rerouteConfigs: rerouteConfigs,
         );
 
   @override

@@ -58,7 +58,7 @@ class QuestionnaireModule extends PageModule
     this.endTimeKey = Const.endTime,
     this.answerKey = Const.answer,
     Permission permission = const Permission(),
-    RerouteConfig? rerouteConfig,
+    List<RerouteConfig> rerouteConfigs = const [],
     this.questionnaireQuery,
     this.home,
     this.edit,
@@ -71,7 +71,7 @@ class QuestionnaireModule extends PageModule
           enabled: enabled,
           title: title,
           permission: permission,
-          rerouteConfig: rerouteConfig,
+          rerouteConfigs: rerouteConfigs,
         );
 
   @override

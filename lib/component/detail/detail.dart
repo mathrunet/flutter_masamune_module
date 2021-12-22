@@ -33,14 +33,14 @@ class DetailModule extends PageModule {
     this.likePath = "like",
     this.expandedHeight = 240,
     Permission permission = const Permission(),
-    RerouteConfig? rerouteConfig,
+    List<RerouteConfig> rerouteConfigs = const [],
     this.home,
     this.image,
   }) : super(
           enabled: enabled,
           title: title,
           permission: permission,
-          rerouteConfig: rerouteConfig,
+          rerouteConfigs: rerouteConfigs,
         );
 
   @override

@@ -26,8 +26,11 @@ MemberModule? _$MemberModuleFromMap(DynamicMap map, MemberModule ref) {
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
-      rerouteConfig: map.get<DynamicMap>(
-          "rerouteConfig", <String, dynamic>{}).toRerouteConfig(),
+      rerouteConfigs: map
+          .get<List>("rerouteConfigs", const [])
+          .cast<DynamicMap>()
+          .map((e) => e.toRerouteConfig())
+          .removeEmpty(),
       designType: DesignType.values.firstWhere((e) =>
           e.index == map.get<int>("designType", DesignType.modern.index)),
       inviteType: MemberModuleInviteType.values.firstWhere((e) =>
@@ -51,7 +54,8 @@ DynamicMap _$MemberModuleToMap(MemberModule ref) {
     if (ref.groupId.isNotEmpty) "groupId": ref.groupId,
     if (ref.affiliationKey.isNotEmpty) "affiliationKey": ref.affiliationKey,
     "permission": ref.permission.toMap(),
-    if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap(),
+    if (ref.rerouteConfigs.isNotEmpty)
+      "rerouteConfigs": ref.rerouteConfigs.map((e) => e.toMap()),
     "designType": ref.designType.index,
     "inviteType": ref.inviteType.index
   };

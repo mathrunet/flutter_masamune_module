@@ -18,7 +18,7 @@ class UserAccountModule extends UserWidgetModule {
     this.allowUserDeleting = false,
     this.allowEditingBlockList = true,
     Permission permission = const Permission(),
-    RerouteConfig? rerouteConfig,
+    List<RerouteConfig> rerouteConfigs = const [],
     this.home,
     this.reauth,
     this.editEmail,
@@ -28,7 +28,7 @@ class UserAccountModule extends UserWidgetModule {
           enabled: enabled,
           title: title,
           permission: permission,
-          rerouteConfig: rerouteConfig,
+          rerouteConfigs: rerouteConfigs,
         );
 
   @override

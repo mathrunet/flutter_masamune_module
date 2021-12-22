@@ -47,8 +47,11 @@ CalendarModule? _$CalendarModuleFromMap(DynamicMap map, CalendarModule ref) {
           const Permission(),
       initialCommentTemplate:
           map.get<List>("initialCommentTemplate", const []).cast<String>(),
-      rerouteConfig: map.get<DynamicMap>(
-          "rerouteConfig", <String, dynamic>{}).toRerouteConfig());
+      rerouteConfigs: map
+          .get<List>("rerouteConfigs", const [])
+          .cast<DynamicMap>()
+          .map((e) => e.toRerouteConfig())
+          .removeEmpty());
 }
 
 DynamicMap _$CalendarModuleToMap(CalendarModule ref) {
@@ -84,6 +87,7 @@ DynamicMap _$CalendarModuleToMap(CalendarModule ref) {
     "permission": ref.permission.toMap(),
     if (ref.initialCommentTemplate.isNotEmpty)
       "initialCommentTemplate": ref.initialCommentTemplate.map((e) => e),
-    if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap()
+    if (ref.rerouteConfigs.isNotEmpty)
+      "rerouteConfigs": ref.rerouteConfigs.map((e) => e.toMap())
   };
 }

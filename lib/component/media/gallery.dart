@@ -38,7 +38,7 @@ class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.mediaType = PlatformMediaType.all,
     this.skipDetailPage = false,
     Permission permission = const Permission(),
-    RerouteConfig? rerouteConfig,
+    List<RerouteConfig> rerouteConfigs = const [],
     this.contentQuery,
     this.categoryQuery,
     this.home,
@@ -54,7 +54,7 @@ class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
           enabled: enabled,
           title: title,
           permission: permission,
-          rerouteConfig: rerouteConfig,
+          rerouteConfigs: rerouteConfigs,
         );
 
   @override

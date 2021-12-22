@@ -24,8 +24,11 @@ UserAccountModule? _$UserAccountModuleFromMap(
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
-      rerouteConfig: map.get<DynamicMap>(
-          "rerouteConfig", <String, dynamic>{}).toRerouteConfig());
+      rerouteConfigs: map
+          .get<List>("rerouteConfigs", const [])
+          .cast<DynamicMap>()
+          .map((e) => e.toRerouteConfig())
+          .removeEmpty());
 }
 
 DynamicMap _$UserAccountModuleToMap(UserAccountModule ref) {
@@ -41,6 +44,7 @@ DynamicMap _$UserAccountModuleToMap(UserAccountModule ref) {
     "allowUserDeleting": ref.allowUserDeleting,
     "allowEditingBlockList": ref.allowEditingBlockList,
     "permission": ref.permission.toMap(),
-    if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap()
+    if (ref.rerouteConfigs.isNotEmpty)
+      "rerouteConfigs": ref.rerouteConfigs.map((e) => e.toMap())
   };
 }

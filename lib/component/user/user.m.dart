@@ -37,8 +37,16 @@ UserModule? _$UserModuleFromMap(DynamicMap map, UserModule ref) {
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
-      rerouteConfig: map.get<DynamicMap>(
-          "rerouteConfig", <String, dynamic>{}).toRerouteConfig());
+      rerouteConfigs: map
+          .get<List>("rerouteConfigs", const [])
+          .cast<DynamicMap>()
+          .map((e) => e.toRerouteConfig())
+          .removeEmpty(),
+      variables: map
+          .get<List>("variables", const [])
+          .cast<DynamicMap>()
+          .map((e) => e.toVariableConfig())
+          .removeEmpty());
 }
 
 DynamicMap _$UserModuleToMap(UserModule ref) {
@@ -65,6 +73,9 @@ DynamicMap _$UserModuleToMap(UserModule ref) {
     "allowBlock": ref.allowBlock,
     "allowReport": ref.allowReport,
     "permission": ref.permission.toMap(),
-    if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap()
+    if (ref.rerouteConfigs.isNotEmpty)
+      "rerouteConfigs": ref.rerouteConfigs.map((e) => e.toMap()),
+    if (ref.variables.isNotEmpty)
+      "variables": ref.variables.map((e) => e.toMap())
   };
 }

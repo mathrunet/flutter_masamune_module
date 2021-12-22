@@ -6,7 +6,7 @@ part 'user.m.dart';
 
 @module
 @immutable
-class UserModule extends PageModule with VerifyAppReroutePageModuleMixin {
+class UserModule extends PageModule {
   const UserModule({
     bool enabled = true,
     String title = "",
@@ -27,14 +27,15 @@ class UserModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.allowBlock = true,
     this.allowReport = true,
     Permission permission = const Permission(),
-    RerouteConfig? rerouteConfig,
+    List<RerouteConfig> rerouteConfigs = const [],
+    this.variables = const [],
     this.home,
     this.editProfile,
   }) : super(
           enabled: enabled,
           title: title,
           permission: permission,
-          rerouteConfig: rerouteConfig,
+          rerouteConfigs: rerouteConfigs,
         );
 
   @override
@@ -109,6 +110,9 @@ class UserModule extends PageModule with VerifyAppReroutePageModuleMixin {
   /// 表示する追加情報。
   final Map<String, String> additionalInformation;
 
+  /// ユーザーの値情報。
+  final List<VariableConfig> variables;
+
   @override
   UserModule? fromMap(DynamicMap map) => _$UserModuleFromMap(map, this);
   @override
@@ -123,7 +127,7 @@ abstract class UserWidgetModule extends PageModule
     String? title,
     Map<String, RouteConfig>? routeSettings,
     Permission permission = const Permission(),
-    RerouteConfig? rerouteConfig,
+    List<RerouteConfig> rerouteConfigs = const [],
     bool verifyAppReroute = false,
   }) : super(
           id: id,
@@ -132,7 +136,7 @@ abstract class UserWidgetModule extends PageModule
           routeSettings: routeSettings,
           permission: permission,
           verifyAppReroute: verifyAppReroute,
-          rerouteConfig: rerouteConfig,
+          rerouteConfigs: rerouteConfigs,
         );
   List<String> get allowRoles;
   Widget build(BuildContext context);
@@ -341,6 +345,14 @@ class UserModuleHome extends PageScopedWidget {
               Text(text),
             ],
           ),
+          ...context.app?.userVariables
+                  .where(
+                      (e) => e.id != config.nameKey && e.id != config.textKey)
+                  .buildView(context, ref, data: user) ??
+              [],
+          ...config.variables
+              .where((e) => e.id != config.nameKey && e.id != config.textKey)
+              .buildView(context, ref, data: user),
           ...config.contents.mapAndRemoveEmpty((item) {
             if (role != null &&
                 role.id.isNotEmpty &&
@@ -350,6 +362,8 @@ class UserModuleHome extends PageScopedWidget {
             }
             return item.build(context);
           }),
+          const Divid(),
+          const Space.height(120),
         ],
       ),
     );
@@ -365,12 +379,8 @@ class UserModuleEditProfile extends PageScopedWidget {
     final form = ref.useForm();
     final user =
         ref.watchDocumentModel("${config.queryPath}/${context.model?.userId}");
-    final name = user.get(config.nameKey, "");
-    final text = user.get(config.textKey, "");
     final image = user.get(config.imageKey, "");
     final icon = user.get(config.iconKey, "");
-    final nameController = ref.useTextEditingController("name", name);
-    final textController = ref.useTextEditingController("text", text);
 
     return UIScaffold(
       appBar: UIAppBar(
@@ -525,29 +535,10 @@ class UserModuleEditProfile extends PageScopedWidget {
                 ),
               ),
               const Space.height(24),
-              DividHeadline("Name".localize()),
-              FormItemTextField(
-                dense: true,
-                controller: nameController,
-                hintText: "Input %s".localize().format(["Name".localize()]),
-                errorText: "No input %s".localize().format(["Name".localize()]),
-                onSaved: (value) {
-                  context[config.nameKey] = value;
-                },
-              ),
-              DividHeadline("Text".localize()),
-              FormItemTextField(
-                dense: true,
-                controller: textController,
-                hintText: "Input %s".localize().format(["Text".localize()]),
-                errorText: "No input %s".localize().format(["Text".localize()]),
-                allowEmpty: true,
-                minLines: 5,
-                maxLines: 10,
-                onSaved: (value) {
-                  context[config.textKey] = value;
-                },
-              ),
+              ...context.app?.userVariables
+                      .buildForm(context, ref, data: user) ??
+                  [],
+              ...config.variables.buildForm(context, ref, data: user),
               const Divid(),
               const Space.height(240),
             ],
@@ -563,8 +554,8 @@ class UserModuleEditProfile extends PageScopedWidget {
           }
 
           try {
-            user[config.nameKey] = context.get(config.nameKey, "");
-            user[config.textKey] = context.get(config.textKey, "");
+            context.app?.userVariables.buildValue(user, context, ref);
+            config.variables.buildValue(user, context, ref);
             await context.model?.saveDocument(user).showIndicator(context);
             UIDialog.show(
               context,

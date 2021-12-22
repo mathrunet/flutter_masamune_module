@@ -25,7 +25,7 @@ class MemberModule extends PageModule {
     this.groupId,
     this.affiliationKey = "affiliation",
     Permission permission = const Permission(),
-    RerouteConfig? rerouteConfig,
+    List<RerouteConfig> rerouteConfigs = const [],
     this.home,
     this.invite,
     this.designType = DesignType.modern,
@@ -34,7 +34,7 @@ class MemberModule extends PageModule {
           enabled: enabled,
           title: title,
           permission: permission,
-          rerouteConfig: rerouteConfig,
+          rerouteConfigs: rerouteConfigs,
         );
 
   @override

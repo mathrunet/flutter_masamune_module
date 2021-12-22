@@ -22,6 +22,7 @@ SnsLoginModule? _$SnsLoginModuleFromMap(DynamicMap map, SnsLoginModule ref) {
       enabled: map.get<bool>("enabled", true),
       title: map.get<String?>("title", null),
       color: map.get<DynamicMap>("color", <String, dynamic>{}).toColor(),
+      userPath: map.get<String>("userPath", Const.user),
       backgroundColor:
           map.get<DynamicMap>("backgroundColor", <String, dynamic>{}).toColor(),
       backgroundGradient: map.get<DynamicMap>(
@@ -56,9 +57,10 @@ SnsLoginModule? _$SnsLoginModuleFromMap(DynamicMap map, SnsLoginModule ref) {
       padding: map.get<DynamicMap>("padding", <String, dynamic>{}).toEdgeInsets() ??
           const EdgeInsets.all(36),
       redirectTo: map.get<String>("redirectTo", "/"),
-      registerForm: map.get<List>("registerForm", const []).cast<DynamicMap>().map((e) => e.toFormConfig()).removeEmpty(),
+      registerVariables: map.get<List>("registerVariables", const []).cast<DynamicMap>().map((e) => e.toVariableConfig()).removeEmpty(),
+      showOnlyRequiredVariable: map.get<bool>("showOnlyRequiredVariable", true),
       permission: map.get<DynamicMap>("permission", <String, dynamic>{}).toPermission() ?? const Permission(),
-      rerouteConfig: map.get<DynamicMap>("rerouteConfig", <String, dynamic>{}).toRerouteConfig());
+      rerouteConfigs: map.get<List>("rerouteConfigs", const []).cast<DynamicMap>().map((e) => e.toRerouteConfig()).removeEmpty());
 }
 
 DynamicMap _$SnsLoginModuleToMap(SnsLoginModule ref) {
@@ -69,6 +71,7 @@ DynamicMap _$SnsLoginModuleToMap(SnsLoginModule ref) {
     "enabled": ref.enabled,
     if (ref.title.isNotEmpty) "title": ref.title,
     if (ref.color != null) "color": ref.color?.toMap(),
+    if (ref.userPath.isNotEmpty) "userPath": ref.userPath,
     if (ref.backgroundColor != null)
       "backgroundColor": ref.backgroundColor?.toMap(),
     if (ref.backgroundGradient != null)
@@ -96,9 +99,11 @@ DynamicMap _$SnsLoginModuleToMap(SnsLoginModule ref) {
     "titlePadding": ref.titlePadding.toMap(),
     "padding": ref.padding.toMap(),
     if (ref.redirectTo.isNotEmpty) "redirectTo": ref.redirectTo,
-    if (ref.registerForm.isNotEmpty)
-      "registerForm": ref.registerForm.map((e) => e.toMap()),
+    if (ref.registerVariables.isNotEmpty)
+      "registerVariables": ref.registerVariables.map((e) => e.toMap()),
+    "showOnlyRequiredVariable": ref.showOnlyRequiredVariable,
     "permission": ref.permission.toMap(),
-    if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap()
+    if (ref.rerouteConfigs.isNotEmpty)
+      "rerouteConfigs": ref.rerouteConfigs.map((e) => e.toMap())
   };
 }

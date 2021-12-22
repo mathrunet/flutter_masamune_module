@@ -25,10 +25,6 @@ extension MasamuneModuleDynamicMapExtensions on DynamicMap {
     return GroupConfig._fromMap(this);
   }
 
-  FormConfig? toFormConfig() {
-    return FormConfig._fromMap(this);
-  }
-
   LoginConfig? toLoginConfig() {
     return LoginConfig._fromMap(this);
   }

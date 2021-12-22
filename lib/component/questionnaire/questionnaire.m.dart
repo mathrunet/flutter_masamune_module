@@ -31,8 +31,11 @@ QuestionnaireModule? _$QuestionnaireModuleFromMap(
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
-      rerouteConfig: map.get<DynamicMap>(
-          "rerouteConfig", <String, dynamic>{}).toRerouteConfig(),
+      rerouteConfigs: map
+          .get<List>("rerouteConfigs", const [])
+          .cast<DynamicMap>()
+          .map((e) => e.toRerouteConfig())
+          .removeEmpty(),
       questionnaireQuery: map.get<DynamicMap>(
           "questionnaireQuery", <String, dynamic>{}).toModelQuery());
 }
@@ -57,7 +60,8 @@ DynamicMap _$QuestionnaireModuleToMap(QuestionnaireModule ref) {
     if (ref.endTimeKey.isNotEmpty) "endTimeKey": ref.endTimeKey,
     if (ref.answerKey.isNotEmpty) "answerKey": ref.answerKey,
     "permission": ref.permission.toMap(),
-    if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap(),
+    if (ref.rerouteConfigs.isNotEmpty)
+      "rerouteConfigs": ref.rerouteConfigs.map((e) => e.toMap()),
     if (ref.questionnaireQuery != null)
       "questionnaireQuery": ref.questionnaireQuery?.toMap()
   };

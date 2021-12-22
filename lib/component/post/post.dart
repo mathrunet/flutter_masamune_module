@@ -30,7 +30,7 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.createdTimeKey = Const.createdTime,
     this.editingType = PostEditingType.planeText,
     Permission permission = const Permission(),
-    RerouteConfig? rerouteConfig,
+    List<RerouteConfig> rerouteConfigs = const [],
     this.postQuery,
     this.home,
     this.edit,
@@ -39,7 +39,7 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
           enabled: enabled,
           title: title,
           permission: permission,
-          rerouteConfig: rerouteConfig,
+          rerouteConfigs: rerouteConfigs,
         );
 
   @override

@@ -41,7 +41,7 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.chatRoomQuery,
     this.availableMemberQuery,
     Permission permission = const Permission(),
-    RerouteConfig? rerouteConfig,
+    List<RerouteConfig> rerouteConfigs = const [],
     this.home,
     this.timeline,
     this.mediaView,
@@ -50,7 +50,7 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
           enabled: enabled,
           title: title,
           permission: permission,
-          rerouteConfig: rerouteConfig,
+          rerouteConfigs: rerouteConfigs,
         );
 
   @override

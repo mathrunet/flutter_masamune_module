@@ -37,7 +37,7 @@ class HomeModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.subMenu = const [],
     this.profileRoutePath = "user",
     Permission permission = const Permission(),
-    RerouteConfig? rerouteConfig,
+    List<RerouteConfig> rerouteConfigs = const [],
     this.header,
     this.footer,
     this.home,
@@ -48,7 +48,7 @@ class HomeModule extends PageModule with VerifyAppReroutePageModuleMixin {
           enabled: enabled,
           title: title,
           permission: permission,
-          rerouteConfig: rerouteConfig,
+          rerouteConfigs: rerouteConfigs,
         );
 
   @override

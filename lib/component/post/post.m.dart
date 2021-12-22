@@ -26,8 +26,11 @@ PostModule? _$PostModuleFromMap(DynamicMap map, PostModule ref) {
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
-      rerouteConfig: map.get<DynamicMap>(
-          "rerouteConfig", <String, dynamic>{}).toRerouteConfig(),
+      rerouteConfigs: map
+          .get<List>("rerouteConfigs", const [])
+          .cast<DynamicMap>()
+          .map((e) => e.toRerouteConfig())
+          .removeEmpty(),
       postQuery:
           map.get<DynamicMap>("postQuery", <String, dynamic>{}).toModelQuery());
 }
@@ -46,7 +49,8 @@ DynamicMap _$PostModuleToMap(PostModule ref) {
     if (ref.createdTimeKey.isNotEmpty) "createdTimeKey": ref.createdTimeKey,
     "editingType": ref.editingType.index,
     "permission": ref.permission.toMap(),
-    if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap(),
+    if (ref.rerouteConfigs.isNotEmpty)
+      "rerouteConfigs": ref.rerouteConfigs.map((e) => e.toMap()),
     if (ref.postQuery != null) "postQuery": ref.postQuery?.toMap()
   };
 }

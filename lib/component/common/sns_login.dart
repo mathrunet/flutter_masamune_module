@@ -19,6 +19,7 @@ class SnsLoginModule extends PageModule {
     bool enabled = true,
     String? title,
     this.color,
+    this.userPath = Const.user,
     this.backgroundColor,
     this.backgroundGradient,
     this.appBarColorOnSliverList,
@@ -39,14 +40,15 @@ class SnsLoginModule extends PageModule {
         const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
     this.padding = const EdgeInsets.all(36),
     this.redirectTo = "/",
-    this.registerForm = const [],
+    this.registerVariables = const [],
+    this.showOnlyRequiredVariable = true,
     Permission permission = const Permission(),
-    RerouteConfig? rerouteConfig,
+    List<RerouteConfig> rerouteConfigs = const [],
   }) : super(
           enabled: enabled,
           title: title,
           permission: permission,
-          rerouteConfig: rerouteConfig,
+          rerouteConfigs: rerouteConfigs,
         );
 
   @override
@@ -57,6 +59,7 @@ class SnsLoginModule extends PageModule {
 
     final route = {
       "/landing": RouteConfig((_) => SnsLoginModuleLanding(this)),
+      "/register": RouteConfig((_) => SnsLoginModuleRegister(this)),
     };
     return route;
   }
@@ -69,6 +72,9 @@ class SnsLoginModule extends PageModule {
 
   /// 前景色。
   final Color? color;
+
+  /// ユーザーコレクションのパス。
+  final String userPath;
 
   /// ロールのキー。
   final String roleKey;
@@ -127,8 +133,11 @@ class SnsLoginModule extends PageModule {
   /// ログイン後のパス。
   final String redirectTo;
 
-  /// 登録時のフォームデータ。
-  final List<FormConfig> registerForm;
+  /// 登録時の値データ。
+  final List<VariableConfig> registerVariables;
+
+  /// `true` if you want to show only necessary values at registration.
+  final bool showOnlyRequiredVariable;
 
   @override
   SnsLoginModule? fromMap(DynamicMap map) => _$SnsLoginModuleFromMap(map, this);
@@ -242,8 +251,15 @@ class SnsLoginModuleLanding extends PageScopedWidget {
                                           await context.model
                                               ?.signInAnonymously()
                                               .showIndicator(context);
-                                          context.navigator
-                                              .pushNamed(config.redirectTo);
+                                          if (_hasRegistrationData(context)) {
+                                            context.navigator
+                                                .pushReplacementNamed(
+                                                    "/register");
+                                          } else {
+                                            context.navigator
+                                                .pushReplacementNamed(
+                                                    config.redirectTo);
+                                          }
                                         } catch (e) {
                                           UIDialog.show(
                                             context,
@@ -291,7 +307,11 @@ class SnsLoginModuleLanding extends PageScopedWidget {
           icon: FontAwesomeIcons.apple,
           onPressed: () {
             try {
-              context.navigator.pushNamed(config.redirectTo);
+              if (_hasRegistrationData(context)) {
+                context.navigator.pushReplacementNamed("/register");
+              } else {
+                context.navigator.pushReplacementNamed(config.redirectTo);
+              }
             } catch (e) {
               UIDialog.show(
                 context,
@@ -314,7 +334,11 @@ class SnsLoginModuleLanding extends PageScopedWidget {
           icon: FontAwesomeIcons.google,
           onPressed: () {
             try {
-              context.navigator.pushNamed(config.redirectTo);
+              if (_hasRegistrationData(context)) {
+                context.navigator.pushReplacementNamed("/register");
+              } else {
+                context.navigator.pushReplacementNamed(config.redirectTo);
+              }
             } catch (e) {
               UIDialog.show(
                 context,
@@ -337,7 +361,11 @@ class SnsLoginModuleLanding extends PageScopedWidget {
           icon: FontAwesomeIcons.facebook,
           onPressed: () {
             try {
-              context.navigator.pushNamed(config.redirectTo);
+              if (_hasRegistrationData(context)) {
+                context.navigator.pushReplacementNamed("/register");
+              } else {
+                context.navigator.pushReplacementNamed(config.redirectTo);
+              }
             } catch (e) {
               UIDialog.show(
                 context,
@@ -360,7 +388,11 @@ class SnsLoginModuleLanding extends PageScopedWidget {
           icon: FontAwesomeIcons.twitter,
           onPressed: () {
             try {
-              context.navigator.pushNamed(config.redirectTo);
+              if (_hasRegistrationData(context)) {
+                context.navigator.pushReplacementNamed("/register");
+              } else {
+                context.navigator.pushReplacementNamed(config.redirectTo);
+              }
             } catch (e) {
               UIDialog.show(
                 context,
@@ -372,6 +404,18 @@ class SnsLoginModuleLanding extends PageScopedWidget {
           },
         );
     }
+  }
+
+  bool _hasRegistrationData(BuildContext context) {
+    return (context.app?.userVariables
+                    .where(
+                        (e) => !config.showOnlyRequiredVariable || e.required)
+                    .length ??
+                0) +
+            config.registerVariables
+                .where((e) => !config.showOnlyRequiredVariable || e.required)
+                .length >
+        0;
   }
 }
 
@@ -425,5 +469,72 @@ class _LoginModuleBackgroundImage extends StatelessWidget {
       return ColoredBox(
           color: config.backgroundColor ?? context.theme.backgroundColor);
     }
+  }
+}
+
+class SnsLoginModuleRegister extends PageScopedWidget {
+  const SnsLoginModuleRegister(this.config);
+  final SnsLoginModule config;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final form = ref.useForm();
+
+    return UIScaffold(
+      designType: DesignType.material,
+      appBar: UIAppBar(
+        designType: DesignType.material,
+        title: Text("Registration".localize()),
+      ),
+      body: FormBuilder(
+        key: form.key,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        children: [
+          ...context.app?.userVariables.buildForm(
+                context,
+                ref,
+                onlyRequired: config.showOnlyRequiredVariable,
+              ) ??
+              [],
+          ...config.registerVariables.buildForm(
+            context,
+            ref,
+            onlyRequired: config.showOnlyRequiredVariable,
+          ),
+          const Divid(),
+          const Space.height(120),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          if (!form.validate()) {
+            return;
+          }
+          try {
+            final userId = context.model?.userId;
+            if (userId.isEmpty) {
+              throw Exception("User id is not found.");
+            }
+            final collection = ref.readCollectionModel(config.userPath);
+            final doc = context.model?.createDocument(collection, userId);
+            if (doc == null) {
+              throw Exception("User document has not created.");
+            }
+            context.app?.userVariables.buildValue(doc, context, ref);
+            await context.model?.saveDocument(doc).showIndicator(context);
+            context.navigator.pushReplacementNamed(config.redirectTo);
+          } catch (e) {
+            UIDialog.show(
+              context,
+              title: "Error".localize(),
+              text: "Invalid error.".localize(),
+              submitText: "Close".localize(),
+            );
+          }
+        },
+        label: Text("Submit".localize()),
+        icon: const Icon(Icons.check),
+      ),
+    );
   }
 }

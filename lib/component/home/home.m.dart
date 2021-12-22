@@ -50,7 +50,7 @@ HomeModule? _$HomeModuleFromMap(DynamicMap map, HomeModule ref) {
       subMenu: map.get<List>("subMenu", const []).cast<DynamicMap>().map((e) => e.toMenuConfig()).removeEmpty(),
       profileRoutePath: map.get<String>("profileRoutePath", "user"),
       permission: map.get<DynamicMap>("permission", <String, dynamic>{}).toPermission() ?? const Permission(),
-      rerouteConfig: map.get<DynamicMap>("rerouteConfig", <String, dynamic>{}).toRerouteConfig());
+      rerouteConfigs: map.get<List>("rerouteConfigs", const []).cast<DynamicMap>().map((e) => e.toRerouteConfig()).removeEmpty());
 }
 
 DynamicMap _$HomeModuleToMap(HomeModule ref) {
@@ -81,7 +81,8 @@ DynamicMap _$HomeModuleToMap(HomeModule ref) {
     if (ref.profileRoutePath.isNotEmpty)
       "profileRoutePath": ref.profileRoutePath,
     "permission": ref.permission.toMap(),
-    if (ref.rerouteConfig != null) "rerouteConfig": ref.rerouteConfig?.toMap()
+    if (ref.rerouteConfigs.isNotEmpty)
+      "rerouteConfigs": ref.rerouteConfigs.map((e) => e.toMap())
   };
 }
 

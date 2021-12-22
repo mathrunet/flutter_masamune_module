@@ -16,6 +16,7 @@ LoginModule? _$LoginModuleFromMap(DynamicMap map, LoginModule ref) {
       layoutType: LoginLayoutType.values.firstWhere((e) =>
           e.index == map.get<int>("layoutType", LoginLayoutType.fixed.index)),
       color: map.get<DynamicMap>("color", <String, dynamic>{}).toColor(),
+      userPath: map.get<String>("userPath", Const.user),
       backgroundColor:
           map.get<DynamicMap>("backgroundColor", <String, dynamic>{}).toColor(),
       backgroundGradient: map.get<DynamicMap>(
@@ -51,7 +52,10 @@ LoginModule? _$LoginModuleFromMap(DynamicMap map, LoginModule ref) {
           const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
       padding: map.get<DynamicMap>("padding", <String, dynamic>{}).toEdgeInsets() ?? const EdgeInsets.all(36),
       redirectTo: map.get<String>("redirectTo", "/"),
-      registerForm: map.get<List>("registerForm", const []).cast<DynamicMap>().map((e) => e.toFormConfig()).removeEmpty());
+      permission: map.get<DynamicMap>("permission", <String, dynamic>{}).toPermission() ?? const Permission(),
+      rerouteConfigs: map.get<List>("rerouteConfigs", const []).cast<DynamicMap>().map((e) => e.toRerouteConfig()).removeEmpty(),
+      registerVariables: map.get<List>("registerVariables", const []).cast<DynamicMap>().map((e) => e.toVariableConfig()).removeEmpty(),
+      showOnlyRequiredVariable: map.get<bool>("showOnlyRequiredVariable", true));
 }
 
 DynamicMap _$LoginModuleToMap(LoginModule ref) {
@@ -61,6 +65,7 @@ DynamicMap _$LoginModuleToMap(LoginModule ref) {
     if (ref.title.isNotEmpty) "title": ref.title,
     "layoutType": ref.layoutType.index,
     if (ref.color != null) "color": ref.color?.toMap(),
+    if (ref.userPath.isNotEmpty) "userPath": ref.userPath,
     if (ref.backgroundColor != null)
       "backgroundColor": ref.backgroundColor?.toMap(),
     if (ref.backgroundGradient != null)
@@ -89,7 +94,11 @@ DynamicMap _$LoginModuleToMap(LoginModule ref) {
     "titlePadding": ref.titlePadding.toMap(),
     "padding": ref.padding.toMap(),
     if (ref.redirectTo.isNotEmpty) "redirectTo": ref.redirectTo,
-    if (ref.registerForm.isNotEmpty)
-      "registerForm": ref.registerForm.map((e) => e.toMap())
+    "permission": ref.permission.toMap(),
+    if (ref.rerouteConfigs.isNotEmpty)
+      "rerouteConfigs": ref.rerouteConfigs.map((e) => e.toMap()),
+    if (ref.registerVariables.isNotEmpty)
+      "registerVariables": ref.registerVariables.map((e) => e.toMap()),
+    "showOnlyRequiredVariable": ref.showOnlyRequiredVariable
   };
 }

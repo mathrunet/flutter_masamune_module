@@ -26,14 +26,15 @@ class SingleMediaModule extends PageModule
     this.createdTimeKey = Const.createdTime,
     this.mediaType = PlatformMediaType.all,
     Permission permission = const Permission(),
-    RerouteConfig? rerouteConfig,
+    List<RerouteConfig> rerouteConfigs = const [],
     this.home,
     this.edit,
   }) : super(
-            enabled: enabled,
-            title: title,
-            permission: permission,
-            rerouteConfig: rerouteConfig);
+          enabled: enabled,
+          title: title,
+          permission: permission,
+          rerouteConfigs: rerouteConfigs,
+        );
 
   @override
   Map<String, RouteConfig>? get routeSettings {
