@@ -1,4 +1,4 @@
-// Copyright 2021 mathru. All rights reserved.
+// Copyright 2022 mathru. All rights reserved.
 
 /// The module library of Masamune framework.
 ///
@@ -8,7 +8,6 @@
 /// [YouTube]: https://www.youtube.com/c/mathrunetchannel
 library masamune_module;
 
-import 'package:flutter/material.dart';
 import 'package:masamune/masamune.dart';
 
 export 'package:masamune/masamune.dart';

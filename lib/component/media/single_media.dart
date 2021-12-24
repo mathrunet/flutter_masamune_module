@@ -1,9 +1,5 @@
-import 'package:masamune/masamune.dart';
-import 'package:masamune/ui/ui.dart';
 import 'package:masamune_module/masamune_module.dart';
 import 'package:photo_view/photo_view.dart';
-
-import 'gallery.dart';
 
 part "single_media.m.dart";
 

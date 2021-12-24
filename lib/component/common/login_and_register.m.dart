@@ -34,6 +34,8 @@ LoginModule? _$LoginModuleFromMap(DynamicMap map, LoginModule ref) {
       featureImage: map.get<String?>("featureImage", null),
       featureImageSize:
           map.get<DynamicMap>("featureImageSize", <String, dynamic>{}).toSize(),
+      featureImageRadius: map.get<DynamicMap>(
+          "featureImageRadius", <String, dynamic>{}).toBorderRadius(),
       roleKey: map.get<String>("roleKey", Const.role),
       formImageSize:
           map.get<DynamicMap>("formImageSize", <String, dynamic>{}).toSize(),
@@ -46,10 +48,9 @@ LoginModule? _$LoginModuleFromMap(DynamicMap map, LoginModule ref) {
               Alignment.bottomLeft,
       login: map.get<DynamicMap>("login", <String, dynamic>{}).toLoginConfig() ??
           const LoginConfig(label: "Login", icon: FontAwesomeIcons.signInAlt),
-      guestLogin: map
-          .get<DynamicMap>("guestLogin", <String, dynamic>{}).toLoginConfig(),
-      titlePadding: map.get<DynamicMap>("titlePadding", <String, dynamic>{}).toEdgeInsets() ??
-          const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+      guestLogin:
+          map.get<DynamicMap>("guestLogin", <String, dynamic>{}).toLoginConfig(),
+      titlePadding: map.get<DynamicMap>("titlePadding", <String, dynamic>{}).toEdgeInsets() ?? const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
       padding: map.get<DynamicMap>("padding", <String, dynamic>{}).toEdgeInsets() ?? const EdgeInsets.all(36),
       redirectTo: map.get<String>("redirectTo", "/"),
       permission: map.get<DynamicMap>("permission", <String, dynamic>{}).toPermission() ?? const Permission(),
@@ -83,6 +84,8 @@ DynamicMap _$LoginModuleToMap(LoginModule ref) {
     if (ref.featureImage.isNotEmpty) "featureImage": ref.featureImage,
     if (ref.featureImageSize != null)
       "featureImageSize": ref.featureImageSize?.toMap(),
+    if (ref.featureImageRadius != null)
+      "featureImageRadius": ref.featureImageRadius?.toMap(),
     if (ref.roleKey.isNotEmpty) "roleKey": ref.roleKey,
     if (ref.formImageSize != null) "formImageSize": ref.formImageSize?.toMap(),
     "featureImageFit": ref.featureImageFit.index,

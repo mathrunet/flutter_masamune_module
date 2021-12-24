@@ -1,8 +1,6 @@
 import 'dart:ui';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:masamune/masamune.dart';
-import 'package:masamune/ui/ui.dart';
 import 'package:masamune_module/masamune_module.dart';
 
 part 'sns_login.m.dart';
@@ -29,6 +27,7 @@ class SnsLoginModule extends PageModule {
     this.backgroundImage,
     this.backgroundImageBlur = 5.0,
     this.featureImage,
+    this.featureImageRadius,
     this.featureImageSize,
     this.roleKey = Const.role,
     this.formImageSize,
@@ -93,6 +92,9 @@ class SnsLoginModule extends PageModule {
 
   /// フィーチャー画像。
   final String? featureImage;
+
+  /// フィーチャー画像の丸み。
+  final BorderRadius? featureImageRadius;
 
   /// フィーチャー画像の配置。
   final BoxFit featureImageFit;
@@ -195,10 +197,14 @@ class SnsLoginModuleLanding extends PageScopedWidget {
                                   SizedBox(
                                     width: config.featureImageSize?.width,
                                     height: config.featureImageSize?.height,
-                                    child: Image(
-                                      image: NetworkOrAsset.image(
-                                          config.featureImage!),
-                                      fit: config.featureImageFit,
+                                    child: ClipRRect(
+                                      borderRadius: config.featureImageRadius ??
+                                          BorderRadius.zero,
+                                      child: Image(
+                                        image: NetworkOrAsset.image(
+                                            config.featureImage!),
+                                        fit: config.featureImageFit,
+                                      ),
                                     ),
                                   ),
                                 if (config.title.isNotEmpty)

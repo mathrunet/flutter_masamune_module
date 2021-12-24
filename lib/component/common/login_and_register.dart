@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -25,6 +24,7 @@ class LoginModule extends PageModule {
     this.backgroundImageBlur = 5.0,
     this.featureImage,
     this.featureImageSize,
+    this.featureImageRadius,
     this.roleKey = Const.role,
     this.formImageSize,
     this.featureImageFit = BoxFit.cover,
@@ -93,6 +93,9 @@ class LoginModule extends PageModule {
 
   /// フィーチャー画像。
   final String? featureImage;
+
+  /// フィーチャー画像の丸み。
+  final BorderRadius? featureImageRadius;
 
   /// フィーチャー画像の配置。
   final BoxFit featureImageFit;
@@ -197,10 +200,14 @@ class LoginModuleLanding extends PageScopedWidget {
                                   SizedBox(
                                     width: config.featureImageSize?.width,
                                     height: config.featureImageSize?.height,
-                                    child: Image(
-                                      image: NetworkOrAsset.image(
-                                          config.featureImage!),
-                                      fit: config.featureImageFit,
+                                    child: ClipRRect(
+                                      borderRadius: config.featureImageRadius ??
+                                          BorderRadius.zero,
+                                      child: Image(
+                                        image: NetworkOrAsset.image(
+                                            config.featureImage!),
+                                        fit: config.featureImageFit,
+                                      ),
                                     ),
                                   ),
                                 if (config.title.isNotEmpty)
@@ -386,9 +393,12 @@ class LoginModuleLogin extends PageScopedWidget {
                   child: SizedBox(
                     width: imageSize?.width,
                     height: imageSize?.height,
-                    child: Image(
-                      image: NetworkOrAsset.image(config.featureImage!),
-                      fit: config.featureImageFit,
+                    child: ClipRRect(
+                      borderRadius: config.featureImageRadius,
+                      child: Image(
+                        image: NetworkOrAsset.image(config.featureImage!),
+                        fit: config.featureImageFit,
+                      ),
                     ),
                   ),
                 )
@@ -591,9 +601,12 @@ class LoginModuleRegister extends PageScopedWidget {
                   child: SizedBox(
                     width: imageSize?.width,
                     height: imageSize?.height,
-                    child: Image(
-                      image: NetworkOrAsset.image(config.featureImage!),
-                      fit: config.featureImageFit,
+                    child: ClipRRect(
+                      borderRadius: config.featureImageRadius,
+                      child: Image(
+                        image: NetworkOrAsset.image(config.featureImage!),
+                        fit: config.featureImageFit,
+                      ),
                     ),
                   ),
                 )
@@ -900,9 +913,12 @@ class LoginModulePasswordReset extends PageScopedWidget {
                   child: SizedBox(
                     width: imageSize?.width,
                     height: imageSize?.height,
-                    child: Image(
-                      image: NetworkOrAsset.image(config.featureImage!),
-                      fit: config.featureImageFit,
+                    child: ClipRRect(
+                      borderRadius: config.featureImageRadius,
+                      child: Image(
+                        image: NetworkOrAsset.image(config.featureImage!),
+                        fit: config.featureImageFit,
+                      ),
                     ),
                   ),
                 )

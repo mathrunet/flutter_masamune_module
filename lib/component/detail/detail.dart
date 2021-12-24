@@ -1,4 +1,3 @@
-import 'package:masamune/masamune.dart';
 import 'package:masamune_module/masamune_module.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';

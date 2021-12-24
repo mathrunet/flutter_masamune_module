@@ -38,6 +38,8 @@ SnsLoginModule? _$SnsLoginModuleFromMap(DynamicMap map, SnsLoginModule ref) {
       backgroundImage: map.get<String?>("backgroundImage", null),
       backgroundImageBlur: map.get<double?>("backgroundImageBlur", 5.0) ?? 5.0,
       featureImage: map.get<String?>("featureImage", null),
+      featureImageRadius: map.get<DynamicMap>(
+          "featureImageRadius", <String, dynamic>{}).toBorderRadius(),
       featureImageSize:
           map.get<DynamicMap>("featureImageSize", <String, dynamic>{}).toSize(),
       roleKey: map.get<String>("roleKey", Const.role),
@@ -47,15 +49,13 @@ SnsLoginModule? _$SnsLoginModuleFromMap(DynamicMap map, SnsLoginModule ref) {
           e.index == map.get<int>("featureImageFit", BoxFit.cover.index)),
       titleTextStyle: map
           .get<DynamicMap>("titleTextStyle", <String, dynamic>{}).toTextStyle(),
-      titleAlignment:
-          map.get<DynamicMap>("titleAlignment", <String, dynamic>{}).toAlignment() ??
-              Alignment.bottomLeft,
-      guestLogin: map
-          .get<DynamicMap>("guestLogin", <String, dynamic>{}).toLoginConfig(),
-      titlePadding: map.get<DynamicMap>("titlePadding", <String, dynamic>{}).toEdgeInsets() ??
-          const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-      padding: map.get<DynamicMap>("padding", <String, dynamic>{}).toEdgeInsets() ??
-          const EdgeInsets.all(36),
+      titleAlignment: map.get<DynamicMap>(
+              "titleAlignment", <String, dynamic>{}).toAlignment() ??
+          Alignment.bottomLeft,
+      guestLogin:
+          map.get<DynamicMap>("guestLogin", <String, dynamic>{}).toLoginConfig(),
+      titlePadding: map.get<DynamicMap>("titlePadding", <String, dynamic>{}).toEdgeInsets() ?? const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+      padding: map.get<DynamicMap>("padding", <String, dynamic>{}).toEdgeInsets() ?? const EdgeInsets.all(36),
       redirectTo: map.get<String>("redirectTo", "/"),
       registerVariables: map.get<List>("registerVariables", const []).cast<DynamicMap>().map((e) => e.toVariableConfig()).removeEmpty(),
       showOnlyRequiredVariable: map.get<bool>("showOnlyRequiredVariable", true),
@@ -87,6 +87,8 @@ DynamicMap _$SnsLoginModuleToMap(SnsLoginModule ref) {
     if (ref.backgroundImageBlur != null)
       "backgroundImageBlur": ref.backgroundImageBlur,
     if (ref.featureImage.isNotEmpty) "featureImage": ref.featureImage,
+    if (ref.featureImageRadius != null)
+      "featureImageRadius": ref.featureImageRadius?.toMap(),
     if (ref.featureImageSize != null)
       "featureImageSize": ref.featureImageSize?.toMap(),
     if (ref.roleKey.isNotEmpty) "roleKey": ref.roleKey,

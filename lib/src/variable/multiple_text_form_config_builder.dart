@@ -26,7 +26,7 @@ class MultipleTextFormConfigBuilder extends FormConfigBuilder {
       if (config.label.isNotEmpty)
         DividHeadline(
           config.label.localize(),
-          icon: config.required ? Icons.check_circle : null,
+          prefix: config.required ? context.widgetTheme.requiredIcon : null,
         )
       else
         const Divid(),
