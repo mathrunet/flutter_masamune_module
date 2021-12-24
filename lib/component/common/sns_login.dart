@@ -153,7 +153,7 @@ class SnsLoginModuleLanding extends PageScopedWidget {
   final SnsLoginModule config;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final animation = ref.useAutoAnimationScenario(
+    final animation = ref.useAutoPlayAnimationScenario(
       "main",
       [
         AnimationUnit(
