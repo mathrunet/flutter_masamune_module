@@ -50,15 +50,15 @@ class HomeModule extends PageModule with VerifyAppReroutePageModuleMixin {
         );
 
   @override
-  Map<String, RouteConfig>? get routeSettings {
+  Map<String, RouteConfig> get routeSettings {
     if (!enabled) {
       return const {};
     }
     final route = {
       "/": RouteConfig((_) => home ?? HomeModuleHome(this)),
     };
-    route.addAll(info.routeSettings ?? {});
-    route.addAll(calendar.routeSettings ?? {});
+    route.addAll(info.routeSettings);
+    route.addAll(calendar.routeSettings);
     return route;
   }
 
@@ -169,7 +169,7 @@ class HomeInformationModule extends PostModule {
         );
 
   @override
-  Map<String, RouteConfig>? get routeSettings {
+  Map<String, RouteConfig> get routeSettings {
     if (!enabled) {
       return const {};
     }
@@ -224,7 +224,7 @@ class HomeCalendarModule extends CalendarModule {
         );
 
   @override
-  Map<String, RouteConfig>? get routeSettings {
+  Map<String, RouteConfig> get routeSettings {
     if (!enabled) {
       return const {};
     }

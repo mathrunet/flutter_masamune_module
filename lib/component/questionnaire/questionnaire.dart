@@ -74,7 +74,7 @@ class QuestionnaireModule extends PageModule
         );
 
   @override
-  Map<String, RouteConfig>? get routeSettings {
+  Map<String, RouteConfig> get routeSettings {
     if (!enabled) {
       return const {};
     }

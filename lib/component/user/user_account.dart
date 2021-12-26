@@ -31,7 +31,7 @@ class UserAccountModule extends UserWidgetModule {
         );
 
   @override
-  Map<String, RouteConfig>? get routeSettings {
+  Map<String, RouteConfig> get routeSettings {
     if (!enabled) {
       return const {};
     }

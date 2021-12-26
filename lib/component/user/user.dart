@@ -38,7 +38,7 @@ class UserModule extends PageModule {
         );
 
   @override
-  Map<String, RouteConfig>? get routeSettings {
+  Map<String, RouteConfig> get routeSettings {
     if (!enabled) {
       return const {};
     }
@@ -48,8 +48,8 @@ class UserModule extends PageModule {
           RouteConfig((_) => editProfile ?? UserModuleEditProfile(this)),
       "/$routePath/{user_id}": RouteConfig((_) => home ?? UserModuleHome(this)),
       ...contents
-          .expandAndRemoveEmpty<MapEntry<String, RouteConfig>>((item) =>
-              item.routeSettings?.entries ?? <MapEntry<String, RouteConfig>>[])
+          .expandAndRemoveEmpty<MapEntry<String, RouteConfig>>(
+              (item) => item.routeSettings.entries)
           .toMap<String, RouteConfig>(
               key: (item) => item.key, value: (item) => item.value)
     };
@@ -124,7 +124,7 @@ abstract class UserWidgetModule extends PageModule
     String? id,
     bool enabled = true,
     String? title,
-    Map<String, RouteConfig>? routeSettings,
+    Map<String, RouteConfig> routeSettings = const {},
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     bool verifyAppReroute = false,
