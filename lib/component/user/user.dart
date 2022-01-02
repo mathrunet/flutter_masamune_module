@@ -1,9 +1,5 @@
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:masamune_module/masamune_module.dart';
 
-part 'user.m.dart';
-
-@module
 @immutable
 class UserModule extends PageModule {
   const UserModule({
@@ -129,11 +125,6 @@ class UserModule extends PageModule {
 
   /// ヘッダーの線を表示する場合True.
   final bool showHeaderDivider;
-
-  @override
-  UserModule? fromMap(DynamicMap map) => _$UserModuleFromMap(map, this);
-  @override
-  DynamicMap toMap() => _$UserModuleToMap(this);
 }
 
 abstract class UserWidgetModule extends PageModule

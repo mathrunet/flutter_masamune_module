@@ -1,13 +1,10 @@
 import 'package:masamune_module/masamune_module.dart';
 
-part 'member.m.dart';
-
 enum MemberModuleInviteType {
   none,
   email,
 }
 
-@module
 @immutable
 class MemberModule extends PageModule {
   const MemberModule({
@@ -97,12 +94,6 @@ class MemberModule extends PageModule {
 
   /// フォームのメッセージ。
   final String? formMessage;
-
-  @override
-  MemberModule? fromMap(DynamicMap map) => _$MemberModuleFromMap(map, this);
-
-  @override
-  DynamicMap toMap() => _$MemberModuleToMap(this);
 }
 
 class MemberModuleHome extends PageScopedWidget {

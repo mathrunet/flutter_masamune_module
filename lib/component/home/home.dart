@@ -1,14 +1,12 @@
 import 'package:masamune_module/component/calendar/calendar.dart';
 import 'package:masamune_module/masamune_module.dart';
 
-part 'home.m.dart';
 part 'tile_menu_home.dart';
 
 enum HomeType {
   tileMenu,
 }
 
-@module
 @immutable
 class HomeModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const HomeModule({
@@ -131,15 +129,8 @@ class HomeModule extends PageModule with VerifyAppReroutePageModuleMixin {
 
   /// 権限のキー。
   final String roleKey;
-
-  @override
-  HomeModule? fromMap(DynamicMap map) => _$HomeModuleFromMap(map, this);
-
-  @override
-  DynamicMap toMap() => _$HomeModuleToMap(this);
 }
 
-@module
 @immutable
 class HomeInformationModule extends PostModule {
   const HomeInformationModule({
@@ -189,16 +180,8 @@ class HomeInformationModule extends PostModule {
 
   /// ウィジェット。
   final Widget? widget;
-
-  @override
-  HomeInformationModule? fromMap(DynamicMap map) =>
-      _$HomeInformationModuleFromMap(map, this);
-
-  @override
-  DynamicMap toMap() => _$HomeInformationModuleToMap(this);
 }
 
-@module
 @immutable
 class HomeCalendarModule extends CalendarModule {
   const HomeCalendarModule({
@@ -240,13 +223,6 @@ class HomeCalendarModule extends CalendarModule {
 
   /// ウィジェット。
   final Widget? widget;
-
-  @override
-  HomeCalendarModule? fromMap(DynamicMap map) =>
-      _$HomeCalendarModuleFromMap(map, this);
-
-  @override
-  DynamicMap toMap() => _$HomeCalendarModuleToMap(this);
 }
 
 class HomeModuleHome extends PageScopedWidget {

@@ -8,12 +8,9 @@ import 'package:flutter_quill/widgets/toolbar.dart';
 import 'package:masamune_module/masamune_module.dart';
 import 'package:tuple/tuple.dart';
 
-part 'calendar.m.dart';
-
 const _kQuillToolbarHeight = 80;
 enum CalendarEditingType { planeText, wysiwyg }
 
-@module
 @immutable
 class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const CalendarModule({
@@ -174,12 +171,6 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
 
   /// 追加ボタンを表示する場合True.
   final bool showAddingButton;
-
-  @override
-  CalendarModule? fromMap(DynamicMap map) => _$CalendarModuleFromMap(map, this);
-
-  @override
-  DynamicMap toMap() => _$CalendarModuleToMap(this);
 }
 
 class CalendarModuleHome extends PageScopedWidget {

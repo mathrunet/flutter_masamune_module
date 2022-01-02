@@ -1,9 +1,5 @@
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:masamune_module/masamune_module.dart';
 
-part 'user_account.m.dart';
-
-@module
 @immutable
 class UserAccountModule extends UserWidgetModule {
   const UserAccountModule({
@@ -89,13 +85,6 @@ class UserAccountModule extends UserWidgetModule {
 
   @override
   Widget build(BuildContext context) => UserAccountModuleContent(this);
-
-  @override
-  UserAccountModule? fromMap(DynamicMap map) =>
-      _$UserAccountModuleFromMap(map, this);
-
-  @override
-  DynamicMap toMap() => _$UserAccountModuleToMap(this);
 }
 
 class UserAccountModuleHome extends PageScopedWidget {

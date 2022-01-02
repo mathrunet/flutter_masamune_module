@@ -8,12 +8,9 @@ import 'package:flutter_quill/widgets/toolbar.dart';
 import 'package:masamune_module/masamune_module.dart';
 import 'package:tuple/tuple.dart';
 
-part "post.m.dart";
-
 const _kQuillToolbarHeight = 80;
 enum PostEditingType { planeText, wysiwyg }
 
-@module
 @immutable
 class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const PostModule({
@@ -94,12 +91,6 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
 
   /// クエリー。
   final ModelQuery? postQuery;
-
-  @override
-  PostModule? fromMap(DynamicMap map) => _$PostModuleFromMap(map, this);
-
-  @override
-  DynamicMap toMap() => _$PostModuleToMap(this);
 }
 
 class PostModuleHome extends PageScopedWidget {

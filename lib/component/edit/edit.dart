@@ -1,9 +1,6 @@
 import 'package:masamune/masamune.dart';
 import 'package:masamune_module/masamune_module.dart';
 
-part 'edit.m.dart';
-
-@module
 @immutable
 class EditModule extends PageModule {
   const EditModule({
@@ -63,12 +60,6 @@ class EditModule extends PageModule {
 
   /// True if you want to automatically display the back button when you are at home.
   final bool automaticallyImplyLeadingOnHome;
-
-  @override
-  EditModule? fromMap(DynamicMap map) => _$EditModuleFromMap(map, this);
-
-  @override
-  DynamicMap toMap() => _$EditModuleToMap(this);
 }
 
 class EditModuleHome extends PageScopedWidget {

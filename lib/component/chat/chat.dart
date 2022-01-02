@@ -1,8 +1,6 @@
 import 'package:masamune_module/masamune_module.dart';
 import 'package:photo_view/photo_view.dart';
 
-part 'chat.m.dart';
-
 enum ChatType { direct, group }
 
 extension ChatTypeExtensions on ChatType {
@@ -16,7 +14,6 @@ extension ChatTypeExtensions on ChatType {
   }
 }
 
-@module
 @immutable
 class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const ChatModule({
@@ -129,12 +126,6 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
 
   /// ルームを作成可能なメンバーのリスト。
   final ModelQuery? availableMemberQuery;
-
-  @override
-  ChatModule? fromMap(DynamicMap map) => _$ChatModuleFromMap(map, this);
-
-  @override
-  DynamicMap toMap() => _$ChatModuleToMap(this);
 }
 
 class ChatModuleHome extends PageScopedWidget {

@@ -2,9 +2,6 @@ import 'package:masamune_module/masamune_module.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
-part 'detail.m.dart';
-
-@module
 @immutable
 class DetailModule extends PageModule {
   const DetailModule({
@@ -95,12 +92,6 @@ class DetailModule extends PageModule {
   final bool enableShare;
 
   final bool multipleImage;
-
-  @override
-  DetailModule? fromMap(DynamicMap map) => _$DetailModuleFromMap(map, this);
-
-  @override
-  DynamicMap toMap() => _$DetailModuleToMap(this);
 }
 
 class DetailModuleHome extends PageScopedWidget {

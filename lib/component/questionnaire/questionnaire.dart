@@ -1,7 +1,5 @@
 import 'package:masamune_module/masamune_module.dart';
 
-part "questionnaire.m.dart";
-
 enum _QuenstionFormType { text, selection }
 
 extension _StringExtension on String {
@@ -35,7 +33,6 @@ extension _QuenstionFormTypeExtension on _QuenstionFormType {
   }
 }
 
-@module
 @immutable
 class QuestionnaireModule extends PageModule
     with VerifyAppReroutePageModuleMixin {
@@ -161,13 +158,6 @@ class QuestionnaireModule extends PageModule
 
   /// クエリー。
   final ModelQuery? questionnaireQuery;
-
-  @override
-  QuestionnaireModule? fromMap(DynamicMap map) =>
-      _$QuestionnaireModuleFromMap(map, this);
-
-  @override
-  DynamicMap toMap() => _$QuestionnaireModuleToMap(this);
 }
 
 class QuestionnaireModuleHome extends PageScopedWidget {

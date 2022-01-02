@@ -1,11 +1,6 @@
 import 'dart:ui';
-
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:masamune_module/masamune_module.dart';
 
-part 'login_and_register.m.dart';
-
-@module
 @immutable
 class LoginModule extends PageModule {
   const LoginModule({
@@ -144,11 +139,6 @@ class LoginModule extends PageModule {
 
   /// `true` if you want to show only necessary values at registration.
   final bool showOnlyRequiredVariable;
-
-  @override
-  LoginModule? fromMap(DynamicMap map) => _$LoginModuleFromMap(map, this);
-  @override
-  DynamicMap toMap() => _$LoginModuleToMap(this);
 }
 
 class LoginModuleLanding extends PageScopedWidget {

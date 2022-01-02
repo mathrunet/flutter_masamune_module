@@ -1,9 +1,6 @@
 import 'package:masamune_module/masamune_module.dart';
 import 'package:photo_view/photo_view.dart';
 
-part "single_media.m.dart";
-
-@module
 @immutable
 class SingleMediaModule extends PageModule
     with VerifyAppReroutePageModuleMixin {
@@ -89,13 +86,6 @@ class SingleMediaModule extends PageModule
 
   /// 対応するメディアタイプ。
   final PlatformMediaType mediaType;
-
-  @override
-  SingleMediaModule? fromMap(DynamicMap map) =>
-      _$SingleMediaModuleFromMap(map, this);
-
-  @override
-  DynamicMap toMap() => _$SingleMediaModuleToMap(this);
 }
 
 class SingleMediaModuleHome extends PageScopedWidget {

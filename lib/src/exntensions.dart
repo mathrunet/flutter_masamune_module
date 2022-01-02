@@ -1,15 +1,5 @@
 part of masamune_module;
 
-extension MasamuneModuleDynamicMapExtensions on DynamicMap {
-  GroupConfig? toGroupConfig() {
-    return GroupConfig._fromMap(this);
-  }
-
-  LoginConfig? toLoginConfig() {
-    return LoginConfig._fromMap(this);
-  }
-}
-
 extension ModuleTagsWidgetRefExtensions on WidgetRef {
   static final _converter = RegExp(r"\{([^\{\}]+?)\}");
   String applyModuleTag(String path) {

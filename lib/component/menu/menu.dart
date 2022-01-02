@@ -1,9 +1,6 @@
 import 'package:masamune/masamune.dart';
 import 'package:masamune_module/masamune_module.dart';
 
-part 'menu.m.dart';
-
-@module
 @immutable
 class MenuModule extends PageModule {
   const MenuModule({
@@ -55,12 +52,6 @@ class MenuModule extends PageModule {
 
   /// True if you want to automatically display the back button when you are at home.
   final bool automaticallyImplyLeadingOnHome;
-
-  @override
-  MenuModule? fromMap(DynamicMap map) => _$MenuModuleFromMap(map, this);
-
-  @override
-  DynamicMap toMap() => _$MenuModuleToMap(this);
 }
 
 @immutable
@@ -74,28 +65,6 @@ class MenuModuleItem {
   final String name;
   final IconData? icon;
   final List<MenuConfig> menus;
-
-  static MenuModuleItem? _fromMap(DynamicMap map) {
-    if (!map.containsKey("name")) {
-      return null;
-    }
-    return MenuModuleItem(
-      name: map.get("name", ""),
-      icon: map.getAsMap("icon").toIconData(),
-      menus: map
-          .getAsList<DynamicMap>("menus")
-          .mapAndRemoveEmpty((item) => item.toMenuConfig()),
-    );
-  }
-
-  /// Convert the menu style to [DynamicMap].
-  DynamicMap toMap() {
-    return <String, dynamic>{
-      "name": name,
-      if (icon != null) "icon": icon!.toMap(),
-      if (menus.isNotEmpty) "menus": menus.map((item) => item.toMap()).toList(),
-    };
-  }
 
   /// The equality operator.
   ///
@@ -142,12 +111,6 @@ class MenuModuleItem {
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   int get hashCode => icon.hashCode ^ name.hashCode ^ menus.hashCode;
-}
-
-extension DynamicMapMenuModuleItemExtensions on DynamicMap {
-  MenuModuleItem? toMenuModuleItem() {
-    return MenuModuleItem._fromMap(this);
-  }
 }
 
 class MenuModuleHome extends PageScopedWidget {

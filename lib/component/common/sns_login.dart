@@ -1,11 +1,7 @@
 import 'dart:ui';
 
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:masamune_module/masamune_module.dart';
 
-part 'sns_login.m.dart';
-
-@module
 @immutable
 class SnsLoginModule extends PageModule {
   const SnsLoginModule({
@@ -144,12 +140,6 @@ class SnsLoginModule extends PageModule {
 
   /// `true` if you want to show only necessary values at registration.
   final bool showOnlyRequiredVariable;
-
-  @override
-  SnsLoginModule? fromMap(DynamicMap map) => _$SnsLoginModuleFromMap(map, this);
-
-  @override
-  DynamicMap toMap() => _$SnsLoginModuleToMap(this);
 }
 
 class SnsLoginModuleLanding extends PageScopedWidget {

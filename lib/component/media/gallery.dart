@@ -1,8 +1,6 @@
 import 'package:masamune_module/masamune_module.dart';
 import 'package:photo_view/photo_view.dart' as phto_view;
 
-part "gallery.m.dart";
-
 enum GalleryType {
   detail,
   tile,
@@ -10,7 +8,6 @@ enum GalleryType {
   tileWithList,
 }
 
-@module
 @immutable
 class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const GalleryModule({
@@ -152,12 +149,6 @@ class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
 
   /// 詳細のページは出さずに直接画像を表示する場合は`true`。
   final bool skipDetailPage;
-
-  @override
-  GalleryModule? fromMap(DynamicMap map) => _$GalleryModuleFromMap(map, this);
-
-  @override
-  DynamicMap toMap() => _$GalleryModuleToMap(this);
 }
 
 class GalleryModuleHome extends PageScopedWidget {
