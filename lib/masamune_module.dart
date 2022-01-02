@@ -9,6 +9,7 @@
 library masamune_module;
 
 import 'package:masamune/masamune.dart';
+import 'variable/variable.dart';
 
 export 'package:masamune/masamune.dart';
 
@@ -24,9 +25,10 @@ export 'component/post/post.dart';
 export 'component/questionnaire/questionnaire.dart';
 export 'component/user/user.dart';
 export 'component/user/user_account.dart';
-export 'src/variable/variable_config.dart';
+export 'variable/variable.dart';
 
 part 'src/exntensions.dart';
 part 'src/functions.dart';
 part 'src/group_config.dart';
 part 'src/login_config.dart';
+part 'src/form_config_builder.dart';

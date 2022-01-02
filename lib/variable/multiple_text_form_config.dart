@@ -1,13 +1,46 @@
-import 'package:masamune/masamune.dart';
-import 'variable_config.dart';
+part of masamune_module.variable;
+
+/// FormConfig for using multiple TextField List.
+@immutable
+class MultipleTextFormConfig extends FormConfig {
+  const MultipleTextFormConfig({
+    this.backgroundColor,
+    this.obscureText = false,
+    this.color,
+    this.minLength,
+    this.maxLength,
+    this.minLines,
+    this.maxLines,
+    this.maxItems,
+    this.keyboardType = TextInputType.url,
+  });
+
+  final int? maxItems;
+
+  final Color? backgroundColor;
+
+  final Color? color;
+
+  final int? minLines;
+
+  final int? maxLines;
+
+  final TextInputType keyboardType;
+
+  final int? minLength;
+
+  final int? maxLength;
+
+  final bool obscureText;
+}
 
 @immutable
-class TextFormConfigBuilder extends FormConfigBuilder {
-  const TextFormConfigBuilder();
+class MultipleTextFormConfigBuilder extends FormConfigBuilder {
+  const MultipleTextFormConfigBuilder();
 
   @override
   bool check(FormConfig? form) {
-    return form is TextFormConfig;
+    return form is MultipleTextFormConfig;
   }
 
   @override
@@ -19,7 +52,7 @@ class TextFormConfigBuilder extends FormConfigBuilder {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    if (form is! TextFormConfig) {
+    if (form is! MultipleTextFormConfig) {
       return [];
     }
     return [
@@ -35,7 +68,7 @@ class TextFormConfigBuilder extends FormConfigBuilder {
         )
       else
         const Divid(),
-      FormItemTextField(
+      FormItemMultipleTextField(
         dense: true,
         color: form.color,
         minLines: form.minLines ?? 1,
@@ -48,10 +81,10 @@ class TextFormConfigBuilder extends FormConfigBuilder {
         backgroundColor: form.backgroundColor,
         obscureText: form.obscureText,
         allowEmpty: !config.required,
-        controller:
-            ref.useTextEditingController(config.id, data.get(config.id, "")),
+        controller: ref.useTextEditingController(
+            config.id, data.getAsList(config.id).join(",")),
         onSaved: (value) {
-          context[config.id] = value;
+          context[config.id] = value?.where((e) => e.isNotEmpty).toList() ?? [];
         },
       ),
     ];
@@ -66,9 +99,10 @@ class TextFormConfigBuilder extends FormConfigBuilder {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    if (form is! TextFormConfig) {
+    if (form is! MultipleTextFormConfig) {
       return [];
     }
+    final list = data.getAsList(config.id);
     return [
       if (config.label.isNotEmpty)
         DividHeadline(
@@ -76,9 +110,10 @@ class TextFormConfigBuilder extends FormConfigBuilder {
         )
       else
         const Divid(),
-      ListItem(
-        title: UIText(data.get(config.id, "")),
-      ),
+      if (list.isEmpty)
+        const ListItem(title: Text("--"))
+      else
+        for (final text in list) ListItem(title: UIText(text)),
     ];
   }
 
@@ -89,6 +124,6 @@ class TextFormConfigBuilder extends FormConfigBuilder {
     WidgetRef ref,
     bool updated,
   ) {
-    return context.get(config.id, "");
+    return context.getAsList(config.id);
   }
 }

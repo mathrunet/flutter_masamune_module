@@ -608,8 +608,8 @@ class UserModuleEditProfile extends PageScopedWidget {
     ];
     if (variables.isEmpty) {
       return [
-        VariableConfig.name.copyWith(show: false),
-        VariableConfig.text.copyWith(show: false),
+        VariableConfigDefinition.name.copyWith(show: false),
+        VariableConfigDefinition.text.copyWith(show: false),
       ];
     } else {
       return variables;

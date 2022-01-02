@@ -1,5 +1,23 @@
-import 'package:masamune/masamune.dart';
-import 'variable_config.dart';
+part of masamune_module.variable;
+
+/// FormConfig for using Select/DropdownField.
+@immutable
+class SelectFormConfig extends FormConfig {
+  const SelectFormConfig({
+    required this.items,
+    required this.initialKey,
+    this.backgroundColor,
+    this.color,
+  });
+
+  final Map<String, String> items;
+
+  final String initialKey;
+
+  final Color? backgroundColor;
+
+  final Color? color;
+}
 
 @immutable
 class SelectFormConfigBuilder extends FormConfigBuilder {

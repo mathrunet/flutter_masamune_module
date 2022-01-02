@@ -1,5 +1,30 @@
-import 'package:masamune/masamune.dart';
-import 'variable_config.dart';
+part of masamune_module.variable;
+
+/// FormConfig for using Slider.
+@immutable
+class SliderFormConfig extends FormConfig {
+  const SliderFormConfig({
+    required this.min,
+    required this.max,
+    this.divisions,
+    this.initialValue,
+    this.backgroundColor,
+    this.color,
+    this.suffixLabel,
+  });
+
+  final double min;
+  final double max;
+  final int? divisions;
+
+  final String? suffixLabel;
+
+  final double? initialValue;
+
+  final Color? backgroundColor;
+
+  final Color? color;
+}
 
 @immutable
 class SliderFormConfigBuilder extends FormConfigBuilder {
