@@ -56,6 +56,8 @@ class QuestionnaireModule extends PageModule
     this.createdTimeKey = Const.createdTime,
     this.endTimeKey = Const.endTime,
     this.answerKey = Const.answer,
+    this.sliverLayoutWhenModernDesignOnHome = true,
+    this.automaticallyImplyLeadingOnHome = true,
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.questionnaireQuery,
@@ -108,6 +110,12 @@ class QuestionnaireModule extends PageModule
   final Widget? answerView;
   final Widget? answerDetail;
   final Widget? questionEdit;
+
+  /// ホームをスライバーレイアウトにする場合True.
+  final bool sliverLayoutWhenModernDesignOnHome;
+
+  /// ホームのときのバックボタンを削除するかどうか。
+  final bool automaticallyImplyLeadingOnHome;
 
   /// ルートのパス。
   final String routePath;
@@ -198,6 +206,8 @@ class QuestionnaireModuleHome extends PageScopedWidget {
       ],
       appBar: UIAppBar(
         title: Text(config.title ?? "Questionnaire".localize()),
+        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
+        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
       ),
       body: UIListBuilder<DynamicMap>(
         source: questionWithAnswer.toList(),
@@ -281,20 +291,9 @@ class QuestionnaireAanswerView extends PageScopedWidget {
     final answers = ref.watchCollectionModel(
       "${config.queryPath}/${context.get("question_id", "")}/${config.answerPath}",
     );
-    final users = ref.watchCollectionModel(
-      ModelQuery(config.userPath,
-              key: Const.uid,
-              whereIn: answers.map((e) => e.get(Const.user, "")).toList())
-          .value,
-    );
-    final answersWithUsers = answers.setWhere(
-      users,
-      test: (o, a) => o.get(Const.user, "") == a.get(Const.uid, ""),
-      apply: (o, a) => o.merge(
-        a,
-        convertKeys: (key) => "${Const.user}$key",
-      ),
-      orElse: (o) => o,
+    final answersWithUsers = answers.mergeUserInformation(
+      ref,
+      userCollectionPath: config.userPath,
     );
     final name = question.get(config.nameKey, "");
     final text = question.get(config.textKey, "");
@@ -344,7 +343,7 @@ class QuestionnaireAanswerView extends PageScopedWidget {
           );
         }
         return UIListBuilder<DynamicMap>(
-          source: answersWithUsers.toList(),
+          source: answersWithUsers,
           top: [
             if (text.isNotEmpty)
               MessageBox(

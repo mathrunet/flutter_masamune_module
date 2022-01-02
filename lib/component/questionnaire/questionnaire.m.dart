@@ -28,6 +28,10 @@ QuestionnaireModule? _$QuestionnaireModuleFromMap(
       createdTimeKey: map.get<String>("createdTimeKey", Const.createdTime),
       endTimeKey: map.get<String>("endTimeKey", Const.endTime),
       answerKey: map.get<String>("answerKey", Const.answer),
+      sliverLayoutWhenModernDesignOnHome:
+          map.get<bool>("sliverLayoutWhenModernDesignOnHome", true),
+      automaticallyImplyLeadingOnHome:
+          map.get<bool>("automaticallyImplyLeadingOnHome", true),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
@@ -59,6 +63,9 @@ DynamicMap _$QuestionnaireModuleToMap(QuestionnaireModule ref) {
     if (ref.createdTimeKey.isNotEmpty) "createdTimeKey": ref.createdTimeKey,
     if (ref.endTimeKey.isNotEmpty) "endTimeKey": ref.endTimeKey,
     if (ref.answerKey.isNotEmpty) "answerKey": ref.answerKey,
+    "sliverLayoutWhenModernDesignOnHome":
+        ref.sliverLayoutWhenModernDesignOnHome,
+    "automaticallyImplyLeadingOnHome": ref.automaticallyImplyLeadingOnHome,
     "permission": ref.permission.toMap(),
     if (ref.rerouteConfigs.isNotEmpty)
       "rerouteConfigs": ref.rerouteConfigs.map((e) => e.toMap()),

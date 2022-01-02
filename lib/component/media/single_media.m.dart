@@ -30,6 +30,10 @@ SingleMediaModule? _$SingleMediaModuleFromMap(
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
+      sliverLayoutWhenModernDesignOnHome:
+          map.get<bool>("sliverLayoutWhenModernDesignOnHome", true),
+      automaticallyImplyLeadingOnHome:
+          map.get<bool>("automaticallyImplyLeadingOnHome", true),
       rerouteConfigs: map
           .get<List>("rerouteConfigs", const [])
           .cast<DynamicMap>()
@@ -54,6 +58,9 @@ DynamicMap _$SingleMediaModuleToMap(SingleMediaModule ref) {
     if (ref.createdTimeKey.isNotEmpty) "createdTimeKey": ref.createdTimeKey,
     "mediaType": ref.mediaType.index,
     "permission": ref.permission.toMap(),
+    "sliverLayoutWhenModernDesignOnHome":
+        ref.sliverLayoutWhenModernDesignOnHome,
+    "automaticallyImplyLeadingOnHome": ref.automaticallyImplyLeadingOnHome,
     if (ref.rerouteConfigs.isNotEmpty)
       "rerouteConfigs": ref.rerouteConfigs.map((e) => e.toMap())
   };

@@ -23,6 +23,8 @@ class MemberModule extends PageModule {
     this.formMessage,
     this.groupId,
     this.affiliationKey = "affiliation",
+    this.sliverLayoutWhenModernDesignOnHome = true,
+    this.automaticallyImplyLeadingOnHome = true,
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.home,
@@ -53,6 +55,12 @@ class MemberModule extends PageModule {
   // Page settings.
   final Widget? home;
   final Widget? invite;
+
+  /// ホームをスライバーレイアウトにする場合True.
+  final bool sliverLayoutWhenModernDesignOnHome;
+
+  /// ホームのときのバックボタンを削除するかどうか。
+  final bool automaticallyImplyLeadingOnHome;
 
   /// Design type.
   final DesignType designType;
@@ -127,6 +135,8 @@ class MemberModuleHome extends PageScopedWidget {
       appBar: UIAppBar(
         title: Text(
             config.title ?? "%s list".localize().format(["Member".localize()])),
+        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
+        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
       ),
       body: UIListBuilder<DynamicMap>(
         source: members,

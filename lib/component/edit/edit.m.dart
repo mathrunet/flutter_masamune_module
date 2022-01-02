@@ -1,30 +1,31 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'user_account.dart';
+part of 'edit.dart';
 
 // **************************************************************************
 // MasamuneModuleGenerator
 // **************************************************************************
 
-UserAccountModule? _$UserAccountModuleFromMap(
-    DynamicMap map, UserAccountModule ref) {
+EditModule? _$EditModuleFromMap(DynamicMap map, EditModule ref) {
   if (map.isEmpty || map.get("type", "") != ref.type) {
     return null;
   }
-  return UserAccountModule(
+  return EditModule(
       enabled: map.get<bool>("enabled", true),
+      variables: map
+          .get<List>("variables", const [])
+          .cast<DynamicMap>()
+          .map((e) => e.toVariableConfig())
+          .removeEmpty(),
       title: map.get<String?>("title", null),
-      routePath: map.get<String>("routePath", "user"),
-      queryPath: map.get<String>("queryPath", "user"),
-      blockPath: map.get<String>("blockPath", "block"),
-      nameKey: map.get<String>("nameKey", Const.name),
-      allowRoles: map.get<List>("allowRoles", const []).cast<String>(),
-      allowUserDeleting: map.get<bool>("allowUserDeleting", false),
-      allowEditingBlockList: map.get<bool>("allowEditingBlockList", true),
-      sliverLayoutWhenModernDesignOnHome:
-          map.get<bool>("sliverLayoutWhenModernDesignOnHome", true),
+      routePath: map.get<String>("routePath", "edit"),
+      queryPath: map.get<String>("queryPath", "edit"),
+      queryKey: map.get<String>("queryKey", "edit_id"),
+      enableDelete: map.get<bool>("enableDelete", true),
       automaticallyImplyLeadingOnHome:
           map.get<bool>("automaticallyImplyLeadingOnHome", true),
+      sliverLayoutWhenModernDesignOnHome:
+          map.get<bool>("sliverLayoutWhenModernDesignOnHome", false),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
@@ -35,21 +36,20 @@ UserAccountModule? _$UserAccountModuleFromMap(
           .removeEmpty());
 }
 
-DynamicMap _$UserAccountModuleToMap(UserAccountModule ref) {
+DynamicMap _$EditModuleToMap(EditModule ref) {
   return <String, dynamic>{
     "type": ref.type,
     "enabled": ref.enabled,
+    if (ref.variables.isNotEmpty)
+      "variables": ref.variables.map((e) => e.toMap()),
     if (ref.title.isNotEmpty) "title": ref.title,
     if (ref.routePath.isNotEmpty) "routePath": ref.routePath,
     if (ref.queryPath.isNotEmpty) "queryPath": ref.queryPath,
-    if (ref.blockPath.isNotEmpty) "blockPath": ref.blockPath,
-    if (ref.nameKey.isNotEmpty) "nameKey": ref.nameKey,
-    if (ref.allowRoles.isNotEmpty) "allowRoles": ref.allowRoles.map((e) => e),
-    "allowUserDeleting": ref.allowUserDeleting,
-    "allowEditingBlockList": ref.allowEditingBlockList,
+    if (ref.queryKey.isNotEmpty) "queryKey": ref.queryKey,
+    "enableDelete": ref.enableDelete,
+    "automaticallyImplyLeadingOnHome": ref.automaticallyImplyLeadingOnHome,
     "sliverLayoutWhenModernDesignOnHome":
         ref.sliverLayoutWhenModernDesignOnHome,
-    "automaticallyImplyLeadingOnHome": ref.automaticallyImplyLeadingOnHome,
     "permission": ref.permission.toMap(),
     if (ref.rerouteConfigs.isNotEmpty)
       "rerouteConfigs": ref.rerouteConfigs.map((e) => e.toMap())

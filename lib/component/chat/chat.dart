@@ -36,7 +36,10 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.createdTimeKey = Const.createdTime,
     this.modifiedTimeKey = Const.modifiedTime,
     this.chatRoomQuery,
+    this.sliverLayoutWhenModernDesignOnHome = true,
+    this.automaticallyImplyLeadingOnHome = true,
     this.availableMemberQuery,
+    this.allowEditRoomName = true,
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.home,
@@ -72,6 +75,15 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
   final Widget? timeline;
   final Widget? mediaView;
   final Widget? edit;
+
+  /// ホームをスライバーレイアウトにする場合True.
+  final bool sliverLayoutWhenModernDesignOnHome;
+
+  /// ホームのときのバックボタンを削除するかどうか。
+  final bool automaticallyImplyLeadingOnHome;
+
+  /// チャットルームの名前を変更可能な場合True.
+  final bool allowEditRoomName;
 
   /// ルートのパス。
   final String routePath;
@@ -197,6 +209,8 @@ class ChatModuleHome extends PageScopedWidget {
       inlineNavigatorControllerOnWeb: controller,
       appBar: UIAppBar(
         title: Text(config.title ?? "Chat".localize()),
+        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
+        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
       ),
       body: UIListView(
         children: [
@@ -225,7 +239,7 @@ class ChatModuleHome extends PageScopedWidget {
                 ),
                 onTap: () {
                   if (context.isMobile) {
-                    context.navigator.pushNamed(
+                    context.rootNavigator.pushNamed(
                       "/${config.routePath}/${item.get(Const.uid, "")}",
                       arguments: RouteQuery.fullscreen,
                     );
@@ -276,7 +290,7 @@ class ChatModuleHome extends PageScopedWidget {
                         ?.saveDocument(doc)
                         .showIndicator(context);
                     if (context.isMobile) {
-                      context.navigator.pushNamed(
+                      context.rootNavigator.pushNamed(
                         "/${config.routePath}/$uid",
                         arguments: RouteQuery.fullscreen,
                       );
@@ -316,18 +330,9 @@ class ChatModuleTimeline extends PageScopedWidget {
     );
     timeline.sort((a, b) =>
         b.get(config.createdTimeKey, 0) - a.get(config.createdTimeKey, 0));
-    final users = ref.watchCollectionModel(
-      ModelQuery(
-        config.userPath,
-        key: Const.uid,
-        whereIn: timeline.map((e) => e.get(Const.user, "")).distinct(),
-      ).value,
-    );
-    final timlineWithUser = timeline.setWhere(
-      users,
-      test: (o, a) => o.get(Const.user, "") == a.get(Const.uid, ""),
-      apply: (o, a) => o.merge(a, convertKeys: (key) => "${Const.user}$key"),
-      orElse: (o) => o,
+    final timlineWithUser = timeline.mergeUserInformation(
+      ref,
+      userCollectionPath: config.userPath,
     );
     final members = ref.watchCollectionModel(
       ModelQuery(
@@ -349,6 +354,7 @@ class ChatModuleTimeline extends PageScopedWidget {
       waitTransition: true,
       appBar: UIAppBar(
         title: Text(name.isEmpty ? title : name),
+        sliverLayoutWhenModernDesign: false,
         actions: [
           if (config.permission.canEdit(user.get(config.roleKey, ""))) ...[
             if (chat.get(config.typeKey, "") == ChatType.group.text)
@@ -360,22 +366,23 @@ class ChatModuleTimeline extends PageScopedWidget {
                     );
                   },
                   icon: const Icon(Icons.people_alt)),
-            IconButton(
-              onPressed: () {
-                context.rootNavigator.pushNamed(
-                  "/${config.routePath}/${context.get("chat_id", "")}/edit",
-                  arguments: RouteQuery.fullscreenOrModal,
-                );
-              },
-              icon: const Icon(Icons.settings),
-            ),
+            if (config.allowEditRoomName)
+              IconButton(
+                onPressed: () {
+                  context.rootNavigator.pushNamed(
+                    "/${config.routePath}/${context.get("chat_id", "")}/edit",
+                    arguments: RouteQuery.fullscreenOrModal,
+                  );
+                },
+                icon: const Icon(Icons.settings),
+              ),
           ]
         ],
       ),
       body: UIListBuilder<DynamicMap>(
         padding: const EdgeInsets.fromLTRB(8, 12, 8, 64),
         reverse: true,
-        source: timlineWithUser.toList(),
+        source: timlineWithUser,
         builder: (context, item, index) {
           final date = DateTime.fromMillisecondsSinceEpoch(
             item.get(config.createdTimeKey, now.millisecondsSinceEpoch),
@@ -606,7 +613,9 @@ class ChatModuleMediaView extends PageScopedWidget {
 
     return UIScaffold(
       waitTransition: true,
-      appBar: const UIAppBar(),
+      appBar: const UIAppBar(
+        sliverLayoutWhenModernDesign: false,
+      ),
       backgroundColor: Colors.black,
       body: media.isEmpty
           ? Center(

@@ -3,6 +3,7 @@ import 'package:masamune_module/src/variable/date_time_form_config_builder.dart'
 import 'package:masamune_module/src/variable/multiple_select_form_config_builder.dart';
 import 'package:masamune_module/src/variable/multiple_text_form_config_builder.dart';
 import 'package:masamune_module/src/variable/select_form_config_builder.dart';
+import 'package:masamune_module/src/variable/slider_form_config_builder.dart';
 import 'package:masamune_module/src/variable/text_form_config_builder.dart';
 
 const _variables = <FormConfigBuilder>[
@@ -11,6 +12,7 @@ const _variables = <FormConfigBuilder>[
   DateTimeFormConfigBuilder(),
   MultipleSelectFormConfigBuilder(),
   MultipleTextFormConfigBuilder(),
+  SliderFormConfigBuilder(),
 ];
 
 @immutable
@@ -40,6 +42,7 @@ abstract class FormConfigBuilder {
     VariableConfig config,
     BuildContext context,
     WidgetRef ref,
+    bool updated,
   );
 }
 
@@ -51,7 +54,10 @@ extension VariableConfigBuildExtensions on VariableConfig {
     bool onlyRequired = false,
   }) {
     if (onlyRequired && !this.required) {
-      return [];
+      return const [];
+    }
+    if (!show) {
+      return const [];
     }
     for (final variable in _variables) {
       if (!variable.check(form)) {
@@ -76,7 +82,7 @@ extension VariableConfigBuildExtensions on VariableConfig {
     bool onlyRequired = false,
   }) {
     if (onlyRequired && !this.required) {
-      return [];
+      return const [];
     }
     for (final variable in _variables) {
       if (!variable.check(form)) {
@@ -94,7 +100,11 @@ extension VariableConfigBuildExtensions on VariableConfig {
     return const [];
   }
 
-  dynamic _buildValue(BuildContext context, WidgetRef ref) {
+  dynamic _buildValue(
+    BuildContext context,
+    WidgetRef ref, {
+    bool updated = true,
+  }) {
     for (final variable in _variables) {
       if (!variable.check(form)) {
         continue;
@@ -103,6 +113,7 @@ extension VariableConfigBuildExtensions on VariableConfig {
         this,
         context,
         ref,
+        updated,
       );
     }
     return null;
@@ -113,11 +124,16 @@ extension VariableConfigBuildExtensions on VariableConfig {
     BuildContext context,
     WidgetRef ref, {
     bool onlyRequired = false,
+    bool updated = true,
   }) {
     if (onlyRequired && !this.required) {
       return;
     }
-    final value = _buildValue(context, ref);
+    final value = _buildValue(
+      context,
+      ref,
+      updated: updated,
+    );
     if (value == null) {
       return;
     }
@@ -133,7 +149,7 @@ extension VariableConfigListExtensions on Iterable<VariableConfig>? {
     bool onlyRequired = false,
   }) {
     if (this == null) {
-      return [];
+      return const [];
     }
     return this!.expand((e) =>
         e.buildView(context, ref, data: data, onlyRequired: onlyRequired));
@@ -146,7 +162,7 @@ extension VariableConfigListExtensions on Iterable<VariableConfig>? {
     bool onlyRequired = false,
   }) {
     if (this == null) {
-      return [];
+      return const [];
     }
     return this!.expand((e) =>
         e.buildForm(context, ref, data: data, onlyRequired: onlyRequired));
@@ -164,7 +180,11 @@ extension VariableConfigListExtensions on Iterable<VariableConfig>? {
         .where((e) => !onlyRequired || e.required)
         .toMap<String, dynamic>(
           key: (val) => val.id,
-          value: (val) => val._buildValue(context, ref),
+          value: (val) => val._buildValue(
+            context,
+            ref,
+            updated: false,
+          ),
         );
   }
 
@@ -173,6 +193,7 @@ extension VariableConfigListExtensions on Iterable<VariableConfig>? {
     BuildContext context,
     WidgetRef ref, {
     bool onlyRequired = false,
+    bool updated = true,
   }) {
     if (this == null) {
       return;
@@ -183,6 +204,7 @@ extension VariableConfigListExtensions on Iterable<VariableConfig>? {
         context,
         ref,
         onlyRequired: onlyRequired,
+        updated: updated,
       );
     }
   }

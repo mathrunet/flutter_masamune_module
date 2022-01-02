@@ -33,6 +33,8 @@ DetailModule? _$DetailModuleFromMap(DynamicMap map, DetailModule ref) {
       multipleImage: map.get<bool>("multipleImage", false),
       bookmarkPath: map.get<String>("bookmarkPath", "bookmark"),
       likePath: map.get<String>("likePath", "like"),
+      automaticallyImplyLeadingOnHome:
+          map.get<bool>("automaticallyImplyLeadingOnHome", true),
       expandedHeight: map.get<double>("expandedHeight", 240),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
@@ -70,6 +72,7 @@ DynamicMap _$DetailModuleToMap(DetailModule ref) {
     "multipleImage": ref.multipleImage,
     if (ref.bookmarkPath.isNotEmpty) "bookmarkPath": ref.bookmarkPath,
     if (ref.likePath.isNotEmpty) "likePath": ref.likePath,
+    "automaticallyImplyLeadingOnHome": ref.automaticallyImplyLeadingOnHome,
     "expandedHeight": ref.expandedHeight,
     "permission": ref.permission.toMap(),
     if (ref.rerouteConfigs.isNotEmpty)

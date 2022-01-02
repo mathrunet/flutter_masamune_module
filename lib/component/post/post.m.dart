@@ -20,6 +20,10 @@ PostModule? _$PostModuleFromMap(DynamicMap map, PostModule ref) {
       textKey: map.get<String>("textKey", Const.text),
       roleKey: map.get<String>("roleKey", Const.role),
       createdTimeKey: map.get<String>("createdTimeKey", Const.createdTime),
+      sliverLayoutWhenModernDesignOnHome:
+          map.get<bool>("sliverLayoutWhenModernDesignOnHome", true),
+      automaticallyImplyLeadingOnHome:
+          map.get<bool>("automaticallyImplyLeadingOnHome", true),
       editingType: PostEditingType.values.firstWhere((e) =>
           e.index ==
           map.get<int>("editingType", PostEditingType.planeText.index)),
@@ -47,6 +51,9 @@ DynamicMap _$PostModuleToMap(PostModule ref) {
     if (ref.textKey.isNotEmpty) "textKey": ref.textKey,
     if (ref.roleKey.isNotEmpty) "roleKey": ref.roleKey,
     if (ref.createdTimeKey.isNotEmpty) "createdTimeKey": ref.createdTimeKey,
+    "sliverLayoutWhenModernDesignOnHome":
+        ref.sliverLayoutWhenModernDesignOnHome,
+    "automaticallyImplyLeadingOnHome": ref.automaticallyImplyLeadingOnHome,
     "editingType": ref.editingType.index,
     "permission": ref.permission.toMap(),
     if (ref.rerouteConfigs.isNotEmpty)

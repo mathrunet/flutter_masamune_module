@@ -92,7 +92,12 @@ class DateTimeFormConfigBuilder extends FormConfigBuilder {
       if (config.label.isNotEmpty)
         DividHeadline(
           config.label.localize(),
-          prefix: config.required ? context.widgetTheme.requiredIcon : null,
+          prefix: config.required
+              ? IconTheme(
+                  data: const IconThemeData(size: 16),
+                  child: context.widgetTheme.requiredIcon,
+                )
+              : null,
         )
       else
         const Divid(),
@@ -151,6 +156,7 @@ class DateTimeFormConfigBuilder extends FormConfigBuilder {
     VariableConfig config,
     BuildContext context,
     WidgetRef ref,
+    bool updated,
   ) {
     return context.get<DateTime?>(config.id, null)?.millisecondsSinceEpoch;
   }

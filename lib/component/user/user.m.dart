@@ -34,6 +34,11 @@ UserModule? _$UserModuleFromMap(DynamicMap map, UserModule ref) {
       allowFollow: map.get<bool>("allowFollow", false),
       allowBlock: map.get<bool>("allowBlock", true),
       allowReport: map.get<bool>("allowReport", true),
+      sliverLayoutWhenModernDesignOnHome:
+          map.get<bool>("sliverLayoutWhenModernDesignOnHome", true),
+      automaticallyImplyLeadingOnHome:
+          map.get<bool>("automaticallyImplyLeadingOnHome", true),
+      showHeaderDivider: map.get<bool>("showHeaderDivider", true),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
@@ -72,6 +77,10 @@ DynamicMap _$UserModuleToMap(UserModule ref) {
     "allowFollow": ref.allowFollow,
     "allowBlock": ref.allowBlock,
     "allowReport": ref.allowReport,
+    "sliverLayoutWhenModernDesignOnHome":
+        ref.sliverLayoutWhenModernDesignOnHome,
+    "automaticallyImplyLeadingOnHome": ref.automaticallyImplyLeadingOnHome,
+    "showHeaderDivider": ref.showHeaderDivider,
     "permission": ref.permission.toMap(),
     if (ref.rerouteConfigs.isNotEmpty)
       "rerouteConfigs": ref.rerouteConfigs.map((e) => e.toMap()),

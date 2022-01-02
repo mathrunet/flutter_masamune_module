@@ -42,6 +42,10 @@ GalleryModule? _$GalleryModuleFromMap(DynamicMap map, GalleryModule ref) {
       mediaType: PlatformMediaType.values.firstWhere((e) =>
           e.index == map.get<int>("mediaType", PlatformMediaType.all.index)),
       skipDetailPage: map.get<bool>("skipDetailPage", false),
+      sliverLayoutWhenModernDesignOnHome:
+          map.get<bool>("sliverLayoutWhenModernDesignOnHome", true),
+      automaticallyImplyLeadingOnHome:
+          map.get<bool>("automaticallyImplyLeadingOnHome", true),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
@@ -81,6 +85,9 @@ DynamicMap _$GalleryModuleToMap(GalleryModule ref) {
       "categoryConfig": ref.categoryConfig.map((e) => e.toMap()),
     "mediaType": ref.mediaType.index,
     "skipDetailPage": ref.skipDetailPage,
+    "sliverLayoutWhenModernDesignOnHome":
+        ref.sliverLayoutWhenModernDesignOnHome,
+    "automaticallyImplyLeadingOnHome": ref.automaticallyImplyLeadingOnHome,
     "permission": ref.permission.toMap(),
     if (ref.rerouteConfigs.isNotEmpty)
       "rerouteConfigs": ref.rerouteConfigs.map((e) => e.toMap()),

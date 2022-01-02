@@ -39,21 +39,21 @@ SnsLoginModule? _$SnsLoginModuleFromMap(DynamicMap map, SnsLoginModule ref) {
       backgroundImageBlur: map.get<double?>("backgroundImageBlur", 5.0) ?? 5.0,
       featureImage: map.get<String?>("featureImage", null),
       featureImageRadius: map.get<DynamicMap>(
-          "featureImageRadius", <String, dynamic>{}).toBorderRadius(),
+              "featureImageRadius", <String, dynamic>{}).toBorderRadius() ??
+          BorderRadius.zero,
       featureImageSize:
-          map.get<DynamicMap>("featureImageSize", <String, dynamic>{}).toSize(),
+          map.get<DynamicMap>("featureImageSize", <String, dynamic>{}).toSize() ??
+              const Size(256, 256),
       roleKey: map.get<String>("roleKey", Const.role),
       formImageSize:
           map.get<DynamicMap>("formImageSize", <String, dynamic>{}).toSize(),
       featureImageFit: BoxFit.values.firstWhere((e) =>
           e.index == map.get<int>("featureImageFit", BoxFit.cover.index)),
-      titleTextStyle: map
-          .get<DynamicMap>("titleTextStyle", <String, dynamic>{}).toTextStyle(),
-      titleAlignment: map.get<DynamicMap>(
-              "titleAlignment", <String, dynamic>{}).toAlignment() ??
-          Alignment.bottomLeft,
-      guestLogin:
-          map.get<DynamicMap>("guestLogin", <String, dynamic>{}).toLoginConfig(),
+      titleTextStyle:
+          map.get<DynamicMap>("titleTextStyle", <String, dynamic>{}).toTextStyle(),
+      titleTextAlignment: TextAlign.values.firstWhere((e) => e.index == map.get<int>("titleTextAlignment", TextAlign.start.index)),
+      titleAlignment: map.get<DynamicMap>("titleAlignment", <String, dynamic>{}).toAlignment() ?? Alignment.bottomLeft,
+      guestLogin: map.get<DynamicMap>("guestLogin", <String, dynamic>{}).toLoginConfig(),
       titlePadding: map.get<DynamicMap>("titlePadding", <String, dynamic>{}).toEdgeInsets() ?? const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
       padding: map.get<DynamicMap>("padding", <String, dynamic>{}).toEdgeInsets() ?? const EdgeInsets.all(36),
       redirectTo: map.get<String>("redirectTo", "/"),
@@ -96,6 +96,7 @@ DynamicMap _$SnsLoginModuleToMap(SnsLoginModule ref) {
     "featureImageFit": ref.featureImageFit.index,
     if (ref.titleTextStyle != null)
       "titleTextStyle": ref.titleTextStyle?.toMap(),
+    "titleTextAlignment": ref.titleTextAlignment.index,
     "titleAlignment": ref.titleAlignment.toMap(),
     if (ref.guestLogin != null) "guestLogin": ref.guestLogin?.toMap(),
     "titlePadding": ref.titlePadding.toMap(),

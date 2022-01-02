@@ -26,6 +26,8 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.textKey = Const.text,
     this.roleKey = Const.role,
     this.createdTimeKey = Const.createdTime,
+    this.sliverLayoutWhenModernDesignOnHome = true,
+    this.automaticallyImplyLeadingOnHome = true,
     this.editingType = PostEditingType.planeText,
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
@@ -59,6 +61,12 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
   final Widget? home;
   final Widget? edit;
   final Widget? view;
+
+  /// ホームをスライバーレイアウトにする場合True.
+  final bool sliverLayoutWhenModernDesignOnHome;
+
+  /// ホームのときのバックボタンを削除するかどうか。
+  final bool automaticallyImplyLeadingOnHome;
 
   /// ルートのパス。
   final String routePath;
@@ -104,18 +112,9 @@ class PostModuleHome extends PageScopedWidget {
     final user = ref.watchUserDocumentModel(config.userPath);
     final post =
         ref.watchCollectionModel(config.postQuery?.value ?? config.queryPath);
-    final users = ref.watchCollectionModel(
-      ModelQuery(
-        config.userPath,
-        key: Const.uid,
-        whereIn: post.map((e) => e.get(Const.user, "")).distinct(),
-      ).value,
-    );
-    final postWithUser = post.setWhere(
-      users,
-      test: (o, a) => o.get(Const.user, "") == a.get(Const.uid, ""),
-      apply: (o, a) => o.merge(a, convertKeys: (key) => "${Const.user}$key"),
-      orElse: (o) => o,
+    final postWithUser = post.mergeUserInformation(
+      ref,
+      userCollectionPath: config.userPath,
     );
     final controller = ref.useNavigatorController(
       "/${config.routePath}/${postWithUser.firstOrNull.get(Const.uid, "")}",
@@ -127,14 +126,15 @@ class PostModuleHome extends PageScopedWidget {
       loadingFutures: [
         user.loading,
         post.loading,
-        users.loading,
       ],
       inlineNavigatorControllerOnWeb: controller,
       appBar: UIAppBar(
         title: Text(config.title ?? "Post".localize()),
+        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
+        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
       ),
       body: UIListBuilder<DynamicMap>(
-        source: postWithUser.toList(),
+        source: postWithUser,
         builder: (context, item, index) {
           return [
             ListItem(

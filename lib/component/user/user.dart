@@ -25,9 +25,14 @@ class UserModule extends PageModule {
     this.allowFollow = false,
     this.allowBlock = true,
     this.allowReport = true,
+    this.sliverLayoutWhenModernDesignOnHome = true,
+    this.automaticallyImplyLeadingOnHome = true,
+    this.showHeaderDivider = true,
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.variables = const [],
+    this.meta,
+    this.bottom = const [],
     this.home,
     this.editProfile,
   }) : super(
@@ -60,6 +65,16 @@ class UserModule extends PageModule {
   /// ページ設定。
   final Widget? home;
   final Widget? editProfile;
+
+  /// 追加ウィジェット。
+  final Widget? meta;
+  final List<Widget> bottom;
+
+  /// ホームをスライバーレイアウトにする場合True.
+  final bool sliverLayoutWhenModernDesignOnHome;
+
+  /// ホームのときのバックボタンを削除するかどうか。
+  final bool automaticallyImplyLeadingOnHome;
 
   /// ツールバーの高さ
   final double expandedHeight;
@@ -111,6 +126,9 @@ class UserModule extends PageModule {
 
   /// ユーザーの値情報。
   final List<VariableConfig> variables;
+
+  /// ヘッダーの線を表示する場合True.
+  final bool showHeaderDivider;
 
   @override
   UserModule? fromMap(DynamicMap map) => _$UserModuleFromMap(map, this);
@@ -175,6 +193,9 @@ class UserModuleHome extends PageScopedWidget {
       return UIScaffold(
         appBar: UIAppBar(
           title: Text(name),
+          sliverLayoutWhenModernDesign:
+              config.sliverLayoutWhenModernDesignOnHome,
+          automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
         ),
         body: Center(
           child: Text(
@@ -196,12 +217,17 @@ class UserModuleHome extends PageScopedWidget {
         designType: DesignType.modern,
         expandedHeight: config.expandedHeight,
         icon: NetworkOrAsset.image(icon),
+        automaticallyImplyLeading:
+            !own || config.automaticallyImplyLeadingOnHome,
         backgroundImage: image.isNotEmpty ? NetworkOrAsset.image(image) : null,
         bottomActions: [
           if (own)
             TextButton(
               onPressed: () {
-                context.navigator.pushNamed("/${config.routePath}/edit");
+                context.rootNavigator.pushNamed(
+                  "/${config.routePath}/edit",
+                  arguments: RouteQuery.fullscreenOrModal,
+                );
               },
               child: Text("Edit Profile".localize()),
               style: TextButton.styleFrom(
@@ -342,16 +368,15 @@ class UserModuleHome extends PageScopedWidget {
               ],
               const Space.height(8),
               Text(text),
+              if (config.meta != null) ...[
+                const Space.height(16),
+                config.meta!,
+              ],
             ],
           ),
-          ...context.app?.userVariables
-                  .where(
-                      (e) => e.id != config.nameKey && e.id != config.textKey)
-                  .buildView(context, ref, data: user) ??
+          ...context.app?.userVariables.buildView(context, ref, data: user) ??
               [],
-          ...config.variables
-              .where((e) => e.id != config.nameKey && e.id != config.textKey)
-              .buildView(context, ref, data: user),
+          ...config.variables.buildView(context, ref, data: user),
           ...config.contents.mapAndRemoveEmpty((item) {
             if (role != null &&
                 role.id.isNotEmpty &&
@@ -361,7 +386,8 @@ class UserModuleHome extends PageScopedWidget {
             }
             return item.build(context);
           }),
-          const Divid(),
+          if (config.showHeaderDivider) const Divid(),
+          ...config.bottom,
           const Space.height(120),
         ],
       ),
@@ -380,6 +406,7 @@ class UserModuleEditProfile extends PageScopedWidget {
         ref.watchDocumentModel("${config.queryPath}/${context.model?.userId}");
     final image = user.get(config.imageKey, "");
     final icon = user.get(config.iconKey, "");
+    final variables = _buildVariables(context);
 
     return UIScaffold(
       appBar: UIAppBar(
@@ -401,7 +428,10 @@ class UserModuleEditProfile extends PageScopedWidget {
                     color: config.allowImageEditing
                         ? context.theme.disabledColor
                         : (context.theme.appBarTheme.backgroundColor ??
-                            context.theme.primaryColor),
+                            (context.theme.colorScheme.brightness ==
+                                    Brightness.dark
+                                ? context.theme.colorScheme.surface
+                                : context.theme.colorScheme.primary)),
                   ),
                   Positioned(
                     left: 24,
@@ -436,7 +466,10 @@ class UserModuleEditProfile extends PageScopedWidget {
                         color: config.allowImageEditing
                             ? context.theme.disabledColor
                             : (context.theme.appBarTheme.backgroundColor ??
-                                context.theme.primaryColor),
+                                (context.theme.colorScheme.brightness ==
+                                        Brightness.dark
+                                    ? context.theme.colorScheme.surface
+                                    : context.theme.colorScheme.primary)),
                         image: config.allowImageEditing
                             ? DecorationImage(
                                 image: NetworkOrAsset.image(image),
@@ -467,7 +500,7 @@ class UserModuleEditProfile extends PageScopedWidget {
                                 final url = await context.model
                                     ?.uploadMedia(media!.path!)
                                     .showIndicator(context);
-                                user[config.iconKey] = url;
+                                user[config.imageKey] = url;
                                 await context.model
                                     ?.saveDocument(user)
                                     .showIndicator(context);
@@ -534,10 +567,7 @@ class UserModuleEditProfile extends PageScopedWidget {
                 ),
               ),
               const Space.height(24),
-              ...context.app?.userVariables
-                      .buildForm(context, ref, data: user) ??
-                  [],
-              ...config.variables.buildForm(context, ref, data: user),
+              ...variables.buildForm(context, ref, data: user),
               const Divid(),
               const Space.height(240),
             ],
@@ -553,8 +583,7 @@ class UserModuleEditProfile extends PageScopedWidget {
           }
 
           try {
-            context.app?.userVariables.buildValue(user, context, ref);
-            config.variables.buildValue(user, context, ref);
+            variables.buildValue(user, context, ref, updated: true);
             await context.model?.saveDocument(user).showIndicator(context);
             UIDialog.show(
               context,
@@ -579,5 +608,20 @@ class UserModuleEditProfile extends PageScopedWidget {
         },
       ),
     );
+  }
+
+  List<VariableConfig> _buildVariables(BuildContext context) {
+    final variables = <VariableConfig>[
+      ...context.app?.userVariables ?? [],
+      ...config.variables,
+    ];
+    if (variables.isEmpty) {
+      return [
+        VariableConfig.name.copyWith(show: false),
+        VariableConfig.text.copyWith(show: false),
+      ];
+    } else {
+      return variables;
+    }
   }
 }

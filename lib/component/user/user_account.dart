@@ -16,6 +16,8 @@ class UserAccountModule extends UserWidgetModule {
     this.allowRoles = const [],
     this.allowUserDeleting = false,
     this.allowEditingBlockList = true,
+    this.sliverLayoutWhenModernDesignOnHome = true,
+    this.automaticallyImplyLeadingOnHome = true,
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.home,
@@ -58,6 +60,12 @@ class UserAccountModule extends UserWidgetModule {
   final Widget? editPassword;
   final Widget? blockList;
 
+  /// ホームをスライバーレイアウトにする場合True.
+  final bool sliverLayoutWhenModernDesignOnHome;
+
+  /// ホームのときのバックボタンを削除するかどうか。
+  final bool automaticallyImplyLeadingOnHome;
+
   /// ルートのパス。
   final String routePath;
 
@@ -98,6 +106,8 @@ class UserAccountModuleHome extends PageScopedWidget {
     return UIScaffold(
       appBar: UIAppBar(
         title: Text(config.title ?? "Account".localize()),
+        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
+        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
       ),
       body: SingleChildScrollView(
         child: PlatformScrollbar(
@@ -122,7 +132,7 @@ class UserAccountModuleContent extends ScopedWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         if (own) ...[
-          SubHeadline("Information".localize()),
+          Headline("Information".localize()),
           ListItem(
             title: Text("Email".localize()),
             textWidth: 150,
@@ -177,7 +187,7 @@ class UserAccountModuleContent extends ScopedWidget {
               },
             ),
           ),
-          SubHeadline("Menu".localize()),
+          Headline("Menu".localize()),
           if (config.allowEditingBlockList)
             ListItem(
               title: Text("%s list".localize().format(["Block".localize()])),
@@ -571,6 +581,7 @@ class UserAccountModuleBlockList extends PageScopedWidget {
       waitTransition: true,
       appBar: UIAppBar(
         title: Text("%s list".localize().format(["Block".localize()])),
+        sliverLayoutWhenModernDesign: false,
       ),
       body: UIListBuilder<DynamicMap>(
         source: blockWithUsers,

@@ -35,6 +35,8 @@ class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.categoryConfig = const [],
     this.mediaType = PlatformMediaType.all,
     this.skipDetailPage = false,
+    this.sliverLayoutWhenModernDesignOnHome = true,
+    this.automaticallyImplyLeadingOnHome = true,
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.contentQuery,
@@ -85,6 +87,12 @@ class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
   final Widget? tileView;
   final Widget? tileViewWithTab;
   final Widget? tileViewWithList;
+
+  /// ホームをスライバーレイアウトにする場合True.
+  final bool sliverLayoutWhenModernDesignOnHome;
+
+  /// ホームのときのバックボタンを削除するかどうか。
+  final bool automaticallyImplyLeadingOnHome;
 
   /// ルートのパス。
   final String routePath;
@@ -197,6 +205,8 @@ class GalleryModuleTileViewWithList extends PageScopedWidget {
       inlineNavigatorControllerOnWeb: controller,
       appBar: UIAppBar(
         title: Text(config.title ?? "Gallery".localize()),
+        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
+        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
       ),
       body: UIListBuilder<GroupConfig>(
         source: list,

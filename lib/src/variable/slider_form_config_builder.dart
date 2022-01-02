@@ -2,12 +2,11 @@ import 'package:masamune/masamune.dart';
 import 'variable_config.dart';
 
 @immutable
-class MultipleTextFormConfigBuilder extends FormConfigBuilder {
-  const MultipleTextFormConfigBuilder();
-
+class SliderFormConfigBuilder extends FormConfigBuilder {
+  const SliderFormConfigBuilder();
   @override
   bool check(FormConfig? form) {
-    return form is MultipleTextFormConfig;
+    return form is SliderFormConfig;
   }
 
   @override
@@ -19,7 +18,7 @@ class MultipleTextFormConfigBuilder extends FormConfigBuilder {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    if (form is! MultipleTextFormConfig) {
+    if (form is! SliderFormConfig) {
       return [];
     }
     return [
@@ -35,23 +34,26 @@ class MultipleTextFormConfigBuilder extends FormConfigBuilder {
         )
       else
         const Divid(),
-      FormItemMultipleTextField(
-        dense: true,
-        color: form.color,
-        minLines: form.minLines ?? 1,
-        hintText: "Input %s".localize().format([config.label.localize()]),
-        errorText: "No input %s".localize().format([config.label.localize()]),
-        maxLines: form.maxLines,
-        minLength: form.minLength,
-        maxLength: form.maxLength,
-        keyboardType: form.keyboardType,
-        backgroundColor: form.backgroundColor,
-        obscureText: form.obscureText,
-        allowEmpty: !config.required,
+      FormItemSlider(
         controller: ref.useTextEditingController(
-            config.id, data.getAsList(config.id).join(",")),
+          config.id,
+          data.get(config.id, form.initialValue ?? form.min).toString(),
+        ),
+        min: form.min,
+        max: form.max,
+        format:
+            "0.##${form.suffixLabel != null ? " " + form.suffixLabel! : ""}",
+        divisions: form.divisions,
+        inaciveColor: form.backgroundColor,
+        showLabel: true,
+        padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
+        activeColor: form.color,
         onSaved: (value) {
-          context[config.id] = value?.where((e) => e.isNotEmpty).toList() ?? [];
+          if (value.isEmpty) {
+            context[config.id] = form.initialValue ?? form.min;
+          } else {
+            context[config.id] = value;
+          }
         },
       ),
     ];
@@ -66,10 +68,9 @@ class MultipleTextFormConfigBuilder extends FormConfigBuilder {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    if (form is! MultipleTextFormConfig) {
+    if (form is! SliderFormConfig) {
       return [];
     }
-    final list = data.getAsList(config.id);
     return [
       if (config.label.isNotEmpty)
         DividHeadline(
@@ -77,10 +78,12 @@ class MultipleTextFormConfigBuilder extends FormConfigBuilder {
         )
       else
         const Divid(),
-      if (list.isEmpty)
-        const ListItem(title: Text("--"))
-      else
-        for (final text in list) ListItem(title: UIText(text)),
+      ListItem(
+        title: Text(data.get(config.id, form.min).toString()),
+        trailing: form.suffixLabel.isEmpty
+            ? null
+            : Text(form.suffixLabel!.localize()),
+      ),
     ];
   }
 
@@ -91,6 +94,6 @@ class MultipleTextFormConfigBuilder extends FormConfigBuilder {
     WidgetRef ref,
     bool updated,
   ) {
-    return context.getAsList(config.id);
+    return context.get(config.id, 0.0);
   }
 }

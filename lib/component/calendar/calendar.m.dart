@@ -41,6 +41,10 @@ CalendarModule? _$CalendarModuleFromMap(DynamicMap map, CalendarModule ref) {
       markerType: UICalendarMarkerType.values.firstWhere((e) =>
           e.index ==
           map.get<int>("markerType", UICalendarMarkerType.count.index)),
+      sliverLayoutWhenModernDesignOnHome:
+          map.get<bool>("sliverLayoutWhenModernDesignOnHome", true),
+      automaticallyImplyLeadingOnHome:
+          map.get<bool>("automaticallyImplyLeadingOnHome", true),
       showAddingButton: map.get<bool>("showAddingButton", true),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
@@ -83,6 +87,9 @@ DynamicMap _$CalendarModuleToMap(CalendarModule ref) {
     "enableNote": ref.enableNote,
     "editingType": ref.editingType.index,
     "markerType": ref.markerType.index,
+    "sliverLayoutWhenModernDesignOnHome":
+        ref.sliverLayoutWhenModernDesignOnHome,
+    "automaticallyImplyLeadingOnHome": ref.automaticallyImplyLeadingOnHome,
     "showAddingButton": ref.showAddingButton,
     "permission": ref.permission.toMap(),
     if (ref.initialCommentTemplate.isNotEmpty)

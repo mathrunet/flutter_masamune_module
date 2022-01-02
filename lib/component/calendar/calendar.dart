@@ -42,6 +42,8 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.enableNote = false,
     this.editingType = CalendarEditingType.planeText,
     this.markerType = UICalendarMarkerType.count,
+    this.sliverLayoutWhenModernDesignOnHome = true,
+    this.automaticallyImplyLeadingOnHome = true,
     this.showAddingButton = true,
     this.markerIcon,
     Permission permission = const Permission(),
@@ -88,6 +90,12 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
   final Widget? template;
   final Widget? detail;
   final Widget? edit;
+
+  /// ホームをスライバーレイアウトにする場合True.
+  final bool sliverLayoutWhenModernDesignOnHome;
+
+  /// ホームのときのバックボタンを削除するかどうか。
+  final bool automaticallyImplyLeadingOnHome;
 
   /// ルートのパス。
   final String routePath;
@@ -188,6 +196,8 @@ class CalendarModuleHome extends PageScopedWidget {
       waitTransition: true,
       appBar: UIAppBar(
         title: Text(config.title ?? "Calendar".localize()),
+        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
+        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
       ),
       body: UICalendar(
         markerType: config.markerType,
@@ -332,19 +342,10 @@ class CalendarModuleDetail extends PageScopedWidget {
               orderBy: Const.time)
           .value,
     );
-    final _commentAuthor = ref.watchCollectionModel(
-      ModelQuery(
-        config.userPath,
-        key: Const.uid,
-        whereIn: _comments.map((e) => e.get(config.userKey, "")).distinct(),
-      ).value,
-    );
-    final comments = _comments.setWhereListenable(
-      _commentAuthor,
-      test: (o, a) => o.get(config.userKey, "") == a.uid,
-      apply: (o, a) =>
-          o.mergeListenable(a, convertKeys: (key) => "${Const.user}$key"),
-      orElse: (o) => o,
+    final comments = _comments.mergeUserInformation(
+      ref,
+      userCollectionPath: config.userPath,
+      userKey: config.userKey,
     );
 
     final editingType = note.isNotEmpty && !note.startsWith(RegExp(r"^(\[|\{)"))

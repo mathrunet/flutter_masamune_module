@@ -30,6 +30,7 @@ class DetailModule extends PageModule {
     this.multipleImage = false,
     this.bookmarkPath = "bookmark",
     this.likePath = "like",
+    this.automaticallyImplyLeadingOnHome = true,
     this.expandedHeight = 240,
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
@@ -70,6 +71,9 @@ class DetailModule extends PageModule {
   final String timeKey;
   final String userKey;
   final String likeCountKey;
+
+  /// ホームのときのバックボタンを削除するかどうか。
+  final bool automaticallyImplyLeadingOnHome;
 
   /// ツールバーの高さ
   final double expandedHeight;
@@ -130,19 +134,10 @@ class DetailModuleHome extends PageScopedWidget {
         orderBy: config.timeKey,
       ).value,
     );
-    final users = ref.watchCollectionModel(
-      ModelQuery(
-        config.userPath,
-        key: "uid",
-        whereIn: comment.map((e) => e.get(config.userKey, "")).distinct(),
-      ).value,
-    );
-    final commentWithUser = comment.setWhere(
-      users,
-      test: (o, a) => o.get(config.userKey, "") == a.uid,
-      apply: (o, a) =>
-          o.merge(a, convertKeys: (key) => "${config.userKey}$key"),
-      orElse: (o) => o,
+    final commentWithUser = comment.mergeUserInformation(
+      ref,
+      userCollectionPath: config.userPath,
+      userKey: config.userKey,
     );
     final like = ref
         .watchDocumentModel(
@@ -163,6 +158,7 @@ class DetailModuleHome extends PageScopedWidget {
         },
         designType: DesignType.modern,
         expandedHeight: config.expandedHeight,
+        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
         background: multipleImage
             ? ColoredBox(
                 color: context.theme.dividerColor,
@@ -217,7 +213,7 @@ class DetailModuleHome extends PageScopedWidget {
       ),
       body: ListBuilder<DynamicMap>(
         padding: const EdgeInsets.all(0),
-        source: commentWithUser.toList(),
+        source: commentWithUser,
         top: [
           Indent(
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),

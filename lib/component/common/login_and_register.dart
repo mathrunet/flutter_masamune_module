@@ -1135,7 +1135,8 @@ class LoginModuleRegisterAnonymous extends PageScopedWidget {
             if (doc == null) {
               throw Exception("User document has not created.");
             }
-            context.app?.userVariables.buildValue(doc, context, ref);
+            context.app?.userVariables
+                .buildValue(doc, context, ref, updated: false);
             await context.model?.saveDocument(doc).showIndicator(context);
             context.navigator.pushReplacementNamed(config.redirectTo);
           } catch (e) {

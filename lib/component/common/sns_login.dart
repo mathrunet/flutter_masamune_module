@@ -27,12 +27,13 @@ class SnsLoginModule extends PageModule {
     this.backgroundImage,
     this.backgroundImageBlur = 5.0,
     this.featureImage,
-    this.featureImageRadius,
-    this.featureImageSize,
+    this.featureImageRadius = BorderRadius.zero,
+    this.featureImageSize = const Size(256, 256),
     this.roleKey = Const.role,
     this.formImageSize,
     this.featureImageFit = BoxFit.cover,
     this.titleTextStyle,
+    this.titleTextAlignment = TextAlign.start,
     this.titleAlignment = Alignment.bottomLeft,
     this.guestLogin,
     this.titlePadding =
@@ -120,6 +121,9 @@ class SnsLoginModule extends PageModule {
   /// タイトルのテキストスタイル。
   final TextStyle? titleTextStyle;
 
+  /// タイトルのテキストの位置。
+  final TextAlign titleTextAlignment;
+
   /// タイトルの位置。
   final Alignment titleAlignment;
 
@@ -157,7 +161,7 @@ class SnsLoginModuleLanding extends PageScopedWidget {
       "main",
       [
         AnimationUnit(
-          tween: DoubleTween(begin: 0, end: 1),
+          tween: DoubleTween(begin: 0.0, end: 1.0),
           from: const Duration(milliseconds: 500),
           to: const Duration(milliseconds: 1500),
           tag: "opacity",
@@ -165,10 +169,11 @@ class SnsLoginModuleLanding extends PageScopedWidget {
       ],
     );
 
-    final color = config.color ?? Colors.white;
-    final buttonColor = config.buttonColor ?? config.color ?? Colors.white;
+    final color = config.color ?? context.theme.textColor;
+    final buttonColor =
+        config.buttonColor ?? config.color ?? context.theme.textColorOnPrimary;
     final buttonBackgroundColor =
-        config.buttonBackgroundColor ?? Colors.transparent;
+        config.buttonBackgroundColor ?? context.theme.primaryColor;
 
     switch (config.layoutType) {
       case LoginLayoutType.fixed:
@@ -181,7 +186,7 @@ class SnsLoginModuleLanding extends PageScopedWidget {
                 animation: animation,
                 builder: (context, child, animation) {
                   return Opacity(
-                    opacity: animation.get("opacity", 0),
+                    opacity: animation.get("opacity", 0.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.max,
@@ -221,6 +226,7 @@ class SnsLoginModuleLanding extends PageScopedWidget {
                                         ),
                                         child: Text(
                                           config.title ?? "",
+                                          textAlign: config.titleTextAlignment,
                                           style: config.titleTextStyle,
                                         ),
                                       ),
@@ -294,9 +300,10 @@ class SnsLoginModuleLanding extends PageScopedWidget {
   }
 
   Widget _snsButton(BuildContext context, SnsLoginType type) {
-    final buttonColor = config.buttonColor ?? config.color ?? Colors.white;
+    final buttonColor =
+        config.buttonColor ?? config.color ?? context.theme.textColorOnPrimary;
     final buttonBackgroundColor =
-        config.buttonBackgroundColor ?? Colors.transparent;
+        config.buttonBackgroundColor ?? context.theme.primaryColor;
     switch (type) {
       case SnsLoginType.apple:
         if (!Config.isIOS) {
@@ -526,7 +533,8 @@ class SnsLoginModuleRegister extends PageScopedWidget {
             if (doc == null) {
               throw Exception("User document has not created.");
             }
-            context.app?.userVariables.buildValue(doc, context, ref);
+            context.app?.userVariables
+                .buildValue(doc, context, ref, updated: false);
             await context.model?.saveDocument(doc).showIndicator(context);
             context.navigator.pushReplacementNamed(config.redirectTo);
           } catch (e) {

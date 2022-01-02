@@ -30,8 +30,13 @@ ChatModule? _$ChatModuleFromMap(DynamicMap map, ChatModule ref) {
       modifiedTimeKey: map.get<String>("modifiedTimeKey", Const.modifiedTime),
       chatRoomQuery: map
           .get<DynamicMap>("chatRoomQuery", <String, dynamic>{}).toModelQuery(),
+      sliverLayoutWhenModernDesignOnHome:
+          map.get<bool>("sliverLayoutWhenModernDesignOnHome", true),
+      automaticallyImplyLeadingOnHome:
+          map.get<bool>("automaticallyImplyLeadingOnHome", true),
       availableMemberQuery: map.get<DynamicMap>(
           "availableMemberQuery", <String, dynamic>{}).toModelQuery(),
+      allowEditRoomName: map.get<bool>("allowEditRoomName", true),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
@@ -62,8 +67,12 @@ DynamicMap _$ChatModuleToMap(ChatModule ref) {
     if (ref.createdTimeKey.isNotEmpty) "createdTimeKey": ref.createdTimeKey,
     if (ref.modifiedTimeKey.isNotEmpty) "modifiedTimeKey": ref.modifiedTimeKey,
     if (ref.chatRoomQuery != null) "chatRoomQuery": ref.chatRoomQuery?.toMap(),
+    "sliverLayoutWhenModernDesignOnHome":
+        ref.sliverLayoutWhenModernDesignOnHome,
+    "automaticallyImplyLeadingOnHome": ref.automaticallyImplyLeadingOnHome,
     if (ref.availableMemberQuery != null)
       "availableMemberQuery": ref.availableMemberQuery?.toMap(),
+    "allowEditRoomName": ref.allowEditRoomName,
     "permission": ref.permission.toMap(),
     if (ref.rerouteConfigs.isNotEmpty)
       "rerouteConfigs": ref.rerouteConfigs.map((e) => e.toMap())

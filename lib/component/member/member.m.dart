@@ -23,6 +23,10 @@ MemberModule? _$MemberModuleFromMap(DynamicMap map, MemberModule ref) {
       formMessage: map.get<String?>("formMessage", null),
       groupId: map.get<String?>("groupId", null),
       affiliationKey: map.get<String>("affiliationKey", "affiliation"),
+      sliverLayoutWhenModernDesignOnHome:
+          map.get<bool>("sliverLayoutWhenModernDesignOnHome", true),
+      automaticallyImplyLeadingOnHome:
+          map.get<bool>("automaticallyImplyLeadingOnHome", true),
       permission: map.get<DynamicMap>(
               "permission", <String, dynamic>{}).toPermission() ??
           const Permission(),
@@ -53,6 +57,9 @@ DynamicMap _$MemberModuleToMap(MemberModule ref) {
     if (ref.formMessage.isNotEmpty) "formMessage": ref.formMessage,
     if (ref.groupId.isNotEmpty) "groupId": ref.groupId,
     if (ref.affiliationKey.isNotEmpty) "affiliationKey": ref.affiliationKey,
+    "sliverLayoutWhenModernDesignOnHome":
+        ref.sliverLayoutWhenModernDesignOnHome,
+    "automaticallyImplyLeadingOnHome": ref.automaticallyImplyLeadingOnHome,
     "permission": ref.permission.toMap(),
     if (ref.rerouteConfigs.isNotEmpty)
       "rerouteConfigs": ref.rerouteConfigs.map((e) => e.toMap()),

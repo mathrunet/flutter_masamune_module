@@ -22,6 +22,8 @@ class SingleMediaModule extends PageModule
     this.createdTimeKey = Const.createdTime,
     this.mediaType = PlatformMediaType.all,
     Permission permission = const Permission(),
+    this.sliverLayoutWhenModernDesignOnHome = true,
+    this.automaticallyImplyLeadingOnHome = true,
     List<RerouteConfig> rerouteConfigs = const [],
     this.home,
     this.edit,
@@ -48,6 +50,12 @@ class SingleMediaModule extends PageModule
   // ページ設定。
   final Widget? home;
   final Widget? edit;
+
+  /// ホームをスライバーレイアウトにする場合True.
+  final bool sliverLayoutWhenModernDesignOnHome;
+
+  /// ホームのときのバックボタンを削除するかどうか。
+  final bool automaticallyImplyLeadingOnHome;
 
   /// ルートのパス。
   final String routePath;
@@ -129,6 +137,8 @@ class SingleMediaModuleHome extends PageScopedWidget {
                   );
                 })
         ],
+        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
+        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
       ),
       backgroundColor: Colors.black,
       body: media.isEmpty

@@ -19,6 +19,7 @@ export 'component/detail/detail.dart';
 export 'component/home/home.dart';
 export 'component/media/gallery.dart';
 export 'component/media/single_media.dart';
+export 'component/menu/menu.dart';
 export 'component/post/post.dart';
 export 'component/questionnaire/questionnaire.dart';
 export 'component/user/user.dart';
