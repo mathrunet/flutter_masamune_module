@@ -6,10 +6,6 @@ import 'package:masamune_module/masamune_module.dart';
 class SnsLoginModule extends PageModule {
   const SnsLoginModule({
     this.layoutType = LoginLayoutType.fixed,
-    this.snsTypes = const [
-      SnsLoginType.apple,
-      SnsLoginType.google,
-    ],
     bool enabled = true,
     String? title,
     this.color,
@@ -62,9 +58,6 @@ class SnsLoginModule extends PageModule {
 
   /// レイアウトタイプ。
   final LoginLayoutType layoutType;
-
-  /// SNSログインタイプ。
-  final List<SnsLoginType> snsTypes;
 
   /// 前景色。
   final Color? color;
@@ -235,8 +228,10 @@ class SnsLoginModuleLanding extends PageScopedWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
-                                  for (final type in config.snsTypes)
-                                    _snsButton(context, type),
+                                  if (context.plugin != null)
+                                    for (final adapter
+                                        in context.plugin!.snsSignIns)
+                                      _snsButton(context, adapter),
                                   if (config.guestLogin != null)
                                     FormItemSubmit(
                                       config.guestLogin!.label?.localize() ??
@@ -289,13 +284,13 @@ class SnsLoginModuleLanding extends PageScopedWidget {
     }
   }
 
-  Widget _snsButton(BuildContext context, SnsLoginType type) {
+  Widget _snsButton(BuildContext context, SNSSignInAdapter adapter) {
     final buttonColor =
         config.buttonColor ?? config.color ?? context.theme.textColorOnPrimary;
     final buttonBackgroundColor =
         config.buttonBackgroundColor ?? context.theme.primaryColor;
-    switch (type) {
-      case SnsLoginType.apple:
+    switch (adapter.provider) {
+      case "apple":
         if (!Config.isIOS) {
           return const Empty();
         }
@@ -308,8 +303,9 @@ class SnsLoginModuleLanding extends PageScopedWidget {
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
           icon: FontAwesomeIcons.apple,
-          onPressed: () {
+          onPressed: () async {
             try {
+              await adapter.signIn();
               if (_hasRegistrationData(context)) {
                 context.navigator.pushReplacementNamed("/register");
               } else {
@@ -325,7 +321,7 @@ class SnsLoginModuleLanding extends PageScopedWidget {
             }
           },
         );
-      case SnsLoginType.google:
+      case "google":
         return FormItemSubmit(
           "Google SignIn".localize(),
           borderRadius: 35,
@@ -335,8 +331,9 @@ class SnsLoginModuleLanding extends PageScopedWidget {
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
           icon: FontAwesomeIcons.google,
-          onPressed: () {
+          onPressed: () async {
             try {
+              await adapter.signIn();
               if (_hasRegistrationData(context)) {
                 context.navigator.pushReplacementNamed("/register");
               } else {
@@ -352,7 +349,7 @@ class SnsLoginModuleLanding extends PageScopedWidget {
             }
           },
         );
-      case SnsLoginType.facebook:
+      case "facebook":
         return FormItemSubmit(
           "Facebook SignIn".localize(),
           borderRadius: 35,
@@ -362,8 +359,9 @@ class SnsLoginModuleLanding extends PageScopedWidget {
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
           icon: FontAwesomeIcons.facebook,
-          onPressed: () {
+          onPressed: () async {
             try {
+              await adapter.signIn();
               if (_hasRegistrationData(context)) {
                 context.navigator.pushReplacementNamed("/register");
               } else {
@@ -379,7 +377,7 @@ class SnsLoginModuleLanding extends PageScopedWidget {
             }
           },
         );
-      case SnsLoginType.twitter:
+      case "twitter":
         return FormItemSubmit(
           "Twitter SignIn".localize(),
           borderRadius: 35,
@@ -389,8 +387,9 @@ class SnsLoginModuleLanding extends PageScopedWidget {
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
           icon: FontAwesomeIcons.twitter,
-          onPressed: () {
+          onPressed: () async {
             try {
+              await adapter.signIn();
               if (_hasRegistrationData(context)) {
                 context.navigator.pushReplacementNamed("/register");
               } else {
@@ -407,6 +406,7 @@ class SnsLoginModuleLanding extends PageScopedWidget {
           },
         );
     }
+    return const Empty();
   }
 
   bool _hasRegistrationData(BuildContext context) {

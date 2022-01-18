@@ -4,13 +4,6 @@ enum LoginLayoutType {
   fixed,
 }
 
-enum SnsLoginType {
-  google,
-  apple,
-  facebook,
-  twitter,
-}
-
 @immutable
 class LoginConfig {
   const LoginConfig({
