@@ -312,6 +312,7 @@ class SnsLoginModuleLanding extends PageScopedWidget {
                 context.navigator.pushReplacementNamed(config.redirectTo);
               }
             } catch (e) {
+              print(e.toString());
               UIDialog.show(
                 context,
                 title: "Error".localize(),
@@ -340,6 +341,7 @@ class SnsLoginModuleLanding extends PageScopedWidget {
                 context.navigator.pushReplacementNamed(config.redirectTo);
               }
             } catch (e) {
+              print(e.toString());
               UIDialog.show(
                 context,
                 title: "Error".localize(),
@@ -368,6 +370,7 @@ class SnsLoginModuleLanding extends PageScopedWidget {
                 context.navigator.pushReplacementNamed(config.redirectTo);
               }
             } catch (e) {
+              print(e.toString());
               UIDialog.show(
                 context,
                 title: "Error".localize(),
@@ -396,6 +399,7 @@ class SnsLoginModuleLanding extends PageScopedWidget {
                 context.navigator.pushReplacementNamed(config.redirectTo);
               }
             } catch (e) {
+              print(e.toString());
               UIDialog.show(
                 context,
                 title: "Error".localize(),
