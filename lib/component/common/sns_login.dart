@@ -190,7 +190,7 @@ class SnsLoginModuleLanding extends PageScopedWidget {
                                           BorderRadius.zero,
                                       child: Image(
                                         image: NetworkOrAsset.image(
-                                            config.featureImage!),
+                                            config.featureImage!, ImageSize.medium,),
                                         fit: config.featureImageFit,
                                       ),
                                     ),
@@ -290,6 +290,35 @@ class SnsLoginModuleLanding extends PageScopedWidget {
     final buttonBackgroundColor =
         config.buttonBackgroundColor ?? context.theme.primaryColor;
     switch (adapter.provider) {
+      case "mock":
+        return FormItemSubmit(
+          "SignIn".localize(),
+          borderRadius: 35,
+          height: 70,
+          width: 1.6,
+          color: buttonColor,
+          borderColor: buttonColor,
+          backgroundColor: buttonBackgroundColor,
+          icon: FontAwesomeIcons.signInAlt,
+          onPressed: () async {
+            try {
+              await adapter.signIn();
+              if (_hasRegistrationData(context)) {
+                context.navigator.pushReplacementNamed("/register");
+              } else {
+                context.navigator.pushReplacementNamed(config.redirectTo);
+              }
+            } catch (e) {
+              print(e.toString());
+              UIDialog.show(
+                context,
+                title: "Error".localize(),
+                text: "Could not login. Please check your information."
+                    .localize(),
+              );
+            }
+          },
+        );
       case "apple":
         if (!Config.isIOS) {
           return const Empty();
