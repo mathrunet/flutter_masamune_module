@@ -190,7 +190,9 @@ class SnsLoginModuleLanding extends PageScopedWidget {
                                           BorderRadius.zero,
                                       child: Image(
                                         image: NetworkOrAsset.image(
-                                            config.featureImage!, ImageSize.medium,),
+                                          config.featureImage!,
+                                          ImageSize.medium,
+                                        ),
                                         fit: config.featureImageFit,
                                       ),
                                     ),

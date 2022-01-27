@@ -421,7 +421,8 @@ class ChatModuleTimeline extends PageScopedWidget {
                       width: 48,
                       child: CircleAvatar(
                         backgroundImage: NetworkOrAsset.image(
-                            item.get("${Const.user}${config.mediaKey}", ""), ImageSize.thumbnail),
+                            item.get("${Const.user}${config.mediaKey}", ""),
+                            ImageSize.thumbnail),
                       ),
                     ),
                     const Space.width(4),

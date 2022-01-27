@@ -210,7 +210,9 @@ class UserModuleHome extends PageScopedWidget {
         icon: NetworkOrAsset.image(icon, ImageSize.thumbnail),
         automaticallyImplyLeading:
             !own || config.automaticallyImplyLeadingOnHome,
-        backgroundImage: image.isNotEmpty ? NetworkOrAsset.image(image, ImageSize.large) : null,
+        backgroundImage: image.isNotEmpty
+            ? NetworkOrAsset.image(image, ImageSize.large)
+            : null,
         bottomActions: [
           if (own)
             TextButton(
@@ -463,7 +465,8 @@ class UserModuleEditProfile extends PageScopedWidget {
                                     : context.theme.colorScheme.primary)),
                         image: config.allowImageEditing
                             ? DecorationImage(
-                                image: NetworkOrAsset.image(image, ImageSize.large),
+                                image: NetworkOrAsset.image(
+                                    image, ImageSize.large),
                                 fit: BoxFit.cover,
                                 colorFilter: const ColorFilter.mode(
                                   Colors.black87,
@@ -519,7 +522,8 @@ class UserModuleEditProfile extends PageScopedWidget {
                           color: context.theme.scaffoldBackgroundColor,
                         ),
                         child: CircleAvatar(
-                          backgroundImage: NetworkOrAsset.image(icon, ImageSize.thumbnail),
+                          backgroundImage:
+                              NetworkOrAsset.image(icon, ImageSize.thumbnail),
                           child: InkWell(
                             onTap: () async {
                               final media = await context.platform?.mediaDialog(
