@@ -22,8 +22,8 @@ class SingleMediaModule extends PageModule
     this.sliverLayoutWhenModernDesignOnHome = true,
     this.automaticallyImplyLeadingOnHome = true,
     List<RerouteConfig> rerouteConfigs = const [],
-    this.home,
-    this.edit,
+    this.homePage = const SingleMediaModuleHome(),
+    this.editPage = const SingleMediaModuleEdit(),
   }) : super(
           enabled: enabled,
           title: title,
@@ -37,16 +37,15 @@ class SingleMediaModule extends PageModule
       return const {};
     }
     final route = {
-      "/$routePath": RouteConfig((_) => home ?? SingleMediaModuleHome(this)),
-      "/$routePath/edit":
-          RouteConfig((_) => edit ?? SingleMediaModuleEdit(this)),
+      "/$routePath": RouteConfig((_) => homePage),
+      "/$routePath/edit": RouteConfig((_) => editPage),
     };
     return route;
   }
 
   // ページ設定。
-  final Widget? home;
-  final Widget? edit;
+  final PageModuleWidget<SingleMediaModule> homePage;
+  final PageModuleWidget<SingleMediaModule> editPage;
 
   /// ホームをスライバーレイアウトにする場合True.
   final bool sliverLayoutWhenModernDesignOnHome;
@@ -88,18 +87,17 @@ class SingleMediaModule extends PageModule
   final PlatformMediaType mediaType;
 }
 
-class SingleMediaModuleHome extends PageScopedWidget {
-  const SingleMediaModuleHome(this.config);
-  final SingleMediaModule config;
+class SingleMediaModuleHome extends PageModuleWidget<SingleMediaModule> {
+  const SingleMediaModuleHome();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, SingleMediaModule module) {
     final now = ref.useNow();
-    final user = ref.watchUserDocumentModel(config.userPath);
-    final item = ref.watchDocumentModel(config.queryPath);
-    final name = item.get(config.nameKey, "");
-    final media = item.get(config.mediaKey, "");
-    final date = item.get(config.createdTimeKey, now.millisecondsSinceEpoch);
+    final user = ref.watchUserDocumentModel(module.userPath);
+    final item = ref.watchDocumentModel(module.queryPath);
+    final name = item.get(module.nameKey, "");
+    final media = item.get(module.mediaKey, "");
+    final date = item.get(module.createdTimeKey, now.millisecondsSinceEpoch);
     final type = getPlatformMediaType(media);
 
     return UIScaffold(
@@ -108,7 +106,7 @@ class SingleMediaModuleHome extends PageScopedWidget {
         title: Text(
           name.isNotEmpty
               ? name
-              : (config.title ??
+              : (module.title ??
                   "%s's ${type == PlatformMediaType.video ? "Video" : "Image"}"
                       .localize()
                       .format([
@@ -117,18 +115,18 @@ class SingleMediaModuleHome extends PageScopedWidget {
                   ])),
         ),
         actions: [
-          if (config.permission.canEdit(user.get(config.roleKey, "")))
+          if (module.permission.canEdit(user.get(module.roleKey, "")))
             IconButton(
                 icon: const Icon(Icons.edit),
                 onPressed: () {
                   context.navigator.pushNamed(
-                    "/${config.routePath}/edit",
+                    "/${module.routePath}/edit",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
                 })
         ],
-        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
-        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
+        sliverLayoutWhenModernDesign: module.sliverLayoutWhenModernDesignOnHome,
+        automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
       ),
       backgroundColor: Colors.black,
       body: media.isEmpty
@@ -157,16 +155,15 @@ class SingleMediaModuleHome extends PageScopedWidget {
   }
 }
 
-class SingleMediaModuleEdit extends PageScopedWidget {
-  const SingleMediaModuleEdit(this.config);
-  final SingleMediaModule config;
+class SingleMediaModuleEdit extends PageModuleWidget<SingleMediaModule> {
+  const SingleMediaModuleEdit();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, SingleMediaModule module) {
     final form = ref.useForm();
-    final item = ref.watchDocumentModel(config.queryPath);
-    final name = item.get(config.nameKey, "");
-    final media = item.get(config.mediaKey, "");
+    final item = ref.watchDocumentModel(module.queryPath);
+    final name = item.get(module.nameKey, "");
+    final media = item.get(module.mediaKey, "");
 
     return UIScaffold(
       waitTransition: true,
@@ -186,7 +183,7 @@ class SingleMediaModuleEdit extends PageScopedWidget {
             height: 200,
             dense: true,
             controller: ref.useTextEditingController(
-              config.mediaKey,
+              module.mediaKey,
               media,
             ),
             errorText: "No input %s".localize().format(["Image".localize()]),
@@ -196,12 +193,12 @@ class SingleMediaModuleEdit extends PageScopedWidget {
                 title: "Please select your %s"
                     .localize()
                     .format(["Media".localize().toLowerCase()]),
-                type: config.mediaType,
+                type: module.mediaType,
               );
               onUpdate(media?.path);
             },
             onSaved: (value) {
-              context[config.mediaKey] = value;
+              context[module.mediaKey] = value;
             },
           ),
           const Space.height(12),
@@ -211,11 +208,11 @@ class SingleMediaModuleEdit extends PageScopedWidget {
             hintText: "Input %s".localize().format(["Title".localize()]),
             errorText: "No input %s".localize().format(["Title".localize()]),
             controller: ref.useTextEditingController(
-              config.nameKey,
+              module.nameKey,
               name,
             ),
             onSaved: (value) {
-              context[config.nameKey] = value;
+              context[module.nameKey] = value;
             },
           ),
           const Divid(),
@@ -227,9 +224,9 @@ class SingleMediaModuleEdit extends PageScopedWidget {
             return;
           }
 
-          item[config.nameKey] = context.get(config.nameKey, "");
-          item[config.mediaKey] = await context.model
-              ?.uploadMedia(context.get(config.mediaKey, ""))
+          item[module.nameKey] = context.get(module.nameKey, "");
+          item[module.mediaKey] = await context.model
+              ?.uploadMedia(context.get(module.mediaKey, ""))
               .showIndicator(context);
           await context.model?.saveDocument(item).showIndicator(context);
           context.navigator.pop();

@@ -58,13 +58,13 @@ class QuestionnaireModule extends PageModule
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.questionnaireQuery,
-    this.home,
-    this.edit,
-    this.view,
-    this.answerView,
-    this.answerDetail,
-    this.questionView,
-    this.questionEdit,
+    this.homePage = const QuestionnaireModuleHome(),
+    this.editPage = const QuestionnaireModuleEdit(),
+    this.viewPage = const QuestionnaireModuleView(),
+    this.answerViewPage = const QuestionnaireAanswerView(),
+    this.answerDetailPage = const QuestionnaireModuleAnswerDetail(),
+    this.questionViewPage = const QuestionnaireModuleQuestionView(),
+    this.questionEditPage = const QuestionnaireModuleQuestionEdit(),
   }) : super(
           enabled: enabled,
           title: title,
@@ -78,35 +78,32 @@ class QuestionnaireModule extends PageModule
       return const {};
     }
     final route = {
-      "/$routePath": RouteConfig((_) => home ?? QuestionnaireModuleHome(this)),
-      "/$routePath/edit":
-          RouteConfig((_) => edit ?? QuestionnaireModuleEdit(this)),
+      "/$routePath": RouteConfig((_) => homePage),
+      "/$routePath/edit": RouteConfig((_) => editPage),
       // "/$routePath/{post_id}": RouteConfig((_) => _PostView(this)),
-      "/$routePath/{question_id}":
-          RouteConfig((_) => view ?? QuestionnaireModuleView(this)),
-      "/$routePath/{question_id}/edit":
-          RouteConfig((_) => edit ?? QuestionnaireModuleEdit(this)),
-      "/$routePath/{question_id}/question": RouteConfig(
-          (_) => questionView ?? QuestionnaireModuleQuestionView(this)),
+      "/$routePath/{question_id}": RouteConfig((_) => viewPage),
+      "/$routePath/{question_id}/edit": RouteConfig((_) => editPage),
+      "/$routePath/{question_id}/question":
+          RouteConfig((_) => questionViewPage),
       "/$routePath/{question_id}/answer/empty":
           RouteConfig((_) => const EmptyPage()),
-      "/$routePath/{question_id}/answer/{answer_id}": RouteConfig(
-          (_) => answerDetail ?? QuestionnaireModuleAnswerDetail(this)),
-      "/$routePath/{question_id}/question/edit": RouteConfig(
-          (_) => questionEdit ?? QuestionnaireModuleQuestionEdit(this)),
-      "/$routePath/{question_id}/question/{item_id}": RouteConfig(
-          (_) => questionEdit ?? QuestionnaireModuleQuestionEdit(this)),
+      "/$routePath/{question_id}/answer/{answer_id}":
+          RouteConfig((_) => answerDetailPage),
+      "/$routePath/{question_id}/question/edit":
+          RouteConfig((_) => questionEditPage),
+      "/$routePath/{question_id}/question/{item_id}":
+          RouteConfig((_) => questionEditPage),
     };
     return route;
   }
 
-  final Widget? home;
-  final Widget? edit;
-  final Widget? view;
-  final Widget? questionView;
-  final Widget? answerView;
-  final Widget? answerDetail;
-  final Widget? questionEdit;
+  final PageModuleWidget<QuestionnaireModule> homePage;
+  final PageModuleWidget<QuestionnaireModule> editPage;
+  final PageModuleWidget<QuestionnaireModule> viewPage;
+  final PageModuleWidget<QuestionnaireModule> answerViewPage;
+  final PageModuleWidget<QuestionnaireModule> questionViewPage;
+  final PageModuleWidget<QuestionnaireModule> answerDetailPage;
+  final PageModuleWidget<QuestionnaireModule> questionEditPage;
 
   /// ホームをスライバーレイアウトにする場合True.
   final bool sliverLayoutWhenModernDesignOnHome;
@@ -160,17 +157,17 @@ class QuestionnaireModule extends PageModule
   final ModelQuery? questionnaireQuery;
 }
 
-class QuestionnaireModuleHome extends PageScopedWidget {
-  const QuestionnaireModuleHome(this.config);
-  final QuestionnaireModule config;
+class QuestionnaireModuleHome extends PageModuleWidget<QuestionnaireModule> {
+  const QuestionnaireModuleHome();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(
+      BuildContext context, WidgetRef ref, QuestionnaireModule module) {
     final now = ref.useNow();
     final question = ref.watchCollectionModel(
-        config.questionnaireQuery?.value ?? config.queryPath);
+        module.questionnaireQuery?.value ?? module.queryPath);
     final answered = ref.watchCollectionModel(
-        "${config.userPath}/${context.model?.userId}/${config.answerPath}");
+        "${module.userPath}/${context.model?.userId}/${module.answerPath}");
 
     final questionWithAnswer = question.map((e) {
       final uid = e.get(Const.uid, "");
@@ -182,9 +179,9 @@ class QuestionnaireModuleHome extends PageScopedWidget {
       }
       return e;
     });
-    final user = ref.watchUserDocumentModel(config.userPath);
+    final user = ref.watchUserDocumentModel(module.userPath);
     final controller = ref.useNavigatorController(
-      "${config.routePath}/${questionWithAnswer.firstOrNull.get(Const.uid, "")}",
+      "${module.routePath}/${questionWithAnswer.firstOrNull.get(Const.uid, "")}",
       (route) => questionWithAnswer.isEmpty,
     );
 
@@ -195,9 +192,9 @@ class QuestionnaireModuleHome extends PageScopedWidget {
         user.loading,
       ],
       appBar: UIAppBar(
-        title: Text(config.title ?? "Questionnaire".localize()),
-        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
-        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
+        title: Text(module.title ?? "Questionnaire".localize()),
+        sliverLayoutWhenModernDesign: module.sliverLayoutWhenModernDesignOnHome,
+        automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
       ),
       body: UIListBuilder<DynamicMap>(
         source: questionWithAnswer.toList(),
@@ -210,21 +207,21 @@ class QuestionnaireModuleHome extends PageScopedWidget {
               iconColor: Colors.green,
               selectedTileColor: context.theme.primaryColor.withOpacity(0.8),
               disabledTapOnSelected: true,
-              title: Text(item.get(config.nameKey, "")),
+              title: Text(item.get(module.nameKey, "")),
               subtitle: Text(
                 DateTime.fromMillisecondsSinceEpoch(
-                  item.get(config.createdTimeKey, now.millisecondsSinceEpoch),
+                  item.get(module.createdTimeKey, now.millisecondsSinceEpoch),
                 ).format("yyyy/MM/dd HH:mm"),
               ),
               onTap: () {
                 if (context.isMobile) {
                   context.navigator.pushNamed(
-                    "${config.routePath}/${item.get(Const.uid, "")}",
+                    "${module.routePath}/${item.get(Const.uid, "")}",
                     arguments: RouteQuery.fullscreen,
                   );
                 } else {
                   controller.navigator.pushReplacementNamed(
-                    "${config.routePath}/${item.get(Const.uid, "")}",
+                    "${module.routePath}/${item.get(Const.uid, "")}",
                   );
                 }
               },
@@ -236,13 +233,13 @@ class QuestionnaireModuleHome extends PageScopedWidget {
         },
       ),
       floatingActionButton:
-          config.permission.canEdit(user.get(config.roleKey, ""))
+          module.permission.canEdit(user.get(module.roleKey, ""))
               ? FloatingActionButton.extended(
                   label: Text("Add".localize()),
                   icon: const Icon(Icons.add),
                   onPressed: () {
                     context.rootNavigator.pushNamed(
-                      "/${config.routePath}/edit",
+                      "/${module.routePath}/edit",
                       arguments: RouteQuery.fullscreenOrModal,
                     );
                   },
@@ -252,42 +249,42 @@ class QuestionnaireModuleHome extends PageScopedWidget {
   }
 }
 
-class QuestionnaireModuleView extends ScopedWidget {
-  const QuestionnaireModuleView(this.config);
-  final QuestionnaireModule config;
+class QuestionnaireModuleView extends PageModuleWidget<QuestionnaireModule> {
+  const QuestionnaireModuleView();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(
+      BuildContext context, WidgetRef ref, QuestionnaireModule module) {
     final user = ref.watchUserDocumentModel();
-    if (config.permission.canEdit(user.get(config.roleKey, ""))) {
-      return QuestionnaireAanswerView(config);
+    if (module.permission.canEdit(user.get(module.roleKey, ""))) {
+      return module.answerViewPage;
     } else {
-      return QuestionnaireModuleQuestionView(config);
+      return module.questionViewPage;
     }
   }
 }
 
-class QuestionnaireAanswerView extends PageScopedWidget {
-  const QuestionnaireAanswerView(this.config);
-  final QuestionnaireModule config;
+class QuestionnaireAanswerView extends PageModuleWidget<QuestionnaireModule> {
+  const QuestionnaireAanswerView();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(
+      BuildContext context, WidgetRef ref, QuestionnaireModule module) {
     final now = ref.useNow();
     final question = ref.watchDocumentModel(
-        "${config.queryPath}/${context.get("question_id", "")}");
+        "${module.queryPath}/${context.get("question_id", "")}");
     final questions = ref.watchCollectionModel(
-        "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}");
+        "${module.queryPath}/${context.get("question_id", "")}/${module.questionPath}");
     final answers = ref.watchCollectionModel(
-      "${config.queryPath}/${context.get("question_id", "")}/${config.answerPath}",
+      "${module.queryPath}/${context.get("question_id", "")}/${module.answerPath}",
     );
     final answersWithUsers = answers.mergeUserInformation(
       ref,
-      userCollectionPath: config.userPath,
+      userCollectionPath: module.userPath,
     );
-    final name = question.get(config.nameKey, "");
-    final text = question.get(config.textKey, "");
-    final endDate = question.get(config.endTimeKey, 0);
+    final name = question.get(module.nameKey, "");
+    final text = question.get(module.textKey, "");
+    final endDate = question.get(module.endTimeKey, 0);
 
     return UIScaffold(
       waitTransition: true,
@@ -297,7 +294,7 @@ class QuestionnaireAanswerView extends PageScopedWidget {
           IconButton(
             onPressed: () {
               context.rootNavigator.pushNamed(
-                "${config.routePath}/${context.get("question_id", "")}/edit",
+                "${module.routePath}/${context.get("question_id", "")}/edit",
                 arguments: RouteQuery.fullscreenOrModal,
               );
             },
@@ -306,7 +303,7 @@ class QuestionnaireAanswerView extends PageScopedWidget {
           IconButton(
             onPressed: () {
               context.rootNavigator.pushNamed(
-                "/${config.routePath}/${context.get("question_id", "")}/question",
+                "/${module.routePath}/${context.get("question_id", "")}/question",
                 arguments: RouteQuery.fullscreenOrModal,
               );
             },
@@ -319,7 +316,7 @@ class QuestionnaireAanswerView extends PageScopedWidget {
           return InkWell(
             onTap: () {
               context.rootNavigator.pushNamed(
-                "/${config.routePath}/${context.get("question_id", "")}/question",
+                "/${module.routePath}/${context.get("question_id", "")}/question",
                 arguments: RouteQuery.fullscreenOrModal,
               );
             },
@@ -365,15 +362,15 @@ class QuestionnaireAanswerView extends PageScopedWidget {
           builder: (context, item, index) {
             return [
               ListItem(
-                title: Text(item.get("${Const.user}${config.nameKey}", "")),
+                title: Text(item.get("${Const.user}${module.nameKey}", "")),
                 subtitle: Text(
                   DateTime.fromMillisecondsSinceEpoch(item.get(
-                          config.createdTimeKey, now.millisecondsSinceEpoch))
+                          module.createdTimeKey, now.millisecondsSinceEpoch))
                       .format("yyyy/MM/dd HH:mm"),
                 ),
                 onTap: () {
                   context.rootNavigator.pushNamed(
-                    "/${config.routePath}/${context.get("question_id", "")}/answer/${item.get(Const.uid, "")}",
+                    "/${module.routePath}/${context.get("question_id", "")}/answer/${item.get(Const.uid, "")}",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
                 },
@@ -386,20 +383,21 @@ class QuestionnaireAanswerView extends PageScopedWidget {
   }
 }
 
-class QuestionnaireModuleAnswerDetail extends PageScopedWidget {
-  const QuestionnaireModuleAnswerDetail(this.config);
-  final QuestionnaireModule config;
+class QuestionnaireModuleAnswerDetail
+    extends PageModuleWidget<QuestionnaireModule> {
+  const QuestionnaireModuleAnswerDetail();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(
+      BuildContext context, WidgetRef ref, QuestionnaireModule module) {
     int i = 0;
     final questions = ref.watchCollectionModel(
-        "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}");
+        "${module.queryPath}/${context.get("question_id", "")}/${module.questionPath}");
     final answer = ref.watchDocumentModel(
-      "${config.queryPath}/${context.get("question_id", "")}/${config.answerPath}/${context.get("answer_id", "")}",
+      "${module.queryPath}/${context.get("question_id", "")}/${module.answerPath}/${context.get("answer_id", "")}",
     );
     final user = ref.watchDocumentModel(
-        "${config.userPath}/${answer.get(Const.user, "empty")}");
+        "${module.userPath}/${answer.get(Const.user, "empty")}");
 
     return UIScaffold(
       waitTransition: true,
@@ -410,7 +408,7 @@ class QuestionnaireModuleAnswerDetail extends PageScopedWidget {
       ],
       appBar: UIAppBar(
         title: Text(
-          "%s answers".localize().format([user.get(config.nameKey, "")]),
+          "%s answers".localize().format([user.get(module.nameKey, "")]),
         ),
       ),
       body: UIListBuilder<DynamicDocumentModel>(
@@ -420,7 +418,6 @@ class QuestionnaireModuleAnswerDetail extends PageScopedWidget {
           i++;
           return [
             QuestionnaireModuleListTile(
-              config,
               index: i,
               question: item,
               answer: answer,
@@ -434,26 +431,27 @@ class QuestionnaireModuleAnswerDetail extends PageScopedWidget {
   }
 }
 
-class QuestionnaireModuleQuestionView extends PageScopedWidget {
-  const QuestionnaireModuleQuestionView(this.config);
-  final QuestionnaireModule config;
+class QuestionnaireModuleQuestionView
+    extends PageModuleWidget<QuestionnaireModule> {
+  const QuestionnaireModuleQuestionView();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(
+      BuildContext context, WidgetRef ref, QuestionnaireModule module) {
     int i = 0;
     final form = ref.useForm();
-    final user = ref.watchUserDocumentModel(config.userPath);
+    final user = ref.watchUserDocumentModel(module.userPath);
     final question = ref.watchDocumentModel(
-        "${config.queryPath}/${context.get("question_id", "")}");
+        "${module.queryPath}/${context.get("question_id", "")}");
     final questions = ref.watchCollectionModel(
-        "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}");
+        "${module.queryPath}/${context.get("question_id", "")}/${module.questionPath}");
     final answer = ref.watchDocumentModel(
-      "${config.queryPath}/${context.get("question_id", "")}/${config.answerPath}/${context.model?.userId}",
+      "${module.queryPath}/${context.get("question_id", "")}/${module.answerPath}/${context.model?.userId}",
     );
-    final name = question.get(config.nameKey, "");
-    final text = question.get(config.textKey, "");
-    final endDate = question.get(config.endTimeKey, 0);
-    final canEdit = config.permission.canEdit(user.get(config.roleKey, ""));
+    final name = question.get(module.nameKey, "");
+    final text = question.get(module.textKey, "");
+    final endDate = question.get(module.endTimeKey, 0);
+    final canEdit = module.permission.canEdit(user.get(module.roleKey, ""));
 
     return UIScaffold(
       waitTransition: true,
@@ -464,7 +462,7 @@ class QuestionnaireModuleQuestionView extends PageScopedWidget {
             IconButton(
               onPressed: () {
                 context.rootNavigator.pushNamed(
-                  "/${config.routePath}/${context.get("question_id", "")}/question/edit",
+                  "/${module.routePath}/${context.get("question_id", "")}/question/edit",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -515,7 +513,6 @@ class QuestionnaireModuleQuestionView extends PageScopedWidget {
                 ...questions.mapListenable((item) {
                   i++;
                   return QuestionnaireModuleListTile(
-                    config,
                     index: i,
                     question: item,
                     answer: answer,
@@ -538,7 +535,7 @@ class QuestionnaireModuleQuestionView extends PageScopedWidget {
           onPressed: () async {
             if (canEdit) {
               context.navigator.pushNamed(
-                "/${config.routePath}/${context.get("question_id", "")}/question/edit",
+                "/${module.routePath}/${context.get("question_id", "")}/question/edit",
                 arguments: RouteQuery.fullscreenOrModal,
               );
             } else {
@@ -568,9 +565,8 @@ class QuestionnaireModuleQuestionView extends PageScopedWidget {
   }
 }
 
-class QuestionnaireModuleListTile extends ScopedWidget {
-  const QuestionnaireModuleListTile(
-    this.config, {
+class QuestionnaireModuleListTile extends ModuleWidget<QuestionnaireModule> {
+  const QuestionnaireModuleListTile({
     required this.index,
     required this.question,
     required this.answer,
@@ -580,26 +576,26 @@ class QuestionnaireModuleListTile extends ScopedWidget {
   final bool onlyView;
   final int index;
   final bool canEdit;
-  final QuestionnaireModule config;
   final DynamicDocumentModel question;
   final DynamicDocumentModel answer;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(
+      BuildContext context, WidgetRef ref, QuestionnaireModule module) {
     final uid = question.get(Const.uid, "");
-    final type = question.get(config.typeKey, "").quenstionFormType;
-    final name = question.get(config.nameKey, "");
-    final required = question.get(config.requiredKey, false);
-    final answers = answer.get(config.answerKey, {});
+    final type = question.get(module.typeKey, "").quenstionFormType;
+    final name = question.get(module.nameKey, "");
+    final required = question.get(module.requiredKey, false);
+    final answers = answer.get(module.answerKey, {});
     switch (type) {
       case _QuenstionFormType.selection:
-        final select = question.get(config.selectionKey, {});
+        final select = question.get(module.selectionKey, {});
 
         return InkWell(
           onTap: canEdit && !onlyView
               ? () {
                   context.rootNavigator.pushNamed(
-                    "/${config.routePath}/${context.get("question_id", "")}/question/$uid",
+                    "/${module.routePath}/${context.get("question_id", "")}/question/$uid",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
                 }
@@ -659,7 +655,7 @@ class QuestionnaireModuleListTile extends ScopedWidget {
           onTap: canEdit && !onlyView
               ? () {
                   context.rootNavigator.pushNamed(
-                    "/${config.routePath}/${context.get("question_id", "")}/question/$uid",
+                    "/${module.routePath}/${context.get("question_id", "")}/question/$uid",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
                 }
@@ -719,21 +715,22 @@ class QuestionnaireModuleListTile extends ScopedWidget {
   }
 }
 
-class QuestionnaireModuleQuestionEdit extends PageScopedWidget {
-  const QuestionnaireModuleQuestionEdit(this.config);
-  final QuestionnaireModule config;
+class QuestionnaireModuleQuestionEdit
+    extends PageModuleWidget<QuestionnaireModule> {
+  const QuestionnaireModuleQuestionEdit();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(
+      BuildContext context, WidgetRef ref, QuestionnaireModule module) {
     final form = ref.useForm("item_id");
     final item = ref.watchDocumentModel(
-        "${config.queryPath}/${context.get("question_id", "")}/${config.questionPath}/${form.uid}");
-    final user = ref.watchUserDocumentModel(config.userPath);
-    final name = item.get(config.nameKey, "");
-    final type = item.get(config.typeKey, Const.text);
-    final required = item.get(config.requiredKey, false);
+        "${module.queryPath}/${context.get("question_id", "")}/${module.questionPath}/${form.uid}");
+    final user = ref.watchUserDocumentModel(module.userPath);
+    final name = item.get(module.nameKey, "");
+    final type = item.get(module.typeKey, Const.text);
+    final required = item.get(module.requiredKey, false);
     final view = ref.state("viewType", type);
-    final selection = item.get(config.selectionKey, {});
+    final selection = item.get(module.selectionKey, {});
     final selectionTextEditingControllers =
         ref.useTextEditingControllerMap("selection", selection);
 
@@ -747,7 +744,7 @@ class QuestionnaireModuleQuestionEdit extends PageScopedWidget {
         )),
         actions: [
           if (form.exists &&
-              config.permission.canDelete(user.get(config.roleKey, "")))
+              module.permission.canDelete(user.get(module.roleKey, "")))
             IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () {
@@ -781,13 +778,13 @@ class QuestionnaireModuleQuestionEdit extends PageScopedWidget {
             errorText: "No input %s".localize().format(["Question".localize()]),
             keyboardType: TextInputType.multiline,
             controller: ref.useTextEditingController(
-              config.nameKey,
+              module.nameKey,
               name,
             ),
             minLines: 3,
             maxLines: 5,
             onSaved: (value) {
-              context[config.nameKey] = value;
+              context[module.nameKey] = value;
             },
           ),
           DividHeadline("Required".localize()),
@@ -798,11 +795,11 @@ class QuestionnaireModuleQuestionEdit extends PageScopedWidget {
               "no": "Optional".localize(),
             },
             controller: ref.useTextEditingController(
-              config.requiredKey,
+              module.requiredKey,
               required ? "yes" : "no",
             ),
             onSaved: (value) {
-              context[config.requiredKey] = value == "yes";
+              context[module.requiredKey] = value == "yes";
             },
           ),
           DividHeadline("Type".localize()),
@@ -815,14 +812,14 @@ class QuestionnaireModuleQuestionEdit extends PageScopedWidget {
               )
             },
             controller: ref.useTextEditingController(
-              config.typeKey,
+              module.typeKey,
               type,
             ),
             onChanged: (value) {
               view.value = value ?? Const.text;
             },
             onSaved: (value) {
-              context[config.typeKey] = value;
+              context[module.typeKey] = value;
             },
           ),
           if (view.value == _QuenstionFormType.selection.text) ...[
@@ -843,9 +840,9 @@ class QuestionnaireModuleQuestionEdit extends PageScopedWidget {
                     keyboardType: TextInputType.text,
                     controller: selectionTextEditingControllers[id],
                     onSaved: (value) {
-                      final select = context.get(config.selectionKey, {});
+                      final select = context.get(module.selectionKey, {});
                       select[id] = value;
-                      context[config.selectionKey] = select;
+                      context[module.selectionKey] = select;
                     },
                   ),
                 );
@@ -878,12 +875,12 @@ class QuestionnaireModuleQuestionEdit extends PageScopedWidget {
             return;
           }
 
-          final type = context.get(config.typeKey, Const.text);
-          item[config.nameKey] = context.get(config.nameKey, "");
-          item[config.requiredKey] = context.get(config.requiredKey, false);
-          item[config.typeKey] = context.get(config.typeKey, Const.text);
+          final type = context.get(module.typeKey, Const.text);
+          item[module.nameKey] = context.get(module.nameKey, "");
+          item[module.requiredKey] = context.get(module.requiredKey, false);
+          item[module.typeKey] = context.get(module.typeKey, Const.text);
           if (type == _QuenstionFormType.selection.text) {
-            item[config.selectionKey] = context.get(config.selectionKey, {});
+            item[module.selectionKey] = context.get(module.selectionKey, {});
           }
           await context.model?.saveDocument(item).showIndicator(context);
           context.navigator.pop();
@@ -895,18 +892,18 @@ class QuestionnaireModuleQuestionEdit extends PageScopedWidget {
   }
 }
 
-class QuestionnaireModuleEdit extends PageScopedWidget {
-  const QuestionnaireModuleEdit(this.config);
-  final QuestionnaireModule config;
+class QuestionnaireModuleEdit extends PageModuleWidget<QuestionnaireModule> {
+  const QuestionnaireModuleEdit();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(
+      BuildContext context, WidgetRef ref, QuestionnaireModule module) {
     final form = ref.useForm("question_id");
-    final item = ref.watchDocumentModel("${config.queryPath}/${form.uid}");
-    final user = ref.watchUserDocumentModel(config.userPath);
-    final name = item.get(config.nameKey, "");
-    final text = item.get(config.textKey, "");
-    final endTime = item.get(config.endTimeKey, 0);
+    final item = ref.watchDocumentModel("${module.queryPath}/${form.uid}");
+    final user = ref.watchUserDocumentModel(module.userPath);
+    final name = item.get(module.nameKey, "");
+    final text = item.get(module.textKey, "");
+    final endTime = item.get(module.endTimeKey, 0);
 
     return UIScaffold(
       waitTransition: true,
@@ -918,7 +915,7 @@ class QuestionnaireModuleEdit extends PageScopedWidget {
         )),
         actions: [
           if (form.exists &&
-              config.permission.canDelete(user.get(config.roleKey, "")))
+              module.permission.canDelete(user.get(module.roleKey, "")))
             IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () {
@@ -952,11 +949,11 @@ class QuestionnaireModuleEdit extends PageScopedWidget {
             hintText: "Input %s".localize().format(["Title".localize()]),
             errorText: "No input %s".localize().format(["Title".localize()]),
             controller: ref.useTextEditingController(
-              config.nameKey,
+              module.nameKey,
               form.select(name, ""),
             ),
             onSaved: (value) {
-              context[config.nameKey] = value;
+              context[module.nameKey] = value;
             },
           ),
           DividHeadline("Description".localize()),
@@ -968,11 +965,11 @@ class QuestionnaireModuleEdit extends PageScopedWidget {
             hintText: "Input %s".localize().format(["Description".localize()]),
             allowEmpty: true,
             controller: ref.useTextEditingController(
-              config.textKey,
+              module.textKey,
               form.select(text, ""),
             ),
             onSaved: (value) {
-              context[config.textKey] = value;
+              context[module.textKey] = value;
             },
           ),
           DividHeadline("End date".localize()),
@@ -982,12 +979,12 @@ class QuestionnaireModuleEdit extends PageScopedWidget {
             hintText: "Input %s".localize().format(["End date".localize()]),
             errorText: "No input %s".localize().format(["End date".localize()]),
             controller: ref.useTextEditingController(
-              config.endTimeKey,
+              module.endTimeKey,
               form.select(FormItemDateTimeField.formatDate(endTime), ""),
             ),
             type: FormItemDateTimeFieldPickerType.date,
             onSaved: (value) {
-              context[config.endTimeKey] = value?.millisecondsSinceEpoch ?? 0;
+              context[module.endTimeKey] = value?.millisecondsSinceEpoch ?? 0;
             },
           ),
           const Divid(),
@@ -999,9 +996,9 @@ class QuestionnaireModuleEdit extends PageScopedWidget {
             return;
           }
 
-          item[config.nameKey] = context.get(config.nameKey, "");
-          item[config.textKey] = context.get(config.textKey, "");
-          item[config.endTimeKey] = context.get(config.endTimeKey, 0);
+          item[module.nameKey] = context.get(module.nameKey, "");
+          item[module.textKey] = context.get(module.textKey, "");
+          item[module.endTimeKey] = context.get(module.endTimeKey, 0);
           await context.model?.saveDocument(item).showIndicator(context);
           context.navigator.pop();
         },

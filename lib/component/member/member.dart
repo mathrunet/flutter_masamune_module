@@ -24,8 +24,8 @@ class MemberModule extends PageModule {
     this.automaticallyImplyLeadingOnHome = true,
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
-    this.home,
-    this.invite,
+    this.homePage = const MemberModuleHome(),
+    this.invitePage = const MemberModuleInvite(),
     this.designType = DesignType.modern,
     this.inviteType = MemberModuleInviteType.none,
   }) : super(
@@ -42,16 +42,15 @@ class MemberModule extends PageModule {
     }
 
     final route = {
-      "/$routePath": RouteConfig((_) => home ?? MemberModuleHome(this)),
-      "/$routePath/invite":
-          RouteConfig((_) => invite ?? MemberModuleInvite(this)),
+      "/$routePath": RouteConfig((_) => homePage),
+      "/$routePath/invite": RouteConfig((_) => invitePage),
     };
     return route;
   }
 
   // Page settings.
-  final Widget? home;
-  final Widget? invite;
+  final PageModuleWidget<MemberModule> homePage;
+  final PageModuleWidget<MemberModule> invitePage;
 
   /// ホームをスライバーレイアウトにする場合True.
   final bool sliverLayoutWhenModernDesignOnHome;
@@ -96,24 +95,23 @@ class MemberModule extends PageModule {
   final String? formMessage;
 }
 
-class MemberModuleHome extends PageScopedWidget {
-  const MemberModuleHome(this.config);
-  final MemberModule config;
+class MemberModuleHome extends PageModuleWidget<MemberModule> {
+  const MemberModuleHome();
 
-  String _groupId(BuildContext context, WidgetRef ref) {
-    if (config.groupId.isEmpty) {
+  String _groupId(BuildContext context, WidgetRef ref, MemberModule module) {
+    if (module.groupId.isEmpty) {
       final user = ref.watchUserDocumentModel();
       return user.uid;
     }
-    return ref.applyModuleTag(config.groupId!);
+    return ref.applyModuleTag(module.groupId!);
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, MemberModule module) {
     // Please describe Hook.
     final members =
-        ref.watchCollectionModel(config.query?.value ?? config.queryPath);
-    final groupId = _groupId(context, ref);
+        ref.watchCollectionModel(module.query?.value ?? module.queryPath);
+    final groupId = _groupId(context, ref, module);
     final user = ref.watchUserDocumentModel();
 
     // Please describe the Widget.
@@ -125,9 +123,9 @@ class MemberModuleHome extends PageScopedWidget {
       ],
       appBar: UIAppBar(
         title: Text(
-            config.title ?? "%s list".localize().format(["Member".localize()])),
-        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
-        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
+            module.title ?? "%s list".localize().format(["Member".localize()])),
+        sliverLayoutWhenModernDesign: module.sliverLayoutWhenModernDesignOnHome,
+        automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
       ),
       body: UIListBuilder<DynamicMap>(
         source: members,
@@ -136,10 +134,10 @@ class MemberModuleHome extends PageScopedWidget {
             ListItem(
               leading: CircleAvatar(
                 backgroundImage:
-                    NetworkOrAsset.image(item.get(config.iconKey, "")),
+                    NetworkOrAsset.image(item.get(module.iconKey, "")),
                 backgroundColor: context.theme.disabledColor,
               ),
-              title: Text(item.get(config.nameKey, "")),
+              title: Text(item.get(module.nameKey, "")),
               trailing: item.uid == user.uid
                   ? null
                   : IconButton(
@@ -161,7 +159,7 @@ class MemberModuleHome extends PageScopedWidget {
                               return;
                             }
                             final affiliation = List<String>.from(
-                              item.getAsList(config.affiliationKey, []),
+                              item.getAsList(module.affiliationKey, []),
                             );
                             if (affiliation.isEmpty ||
                                 !affiliation.contains(groupId)) {
@@ -174,7 +172,7 @@ class MemberModuleHome extends PageScopedWidget {
                                 submitText: "Close".localize(),
                               );
                             }
-                            doc[config.affiliationKey] = affiliation
+                            doc[module.affiliationKey] = affiliation
                               ..remove(groupId);
                             await context.model
                                 ?.saveDocument(doc)
@@ -193,7 +191,7 @@ class MemberModuleHome extends PageScopedWidget {
                     ),
               onTap: () {
                 context.navigator.pushNamed(
-                  "/${config.profilePath}/${item.uid}",
+                  "/${module.profilePath}/${item.uid}",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -201,12 +199,12 @@ class MemberModuleHome extends PageScopedWidget {
           ];
         },
       ),
-      floatingActionButton: config.inviteType == MemberModuleInviteType.none
+      floatingActionButton: module.inviteType == MemberModuleInviteType.none
           ? null
           : FloatingActionButton.extended(
               onPressed: () {
                 context.navigator.pushNamed(
-                  "/${config.routePath}/invite",
+                  "/${module.routePath}/invite",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -217,12 +215,11 @@ class MemberModuleHome extends PageScopedWidget {
   }
 }
 
-class MemberModuleInvite extends PageScopedWidget {
-  const MemberModuleInvite(this.config);
-  final MemberModule config;
+class MemberModuleInvite extends PageModuleWidget<MemberModule> {
+  const MemberModuleInvite();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, MemberModule module) {
     final form = ref.useForm();
 
     return UIScaffold(
@@ -230,13 +227,13 @@ class MemberModuleInvite extends PageScopedWidget {
       appBar: UIAppBar(title: Text("Invite".localize())),
       body: FormBuilder(
         key: form.key,
-        type: _type(context),
+        type: _type(context, module),
         padding: const EdgeInsets.all(0),
-        children: _form(context, ref),
+        children: _form(context, ref, module),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          switch (config.inviteType) {
+          switch (module.inviteType) {
             case MemberModuleInviteType.email:
             default:
           }
@@ -247,20 +244,20 @@ class MemberModuleInvite extends PageScopedWidget {
     );
   }
 
-  FormBuilderType _type(BuildContext context) {
-    switch (config.inviteType) {
+  FormBuilderType _type(BuildContext context, MemberModule module) {
+    switch (module.inviteType) {
       case MemberModuleInviteType.email:
       default:
         return FormBuilderType.center;
     }
   }
 
-  List<Widget> _form(BuildContext context, WidgetRef ref) {
-    switch (config.inviteType) {
+  List<Widget> _form(BuildContext context, WidgetRef ref, MemberModule module) {
+    switch (module.inviteType) {
       case MemberModuleInviteType.email:
         return [
           MessageBox(
-            config.formMessage ??
+            module.formMessage ??
                 "An invitation email will be sent to the email address you entered. You can complete the invitation by clicking the link in the invitation email."
                     .localize(),
             margin: const EdgeInsets.fromLTRB(24, 0, 24, 32),

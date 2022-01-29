@@ -14,7 +14,7 @@ class MenuModule extends PageModule {
     List<RerouteConfig> rerouteConfigs = const [],
     this.top = const [],
     this.bottom = const [],
-    this.home,
+    this.homePage = const MenuModuleHome(),
   }) : super(
           enabled: enabled,
           title: title,
@@ -29,13 +29,13 @@ class MenuModule extends PageModule {
     }
 
     final route = {
-      "/$routePath": RouteConfig((_) => home ?? MenuModuleHome(this)),
+      "/$routePath": RouteConfig((_) => homePage),
     };
     return route;
   }
 
   // Page settings.
-  final Widget? home;
+  final PageModuleWidget<MenuModule> homePage;
 
   /// Widget parts.
   final List<Widget> top;
@@ -113,26 +113,25 @@ class MenuModuleItem {
   int get hashCode => icon.hashCode ^ name.hashCode ^ menus.hashCode;
 }
 
-class MenuModuleHome extends PageScopedWidget {
-  const MenuModuleHome(this.config);
-  final MenuModule config;
+class MenuModuleHome extends PageModuleWidget<MenuModule> {
+  const MenuModuleHome();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, MenuModule module) {
     // Please describe reference.
 
     // Please describe the Widget.
     return UIScaffold(
       appBar: UIAppBar(
-        title: Text(config.title?.localize() ?? "Menu".localize()),
-        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
-        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
+        title: Text(module.title?.localize() ?? "Menu".localize()),
+        automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
+        sliverLayoutWhenModernDesign: module.sliverLayoutWhenModernDesignOnHome,
       ),
       body: UIListBuilder<MenuModuleItem>(
-        source: config.menu,
+        source: module.menu,
         padding: const EdgeInsets.symmetric(vertical: 8),
-        top: config.top,
-        bottom: config.bottom,
+        top: module.top,
+        bottom: module.bottom,
         builder: (context, item, index) {
           return [
             Headline(

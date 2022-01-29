@@ -32,10 +32,18 @@ class DetailModule extends PageModule {
     this.expandedHeight = 240,
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
-    this.home,
-    this.image,
-    this.appBarBottomActions = const [],
-    this.contents = const [],
+    this.homePage = const DetailModuleHome(),
+    this.imagePage = const DetailModuleImageView(),
+    this.appBarBottomActions = const [
+      DetailModuleDateWidget(),
+    ],
+    this.contents = const [
+      DetailModuleNameWidget(),
+      DetailModuleTextWidget(),
+      DetailModuleTagsWidget(),
+      Space.height(16),
+      DetailModuleActionWidget(),
+    ],
   }) : super(
           enabled: enabled,
           title: title,
@@ -50,17 +58,15 @@ class DetailModule extends PageModule {
     }
 
     final route = {
-      "/$routePath/{detail_id}":
-          RouteConfig((_) => home ?? DetailModuleHome(this)),
-      "/$routePath/{detail_id}/view":
-          RouteConfig((_) => image ?? DetailModuleImageView(this)),
+      "/$routePath/{detail_id}": RouteConfig((_) => homePage),
+      "/$routePath/{detail_id}/view": RouteConfig((_) => imagePage),
     };
     return route;
   }
 
   // Page settings.
-  final Widget? home;
-  final Widget? image;
+  final PageModuleWidget<DetailModule> homePage;
+  final PageModuleWidget<DetailModule> imagePage;
 
   /// Keys.
   final String tagKey;
@@ -102,21 +108,20 @@ class DetailModule extends PageModule {
   final List<Widget> contents;
 }
 
-class DetailModuleHome extends PageScopedWidget {
-  const DetailModuleHome(this.config);
-  final DetailModule config;
+class DetailModuleHome extends PageModuleWidget<DetailModule> {
+  const DetailModuleHome();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, DetailModule module) {
     // Please describe reference.
     final detailId = context.get("detail_id", "");
-    final detail = ref.watchDocumentModel("${config.queryPath}/$detailId");
-    final name = detail.get(config.nameKey, "");
-    final images = config.multipleImage
-        ? detail.getAsList(config.imageKey)
+    final detail = ref.watchDocumentModel("${module.queryPath}/$detailId");
+    final name = detail.get(module.nameKey, "");
+    final images = module.multipleImage
+        ? detail.getAsList(module.imageKey)
         : [
-            if (detail.containsKey(config.imageKey))
-              detail.get(config.imageKey, "")
+            if (detail.containsKey(module.imageKey))
+              detail.get(module.imageKey, "")
           ];
     final focus = ref.useFocusNode(
       "comment",
@@ -124,30 +129,30 @@ class DetailModuleHome extends PageScopedWidget {
     );
     final comment = ref.watchCollectionModel(
       ModelQuery(
-        "${config.queryPath}/$detailId/${config.commentQueryPath}",
+        "${module.queryPath}/$detailId/${module.commentQueryPath}",
         order: ModelQueryOrder.desc,
-        orderBy: config.timeKey,
+        orderBy: module.timeKey,
       ).value,
     );
     final commentWithUser = comment.mergeUserInformation(
       ref,
-      userCollectionPath: config.userPath,
-      userKey: config.userKey,
+      userCollectionPath: module.userPath,
+      userKey: module.userKey,
     );
     final multipleImage = images.length > 1;
 
     // Please describe the Widget.
     return UIScaffold(
-      appBar: config.enableFeatureImage
+      appBar: module.enableFeatureImage
           ? UIModernDetailAppBar(
               title: Text(name),
               onTapImage: () {
                 context.navigator
-                    .pushNamed("/${config.routePath}/$detailId/view");
+                    .pushNamed("/${module.routePath}/$detailId/view");
               },
               designType: DesignType.modern,
-              expandedHeight: config.expandedHeight,
-              automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
+              expandedHeight: module.expandedHeight,
+              automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
               background: multipleImage
                   ? ColoredBox(
                       color: context.theme.dividerColor,
@@ -192,39 +197,19 @@ class DetailModuleHome extends PageScopedWidget {
                   : null,
               backgroundImage:
                   images.isNotEmpty ? NetworkOrAsset.image(images.first) : null,
-              bottomActions: [
-                if (config.appBarBottomActions.isNotEmpty)
-                  ...config.appBarBottomActions
-                else
-                  DetailModuleDateWidget(config),
-              ],
+              bottomActions: module.appBarBottomActions,
             )
           : AppBar(
               title: Text(name),
-              automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
+              automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
             ),
       body: ListBuilder<DynamicMap>(
         padding: const EdgeInsets.all(0),
         source: commentWithUser,
         top: [
-          if (!config.enableFeatureImage)
-            if (config.appBarBottomActions.isNotEmpty)
-              ...config.appBarBottomActions
-            else
-              DetailModuleDateWidget(config),
-          if (config.contents.isNotEmpty)
-            ...config.contents
-          else ...[
-            DetailModuleNameWidget(config),
-            DetailModuleTextWidget(config),
-            DetailModuleTagsWidget(config),
-            const Space.height(16),
-            DetailModuleActionWidget(
-              config,
-              focusNode: focus,
-            ),
-          ],
-          if (config.enableComment) ...[
+          if (!module.enableFeatureImage) ...module.appBarBottomActions,
+          ...module.contents,
+          if (module.enableComment) ...[
             const Divid(),
             FormItemCommentField(
               focusNode: focus,
@@ -238,8 +223,8 @@ class DetailModuleHome extends PageScopedWidget {
                 if (doc == null) {
                   return;
                 }
-                doc[config.userKey] = context.model?.userId;
-                doc[config.textKey] = value;
+                doc[module.userKey] = context.model?.userId;
+                doc[module.textKey] = value;
                 await context.model?.saveDocument(doc);
               },
             ),
@@ -250,11 +235,11 @@ class DetailModuleHome extends PageScopedWidget {
           return [
             CommentTile(
               avatar: NetworkOrAsset.image(
-                item.get("${config.userKey}${config.iconKey}", ""),
+                item.get("${module.userKey}${module.iconKey}", ""),
               ),
-              name: item.get("${config.userKey}${config.nameKey}", ""),
-              text: item.get(config.textKey, ""),
-              date: item.getAsDateTime(config.timeKey),
+              name: item.get("${module.userKey}${module.nameKey}", ""),
+              text: item.get(module.textKey, ""),
+              date: item.getAsDateTime(module.timeKey),
             ),
             const Divid(),
           ];
@@ -264,15 +249,14 @@ class DetailModuleHome extends PageScopedWidget {
   }
 }
 
-class DetailModuleDateWidget extends ScopedWidget {
-  const DetailModuleDateWidget(this.config);
-  final DetailModule config;
+class DetailModuleDateWidget extends ModuleWidget<DetailModule> {
+  const DetailModuleDateWidget();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, DetailModule module) {
     final detailId = context.get("detail_id", "");
-    final detail = ref.watchDocumentModel("${config.queryPath}/$detailId");
-    final time = detail.getAsDateTime(config.timeKey);
+    final detail = ref.watchDocumentModel("${module.queryPath}/$detailId");
+    final time = detail.getAsDateTime(module.timeKey);
 
     return Text(
       time.format("yyyy/MM/dd HH:mm"),
@@ -283,15 +267,14 @@ class DetailModuleDateWidget extends ScopedWidget {
   }
 }
 
-class DetailModuleNameWidget extends ScopedWidget {
-  const DetailModuleNameWidget(this.config);
-  final DetailModule config;
+class DetailModuleNameWidget extends ModuleWidget<DetailModule> {
+  const DetailModuleNameWidget();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, DetailModule module) {
     final detailId = context.get("detail_id", "");
-    final detail = ref.watchDocumentModel("${config.queryPath}/$detailId");
-    final name = detail.get(config.nameKey, "");
+    final detail = ref.watchDocumentModel("${module.queryPath}/$detailId");
+    final name = detail.get(module.nameKey, "");
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 4),
@@ -300,15 +283,14 @@ class DetailModuleNameWidget extends ScopedWidget {
   }
 }
 
-class DetailModuleTextWidget extends ScopedWidget {
-  const DetailModuleTextWidget(this.config);
-  final DetailModule config;
+class DetailModuleTextWidget extends ModuleWidget<DetailModule> {
+  const DetailModuleTextWidget();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, DetailModule module) {
     final detailId = context.get("detail_id", "");
-    final detail = ref.watchDocumentModel("${config.queryPath}/$detailId");
-    final text = detail.get(config.textKey, "");
+    final detail = ref.watchDocumentModel("${module.queryPath}/$detailId");
+    final text = detail.get(module.textKey, "");
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
@@ -317,19 +299,17 @@ class DetailModuleTextWidget extends ScopedWidget {
   }
 }
 
-class DetailModuleContentWidget extends ScopedWidget {
-  const DetailModuleContentWidget(
-    this.config, {
+class DetailModuleContentWidget extends ModuleWidget<DetailModule> {
+  const DetailModuleContentWidget({
     this.contentLabel,
   });
-  final DetailModule config;
   final String? contentLabel;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, DetailModule module) {
     final detailId = context.get("detail_id", "");
-    final detail = ref.watchDocumentModel("${config.queryPath}/$detailId");
-    final text = detail.get(config.textKey, "");
+    final detail = ref.watchDocumentModel("${module.queryPath}/$detailId");
+    final text = detail.get(module.textKey, "");
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
@@ -349,15 +329,14 @@ class DetailModuleContentWidget extends ScopedWidget {
   }
 }
 
-class DetailModuleTagsWidget extends ScopedWidget {
-  const DetailModuleTagsWidget(this.config);
-  final DetailModule config;
+class DetailModuleTagsWidget extends ModuleWidget<DetailModule> {
+  const DetailModuleTagsWidget();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, DetailModule module) {
     final detailId = context.get("detail_id", "");
-    final detail = ref.watchDocumentModel("${config.queryPath}/$detailId");
-    final tags = detail.getAsList(config.tagKey);
+    final detail = ref.watchDocumentModel("${module.queryPath}/$detailId");
+    final tags = detail.getAsList(module.tagKey);
 
     if (tags.isEmpty) {
       return const Empty();
@@ -383,7 +362,7 @@ class DetailModuleTagsWidget extends ScopedWidget {
             ),
             onPressed: () {
               context.rootNavigator.pushNamed(
-                "/${config.searchPath}",
+                "/${module.searchPath}",
                 arguments: RouteQuery(
                   transition: PageTransition.fullscreen,
                   parameters: {"query": e},
@@ -397,26 +376,21 @@ class DetailModuleTagsWidget extends ScopedWidget {
   }
 }
 
-class DetailModuleActionWidget extends ScopedWidget {
-  const DetailModuleActionWidget(
-    this.config, {
-    this.focusNode,
-  });
-  final DetailModule config;
-  final FocusNode? focusNode;
+class DetailModuleActionWidget extends ModuleWidget<DetailModule> {
+  const DetailModuleActionWidget();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, DetailModule module) {
     final detailId = context.get("detail_id", "");
-    final detail = ref.watchDocumentModel("${config.queryPath}/$detailId");
-    final count = detail.get(config.likeCountKey, 0);
+    final detail = ref.watchDocumentModel("${module.queryPath}/$detailId");
+    final count = detail.get(module.likeCountKey, 0);
     final like = ref
         .watchDocumentModel(
-            "${config.userPath}/${context.model?.userId}/${config.likePath}/$detailId")
+            "${module.userPath}/${context.model?.userId}/${module.likePath}/$detailId")
         .isNotEmpty;
     final bookmark = ref
         .watchDocumentModel(
-            "${config.userPath}/${context.model?.userId}/${config.bookmarkPath}/$detailId")
+            "${module.userPath}/${context.model?.userId}/${module.bookmarkPath}/$detailId")
         .isNotEmpty;
 
     return Padding(
@@ -425,7 +399,7 @@ class DetailModuleActionWidget extends ScopedWidget {
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          if (config.enableLike)
+          if (module.enableLike)
             TextButton.icon(
               style: TextButton.styleFrom(
                 primary:
@@ -435,9 +409,9 @@ class DetailModuleActionWidget extends ScopedWidget {
               onPressed: () {
                 final counter = context.model?.incrementCounter(
                   collectionPath:
-                      "${config.queryPath}/$detailId/${config.likePath}",
+                      "${module.queryPath}/$detailId/${module.likePath}",
                   linkedCollectionPath:
-                      "${config.userPath}/${context.model!.userId}/${config.likePath}",
+                      "${module.userPath}/${context.model!.userId}/${module.likePath}",
                 );
                 if (like) {
                   counter?.remove(context.model!.userId, linkId: detail.uid);
@@ -450,21 +424,13 @@ class DetailModuleActionWidget extends ScopedWidget {
                 style: const TextStyle(fontSize: 18),
               ),
             ),
-          if (config.enableComment)
-            IconButton(
-              color: context.theme.textColor,
-              icon: const Icon(Icons.comment),
-              onPressed: () {
-                focusNode?.requestFocus();
-              },
-            ),
-          if (config.enableShare)
+          if (module.enableShare)
             IconButton(
               color: context.theme.textColor,
               icon: const Icon(Icons.share),
               onPressed: () {},
             ),
-          if (config.enableBookmark)
+          if (module.enableBookmark)
             IconButton(
               color: bookmark
                   ? context.theme.primaryColor
@@ -473,9 +439,9 @@ class DetailModuleActionWidget extends ScopedWidget {
               onPressed: () {
                 final counter = context.model?.incrementCounter(
                   collectionPath:
-                      "${config.queryPath}/$detailId/${config.bookmarkPath}",
+                      "${module.queryPath}/$detailId/${module.bookmarkPath}",
                   linkedCollectionPath:
-                      "${config.userPath}/${context.model!.userId}/${config.bookmarkPath}",
+                      "${module.userPath}/${context.model!.userId}/${module.bookmarkPath}",
                 );
                 if (bookmark) {
                   counter?.remove(context.model!.userId, linkId: detail.uid);
@@ -490,16 +456,15 @@ class DetailModuleActionWidget extends ScopedWidget {
   }
 }
 
-class DetailModuleProfileWidget extends ScopedWidget {
-  const DetailModuleProfileWidget(this.config);
-  final DetailModule config;
+class DetailModuleProfileWidget extends ModuleWidget<DetailModule> {
+  const DetailModuleProfileWidget();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, DetailModule module) {
     final user = ref.watchUserDocumentModel();
-    final icon = user.get(config.iconKey, "assets/default.png");
-    final name = user.get(config.nameKey, "");
-    final text = user.get(config.textKey, "");
+    final icon = user.get(module.iconKey, "assets/default.png");
+    final name = user.get(module.nameKey, "");
+    final text = user.get(module.textKey, "");
 
     return InkWell(
       onTap: () {
@@ -552,20 +517,19 @@ class DetailModuleProfileWidget extends ScopedWidget {
   }
 }
 
-class DetailModuleImageView extends PageScopedWidget {
-  const DetailModuleImageView(this.config);
-  final DetailModule config;
+class DetailModuleImageView extends PageModuleWidget<DetailModule> {
+  const DetailModuleImageView();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, DetailModule module) {
     final detailId = context.get("detail_id", "");
-    final detail = ref.watchDocumentModel("${config.queryPath}/$detailId");
-    final name = detail.get(config.nameKey, "");
-    final images = config.multipleImage
-        ? detail.getAsList(config.imageKey)
+    final detail = ref.watchDocumentModel("${module.queryPath}/$detailId");
+    final name = detail.get(module.nameKey, "");
+    final images = module.multipleImage
+        ? detail.getAsList(module.imageKey)
         : [
-            if (detail.containsKey(config.imageKey))
-              detail.get(config.imageKey, "")
+            if (detail.containsKey(module.imageKey))
+              detail.get(module.imageKey, "")
           ];
     final controller = ref.usePageController();
     final page = !controller.hasClients ? 0.0 : controller.page ?? 0.0;

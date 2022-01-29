@@ -29,8 +29,8 @@ class UserModule extends PageModule {
     this.variables = const [],
     this.meta,
     this.bottom = const [],
-    this.home,
-    this.editProfile,
+    this.homePage = const UserModuleHome(),
+    this.editProfilePage = const UserModuleEditProfile(),
   }) : super(
           enabled: enabled,
           title: title,
@@ -44,10 +44,9 @@ class UserModule extends PageModule {
       return const {};
     }
     final route = {
-      "/$routePath": RouteConfig((_) => home ?? UserModuleHome(this)),
-      "/$routePath/edit":
-          RouteConfig((_) => editProfile ?? UserModuleEditProfile(this)),
-      "/$routePath/{user_id}": RouteConfig((_) => home ?? UserModuleHome(this)),
+      "/$routePath": RouteConfig((_) => homePage),
+      "/$routePath/edit": RouteConfig((_) => editProfilePage),
+      "/$routePath/{user_id}": RouteConfig((_) => homePage),
       ...contents
           .expandAndRemoveEmpty<MapEntry<String, RouteConfig>>(
               (item) => item.routeSettings.entries)
@@ -59,8 +58,8 @@ class UserModule extends PageModule {
   }
 
   /// ページ設定。
-  final Widget? home;
-  final Widget? editProfile;
+  final Widget homePage;
+  final PageModuleWidget<UserModule> editProfilePage;
 
   /// 追加ウィジェット。
   final Widget? meta;
@@ -150,21 +149,20 @@ abstract class UserWidgetModule extends PageModule
   Widget build(BuildContext context);
 }
 
-class UserModuleHome extends PageScopedWidget {
-  const UserModuleHome(this.config);
-  final UserModule config;
+class UserModuleHome extends PageModuleWidget<UserModule> {
+  const UserModuleHome();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, UserModule module) {
     final userId = context.get("user_id", context.model?.userId ?? "");
-    final user = ref.watchDocumentModel("${config.queryPath}/$userId");
-    final name = user.get(config.nameKey, "");
-    final text = user.get(config.textKey, "");
-    final image = user.get(config.imageKey, "");
-    final icon = user.get(config.iconKey, "");
+    final user = ref.watchDocumentModel("${module.queryPath}/$userId");
+    final name = user.get(module.nameKey, "");
+    final text = user.get(module.textKey, "");
+    final image = user.get(module.imageKey, "");
+    final icon = user.get(module.iconKey, "");
     final roles = context.roles;
     final role = roles
-        .firstWhereOrNull((item) => user.get(config.roleKey, "") == item.id);
+        .firstWhereOrNull((item) => user.get(module.roleKey, "") == item.id);
     final own = userId == context.model?.userId;
 
     if (userId.isEmpty) {
@@ -176,17 +174,17 @@ class UserModuleHome extends PageScopedWidget {
       );
     }
 
-    final report = ref.watchDocumentModel("${config.reportPath}/$userId");
+    final report = ref.watchDocumentModel("${module.reportPath}/$userId");
     final block = ref.watchDocumentModel(
-        "${config.queryPath}/${context.model?.userId}/${config.blockPath}/$userId");
+        "${module.queryPath}/${context.model?.userId}/${module.blockPath}/$userId");
 
     if (block.isNotEmpty) {
       return UIScaffold(
         appBar: UIAppBar(
           title: Text(name),
           sliverLayoutWhenModernDesign:
-              config.sliverLayoutWhenModernDesignOnHome,
-          automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
+              module.sliverLayoutWhenModernDesignOnHome,
+          automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
         ),
         body: Center(
           child: Text(
@@ -206,10 +204,10 @@ class UserModuleHome extends PageScopedWidget {
       ],
       appBar: UIModernDetailAppBar(
         designType: DesignType.modern,
-        expandedHeight: config.expandedHeight,
+        expandedHeight: module.expandedHeight,
         icon: NetworkOrAsset.image(icon, ImageSize.thumbnail),
         automaticallyImplyLeading:
-            !own || config.automaticallyImplyLeadingOnHome,
+            !own || module.automaticallyImplyLeadingOnHome,
         backgroundImage: image.isNotEmpty
             ? NetworkOrAsset.image(image, ImageSize.large)
             : null,
@@ -218,7 +216,7 @@ class UserModuleHome extends PageScopedWidget {
             TextButton(
               onPressed: () {
                 context.rootNavigator.pushNamed(
-                  "/${config.routePath}/edit",
+                  "/${module.routePath}/edit",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -232,7 +230,7 @@ class UserModuleHome extends PageScopedWidget {
                 backgroundColor: context.theme.scaffoldBackgroundColor,
               ),
             )
-          else if (config.allowFollow)
+          else if (module.allowFollow)
             TextButton(
               onPressed: () {},
               child: Text("Follow".localize()),
@@ -248,7 +246,7 @@ class UserModuleHome extends PageScopedWidget {
         title: Text(name),
         actions: [
           if (!own) ...[
-            if (config.allowBlock)
+            if (module.allowBlock)
               IconButton(
                 icon: const Icon(FontAwesomeIcons.ban),
                 onPressed: () {
@@ -303,7 +301,7 @@ class UserModuleHome extends PageScopedWidget {
                   );
                 },
               ),
-            if (config.allowReport)
+            if (module.allowReport)
               IconButton(
                 icon: const Icon(FontAwesomeIcons.flag),
                 onPressed: () {
@@ -361,16 +359,16 @@ class UserModuleHome extends PageScopedWidget {
               ],
               const Space.height(8),
               Text(text),
-              if (config.meta != null) ...[
+              if (module.meta != null) ...[
                 const Space.height(16),
-                config.meta!,
+                module.meta!,
               ],
             ],
           ),
           ...context.app?.userVariables.buildView(context, ref, data: user) ??
               [],
-          ...config.variables.buildView(context, ref, data: user),
-          ...config.contents.mapAndRemoveEmpty((item) {
+          ...module.variables.buildView(context, ref, data: user),
+          ...module.contents.mapAndRemoveEmpty((item) {
             if (role != null &&
                 role.id.isNotEmpty &&
                 item.allowRoles.isNotEmpty &&
@@ -379,8 +377,8 @@ class UserModuleHome extends PageScopedWidget {
             }
             return item.build(context);
           }),
-          if (config.showHeaderDivider) const Divid(),
-          ...config.bottom,
+          if (module.showHeaderDivider) const Divid(),
+          ...module.bottom,
           const Space.height(120),
         ],
       ),
@@ -388,18 +386,17 @@ class UserModuleHome extends PageScopedWidget {
   }
 }
 
-class UserModuleEditProfile extends PageScopedWidget {
-  const UserModuleEditProfile(this.config);
-  final UserModule config;
+class UserModuleEditProfile extends PageModuleWidget<UserModule> {
+  const UserModuleEditProfile();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, UserModule module) {
     final form = ref.useForm();
     final user =
-        ref.watchDocumentModel("${config.queryPath}/${context.model?.userId}");
-    final image = user.get(config.imageKey, "");
-    final icon = user.get(config.iconKey, "");
-    final variables = _buildVariables(context);
+        ref.watchDocumentModel("${module.queryPath}/${context.model?.userId}");
+    final image = user.get(module.imageKey, "");
+    final icon = user.get(module.iconKey, "");
+    final variables = _buildVariables(context, module);
 
     return UIScaffold(
       appBar: UIAppBar(
@@ -412,13 +409,13 @@ class UserModuleEditProfile extends PageScopedWidget {
           if (state.connectionState != ConnectionState.done) {
             return ConstrainedBox(
               constraints:
-                  BoxConstraints.expand(height: config.expandedHeight - 16),
+                  BoxConstraints.expand(height: module.expandedHeight - 16),
               child: Stack(
                 children: [
                   Container(
                     constraints: BoxConstraints.expand(
-                        height: config.expandedHeight - 56),
-                    color: config.allowImageEditing
+                        height: module.expandedHeight - 56),
+                    color: module.allowImageEditing
                         ? context.theme.disabledColor
                         : (context.theme.appBarTheme.backgroundColor ??
                             (context.theme.colorScheme.brightness ==
@@ -449,21 +446,21 @@ class UserModuleEditProfile extends PageScopedWidget {
             children: [
               ConstrainedBox(
                 constraints:
-                    BoxConstraints.expand(height: config.expandedHeight - 16),
+                    BoxConstraints.expand(height: module.expandedHeight - 16),
                 child: Stack(
                   children: [
                     Container(
                       constraints: BoxConstraints.expand(
-                          height: config.expandedHeight - 56),
+                          height: module.expandedHeight - 56),
                       decoration: BoxDecoration(
-                        color: config.allowImageEditing
+                        color: module.allowImageEditing
                             ? context.theme.disabledColor
                             : (context.theme.appBarTheme.backgroundColor ??
                                 (context.theme.colorScheme.brightness ==
                                         Brightness.dark
                                     ? context.theme.colorScheme.surface
                                     : context.theme.colorScheme.primary)),
-                        image: config.allowImageEditing
+                        image: module.allowImageEditing
                             ? DecorationImage(
                                 image: NetworkOrAsset.image(
                                     image, ImageSize.large),
@@ -475,7 +472,7 @@ class UserModuleEditProfile extends PageScopedWidget {
                               )
                             : null,
                       ),
-                      child: config.allowImageEditing
+                      child: module.allowImageEditing
                           ? InkWell(
                               onTap: () async {
                                 final media =
@@ -494,7 +491,7 @@ class UserModuleEditProfile extends PageScopedWidget {
                                 final url = await context.model
                                     ?.uploadMedia(media!.path!)
                                     .showIndicator(context);
-                                user[config.imageKey] = url;
+                                user[module.imageKey] = url;
                                 await context.model
                                     ?.saveDocument(user)
                                     .showIndicator(context);
@@ -540,7 +537,7 @@ class UserModuleEditProfile extends PageScopedWidget {
                               final url = await context.model
                                   ?.uploadMedia(media!.path!)
                                   .showIndicator(context);
-                              user[config.iconKey] = url;
+                              user[module.iconKey] = url;
                               await context.model
                                   ?.saveDocument(user)
                                   .showIndicator(context);
@@ -605,10 +602,11 @@ class UserModuleEditProfile extends PageScopedWidget {
     );
   }
 
-  List<VariableConfig> _buildVariables(BuildContext context) {
+  List<VariableConfig> _buildVariables(
+      BuildContext context, UserModule module) {
     final variables = <VariableConfig>[
       ...context.app?.userVariables ?? [],
-      ...config.variables,
+      ...module.variables,
     ];
     if (variables.isEmpty) {
       return [

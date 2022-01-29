@@ -36,10 +36,11 @@ class HomeModule extends PageModule with VerifyAppReroutePageModuleMixin {
     List<RerouteConfig> rerouteConfigs = const [],
     this.header,
     this.footer,
-    this.home,
-    this.tileMenuHome,
-    this.tileMenuHomeInformation,
-    this.tileMenuHomeCalendar,
+    this.homePage = const HomeModuleHome(),
+    this.tileMenuHomeWidget = const HomeModuleTileMenuHome(),
+    this.tileMenuHomeInformationWidget =
+        const HomeModuleTileMenuHomeInformation(),
+    this.tileMenuHomeCalendarWidget = const HomeModuleTileMenuHomeCalendar(),
   }) : super(
           enabled: enabled,
           title: title,
@@ -53,7 +54,7 @@ class HomeModule extends PageModule with VerifyAppReroutePageModuleMixin {
       return const {};
     }
     final route = {
-      "/": RouteConfig((_) => home ?? HomeModuleHome(this)),
+      "/": RouteConfig((_) => homePage),
     };
     route.addAll(info.routeSettings);
     route.addAll(calendar.routeSettings);
@@ -61,14 +62,14 @@ class HomeModule extends PageModule with VerifyAppReroutePageModuleMixin {
   }
 
   // ページの設定。
-  final Widget? home;
-  final Widget? tileMenuHome;
-  final Widget? tileMenuHomeInformation;
-  final Widget? tileMenuHomeCalendar;
+  final PageModuleWidget<HomeModule> homePage;
+  final ModuleWidget<HomeModule> tileMenuHomeWidget;
+  final ModuleWidget<HomeModule> tileMenuHomeInformationWidget;
+  final ModuleWidget<HomeModule> tileMenuHomeCalendarWidget;
 
   // ホームのパーツ。
-  final Widget? header;
-  final Widget? footer;
+  final ModuleWidget<HomeModule>? header;
+  final ModuleWidget<HomeModule>? footer;
 
   /// お知らせの設定。
   final HomeInformationModule info;
@@ -142,8 +143,8 @@ class HomeInformationModule extends PostModule {
     String nameKey = Const.name,
     String createdTimeKey = Const.createdTime,
     Permission permission = const Permission(),
-    Widget? view,
-    Widget? edit,
+    PageModuleWidget<PostModule> viewPage = const PostModuleView(),
+    PageModuleWidget<PostModule> editPage = const PostModuleEdit(),
     this.widget,
     this.limit = 10,
   }) : super(
@@ -153,8 +154,8 @@ class HomeInformationModule extends PostModule {
           routePath: routePath,
           editingType: PostEditingType.planeText,
           permission: permission,
-          view: view,
-          edit: edit,
+          viewPage: viewPage,
+          editPage: editPage,
           nameKey: nameKey,
           createdTimeKey: createdTimeKey,
         );
@@ -165,9 +166,8 @@ class HomeInformationModule extends PostModule {
       return const {};
     }
     final route = {
-      "/$routePath/{post_id}": RouteConfig((_) => view ?? PostModuleView(this)),
-      "/$routePath/{post_id}/edit":
-          RouteConfig((_) => view ?? PostModuleEdit(this)),
+      "/$routePath/{post_id}": RouteConfig((_) => viewPage),
+      "/$routePath/{post_id}/edit": RouteConfig((_) => editPage),
     };
     return route;
   }
@@ -193,14 +193,14 @@ class HomeCalendarModule extends CalendarModule {
     String endTimeKey = Const.endTime,
     String allDayKey = "allDay",
     this.icon = Icons.calendar_today,
-    Widget? detail,
+    PageModuleWidget<CalendarModule> detailPage = const CalendarModuleDetail(),
     this.widget,
   }) : super(
           enabled: enabled,
           title: title,
           routePath: routePath,
           queryPath: queryPath,
-          detail: detail,
+          detailPage: detailPage,
           startTimeKey: startTimeKey,
           endTimeKey: endTimeKey,
           allDayKey: allDayKey,
@@ -212,8 +212,7 @@ class HomeCalendarModule extends CalendarModule {
       return const {};
     }
     final route = {
-      "/$routePath/{event_id}/detail":
-          RouteConfig((_) => detail ?? CalendarModuleDetail(this)),
+      "/$routePath/{event_id}/detail": RouteConfig((_) => detailPage),
     };
     return route;
   }
@@ -225,14 +224,14 @@ class HomeCalendarModule extends CalendarModule {
   final Widget? widget;
 }
 
-class HomeModuleHome extends PageScopedWidget {
-  const HomeModuleHome(this.config);
-  final HomeModule config;
+class HomeModuleHome extends PageModuleWidget<HomeModule> {
+  const HomeModuleHome();
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    switch (config.homeType) {
+  Widget build(BuildContext context, WidgetRef ref, HomeModule module) {
+    switch (module.homeType) {
       case HomeType.tileMenu:
-        return config.tileMenuHome ?? HomeModuleTileMenuHome(config);
+        return module.tileMenuHomeWidget;
     }
   }
 }

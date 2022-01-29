@@ -1,14 +1,13 @@
 part of 'home.dart';
 
-class HomeModuleTileMenuHome extends ScopedWidget {
-  const HomeModuleTileMenuHome(this.config);
-  final HomeModule config;
+class HomeModuleTileMenuHome extends ModuleWidget<HomeModule> {
+  const HomeModuleTileMenuHome();
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchUserDocumentModel(config.userPath);
-    final name = user.get(config.nameKey, "Unknown".localize());
+  Widget build(BuildContext context, WidgetRef ref, HomeModule module) {
+    final user = ref.watchUserDocumentModel(module.userPath);
+    final name = user.get(module.nameKey, "Unknown".localize());
     final role = context.roles.firstWhereOrNull(
-      (item) => item.id == user.get(config.roleKey, ""),
+      (item) => item.id == user.get(module.roleKey, ""),
     );
 
     return Scaffold(
@@ -19,7 +18,7 @@ class HomeModuleTileMenuHome extends ScopedWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: SizedBox(
-                height: config.headerHeight,
+                height: module.headerHeight,
                 width: context.isMobileOrSmall
                     ? null
                     : () {
@@ -32,30 +31,30 @@ class HomeModuleTileMenuHome extends ScopedWidget {
                       flex: 2,
                       child: DefaultTextStyle(
                         style: TextStyle(
-                          color: config.textColor ??
+                          color: module.textColor ??
                               context.theme.textColorOnPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                         child: Container(
-                          alignment: config.titleAlignment,
-                          padding: config.titlePadding,
+                          alignment: module.titleAlignment,
+                          padding: module.titlePadding,
                           decoration: BoxDecoration(
-                            image: config.featureImage.isNotEmpty
+                            image: module.featureImage.isNotEmpty
                                 ? DecorationImage(
                                     image: NetworkOrAsset.image(
-                                        config.featureImage!),
-                                    fit: config.featureImageFit,
-                                    alignment: config.featureImageAlignment,
+                                        module.featureImage!),
+                                    fit: module.featureImageFit,
+                                    alignment: module.featureImageAlignment,
                                   )
                                 : null,
-                            color: config.color ?? context.theme.primaryColor,
+                            color: module.color ?? context.theme.primaryColor,
                           ),
                           child: Row(
                             children: [
-                              if (config.featureIcon.isNotEmpty) ...[
+                              if (module.featureIcon.isNotEmpty) ...[
                                 Image(
                                     image: NetworkOrAsset.image(
-                                        config.featureIcon!)),
+                                        module.featureIcon!)),
                                 const Space.width(8),
                               ],
                               Expanded(
@@ -65,9 +64,9 @@ class HomeModuleTileMenuHome extends ScopedWidget {
                                     fontWeight: FontWeight.bold,
                                   ),
                                   child: Text(
-                                    config.title ?? "",
+                                    module.title ?? "",
                                     textAlign: TextAlign.center,
-                                    style: config.titleTextStyle,
+                                    style: module.titleTextStyle,
                                   ),
                                 ),
                               ),
@@ -81,7 +80,7 @@ class HomeModuleTileMenuHome extends ScopedWidget {
                       flex: 1,
                       child: DefaultTextStyle(
                         style: TextStyle(
-                          color: config.textColor ??
+                          color: module.textColor ??
                               context.theme.textColorOnPrimary,
                         ),
                         child: Column(
@@ -93,7 +92,7 @@ class HomeModuleTileMenuHome extends ScopedWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 16, vertical: 0),
                                 color:
-                                    config.color ?? context.theme.primaryColor,
+                                    module.color ?? context.theme.primaryColor,
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,7 +102,7 @@ class HomeModuleTileMenuHome extends ScopedWidget {
                                         if (role?.icon != null) ...[
                                           Icon(
                                             role?.icon,
-                                            color: config.textColor ??
+                                            color: module.textColor ??
                                                 context.theme.colorScheme
                                                     .onPrimary,
                                             size: 15,
@@ -130,7 +129,7 @@ class HomeModuleTileMenuHome extends ScopedWidget {
                             ),
                             const Space.height(4),
                             ClickableBox(
-                              color: config.color ?? context.theme.primaryColor,
+                              color: module.color ?? context.theme.primaryColor,
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 16, vertical: 8),
@@ -145,7 +144,7 @@ class HomeModuleTileMenuHome extends ScopedWidget {
                               ),
                               onTap: () {
                                 context.navigator.pushNamed(
-                                    "/${config.profileRoutePath}/${context.model?.userId}");
+                                    "/${module.profileRoutePath}/${context.model?.userId}");
                               },
                             ),
                           ],
@@ -156,27 +155,25 @@ class HomeModuleTileMenuHome extends ScopedWidget {
                 ),
               ),
             ),
-            if (config.header != null) ...[
+            if (module.header != null) ...[
               const Space.height(8),
-              config.header!,
+              module.header!,
             ],
             const Space.height(8),
-            if (config.info.enabled) ...[
-              config.tileMenuHomeInformation ??
-                  HomeModuleTileMenuHomeInformation(config),
+            if (module.info.enabled) ...[
+              module.tileMenuHomeInformationWidget,
               const Space.height(8),
             ],
-            if (config.calendar.enabled) ...[
-              config.tileMenuHomeCalendar ??
-                  HomeModuleTileMenuHomeCalendar(config),
+            if (module.calendar.enabled) ...[
+              module.tileMenuHomeCalendarWidget,
               const Space.height(8),
             ],
             HomeModuleTileMenuHomeHeadline(
               "Menu".localize(),
               icon: Icons.menu,
-              color: config.textColor ?? context.theme.textColorOnPrimary,
+              color: module.textColor ?? context.theme.textColorOnPrimary,
               backgroundColor:
-                  config.color ?? context.theme.primaryColor.lighten(0.15),
+                  module.color ?? context.theme.primaryColor.lighten(0.15),
             ),
             const Space.height(4),
             Grid.extent(
@@ -184,7 +181,7 @@ class HomeModuleTileMenuHome extends ScopedWidget {
               crossAxisSpacing: 4,
               mainAxisSpacing: 4,
               children: [
-                ...config.menu.mapAndRemoveEmpty(
+                ...module.menu.mapAndRemoveEmpty(
                   (item) {
                     if (role != null &&
                         role.id.isNotEmpty &&
@@ -193,7 +190,7 @@ class HomeModuleTileMenuHome extends ScopedWidget {
                       return null;
                     }
                     return ClickableBox(
-                      color: config.color ?? context.theme.primaryColor,
+                      color: module.color ?? context.theme.primaryColor,
                       onTap: item.path.isEmpty
                           ? null
                           : () {
@@ -208,14 +205,14 @@ class HomeModuleTileMenuHome extends ScopedWidget {
                             Icon(
                               item.icon ?? Icons.info,
                               size: context.isMobileOrSmall ? 64 : 78,
-                              color: config.textColor ??
+                              color: module.textColor ??
                                   context.theme.textColorOnPrimary,
                             ),
                             const Space.height(8),
                             Text(
                               item.name,
                               style: TextStyle(
-                                  color: config.textColor ??
+                                  color: module.textColor ??
                                       context.theme.textColorOnPrimary,
                                   fontWeight: FontWeight.bold,
                                   fontSize:
@@ -236,7 +233,7 @@ class HomeModuleTileMenuHome extends ScopedWidget {
               mainAxisSpacing: 4,
               childAspectRatio: 3,
               children: [
-                ...config.subMenu.mapAndRemoveEmpty((item) {
+                ...module.subMenu.mapAndRemoveEmpty((item) {
                   if (role != null &&
                       role.id.isNotEmpty &&
                       item.availableRole.isNotEmpty &&
@@ -244,7 +241,7 @@ class HomeModuleTileMenuHome extends ScopedWidget {
                     return null;
                   }
                   return ClickableBox(
-                    color: config.color ?? context.theme.primaryColor,
+                    color: module.color ?? context.theme.primaryColor,
                     onTap: item.path.isEmpty
                         ? null
                         : () {
@@ -256,7 +253,7 @@ class HomeModuleTileMenuHome extends ScopedWidget {
                       child: Text(
                         item.name,
                         style: TextStyle(
-                          color: config.textColor ??
+                          color: module.textColor ??
                               context.theme.textColorOnPrimary,
                           fontWeight: FontWeight.bold,
                         ),
@@ -266,9 +263,9 @@ class HomeModuleTileMenuHome extends ScopedWidget {
                 }),
               ],
             ),
-            if (config.footer != null) ...[
+            if (module.footer != null) ...[
               const Space.height(8),
-              config.footer!,
+              module.footer!,
             ],
           ],
         ),
@@ -285,21 +282,20 @@ class HomeModuleTileMenuHome extends ScopedWidget {
   }
 }
 
-class HomeModuleTileMenuHomeInformation extends ScopedWidget {
-  const HomeModuleTileMenuHomeInformation(this.config);
-  final HomeModule config;
+class HomeModuleTileMenuHomeInformation extends ModuleWidget<HomeModule> {
+  const HomeModuleTileMenuHomeInformation();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (config.info.widget != null) {
-      return config.info.widget!;
+  Widget build(BuildContext context, WidgetRef ref, HomeModule module) {
+    if (module.info.widget != null) {
+      return module.info.widget!;
     }
 
     final now = ref.useNow();
-    final info = ref.watchCollectionModel(config.info.queryPath);
+    final info = ref.watchCollectionModel(module.info.queryPath);
     info.sort((a, b) {
-      return b.get(config.info.createdTimeKey, now.millisecondsSinceEpoch) -
-          a.get(config.info.createdTimeKey, now.millisecondsSinceEpoch);
+      return b.get(module.info.createdTimeKey, now.millisecondsSinceEpoch) -
+          a.get(module.info.createdTimeKey, now.millisecondsSinceEpoch);
     });
 
     return LoadingBuilder(
@@ -311,11 +307,11 @@ class HomeModuleTileMenuHomeInformation extends ScopedWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             HomeModuleTileMenuHomeHeadline(
-              config.info.title ?? "Information".localize(),
-              icon: config.info.icon,
-              color: config.textColor ?? context.theme.textColorOnPrimary,
+              module.info.title ?? "Information".localize(),
+              icon: module.info.icon,
+              color: module.textColor ?? context.theme.textColorOnPrimary,
               backgroundColor:
-                  config.color ?? context.theme.primaryColor.lighten(0.15),
+                  module.color ?? context.theme.primaryColor.lighten(0.15),
             ),
             const Space.height(4),
             Grid.extent(
@@ -324,21 +320,21 @@ class HomeModuleTileMenuHomeInformation extends ScopedWidget {
               crossAxisSpacing: 4,
               childAspectRatio: 2,
               children: [
-                ...info.limitEnd(config.info.limit).mapListenable((item) {
+                ...info.limitEnd(module.info.limit).mapListenable((item) {
                   final dateTime = DateTime.fromMillisecondsSinceEpoch(
                     item.get(
-                        config.info.createdTimeKey, now.millisecondsSinceEpoch),
+                        module.info.createdTimeKey, now.millisecondsSinceEpoch),
                   );
                   return DefaultTextStyle(
                     style: TextStyle(
                       color:
-                          config.textColor ?? context.theme.textColorOnPrimary,
+                          module.textColor ?? context.theme.textColorOnPrimary,
                     ),
                     child: ClickableBox(
-                      color: config.color ?? context.theme.primaryColor,
+                      color: module.color ?? context.theme.primaryColor,
                       onTap: () {
                         context.navigator.pushNamed(
-                          "/${config.info.routePath}/${item.get(Const.uid, "")}",
+                          "/${module.info.routePath}/${item.get(Const.uid, "")}",
                           arguments: RouteQuery.fullscreenOrModal,
                         );
                       },
@@ -369,7 +365,7 @@ class HomeModuleTileMenuHomeInformation extends ScopedWidget {
                               ],
                             ),
                             const Space.height(8),
-                            Text(item.get(config.info.nameKey, "--")),
+                            Text(item.get(module.info.nameKey, "--")),
                           ],
                         ),
                       ),
@@ -385,21 +381,20 @@ class HomeModuleTileMenuHomeInformation extends ScopedWidget {
   }
 }
 
-class HomeModuleTileMenuHomeCalendar extends ScopedWidget {
-  const HomeModuleTileMenuHomeCalendar(this.config);
-  final HomeModule config;
+class HomeModuleTileMenuHomeCalendar extends ModuleWidget<HomeModule> {
+  const HomeModuleTileMenuHomeCalendar();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (config.info.widget != null) {
-      return config.info.widget!;
+  Widget build(BuildContext context, WidgetRef ref, HomeModule module) {
+    if (module.info.widget != null) {
+      return module.info.widget!;
     }
 
     final now = ref.useNow();
     final start = now.toDate();
     final event =
-        ref.watchCollectionModel(config.calendar.queryPath).where((element) {
-      final time = element.getAsDateTime(config.calendar.startTimeKey);
+        ref.watchCollectionModel(module.calendar.queryPath).where((element) {
+      final time = element.getAsDateTime(module.calendar.startTimeKey);
       return time.millisecondsSinceEpoch >= start.millisecondsSinceEpoch;
     }).toList();
 
@@ -407,11 +402,11 @@ class HomeModuleTileMenuHomeCalendar extends ScopedWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         HomeModuleTileMenuHomeHeadline(
-          config.calendar.title ?? "Calendar".localize(),
-          icon: config.calendar.icon,
-          color: config.textColor ?? context.theme.textColorOnPrimary,
+          module.calendar.title ?? "Calendar".localize(),
+          icon: module.calendar.icon,
+          color: module.textColor ?? context.theme.textColorOnPrimary,
           backgroundColor:
-              config.color ?? context.theme.primaryColor.lighten(0.15),
+              module.color ?? context.theme.primaryColor.lighten(0.15),
         ),
         const Space.height(4),
         ColoredBox(
@@ -436,7 +431,7 @@ class HomeModuleTileMenuHomeCalendar extends ScopedWidget {
                       TextStyle(color: context.theme.textColorOnPrimary),
                   builder: (context, item) {
                     final endTimeValue =
-                        item.get<int?>(config.calendar.endTimeKey, null);
+                        item.get<int?>(module.calendar.endTimeKey, null);
                     final endTime = endTimeValue != null
                         ? DateTime.fromMillisecondsSinceEpoch(endTimeValue)
                         : null;
@@ -444,7 +439,7 @@ class HomeModuleTileMenuHomeCalendar extends ScopedWidget {
                     return InkWell(
                       onTap: () {
                         context.navigator.pushNamed(
-                          "/${config.calendar.routePath}/${item.uid}/detail",
+                          "/${module.calendar.routePath}/${item.uid}/detail",
                           arguments: RouteQuery.fullscreenOrModal,
                         );
                       },
@@ -456,7 +451,7 @@ class HomeModuleTileMenuHomeCalendar extends ScopedWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              item.get(config.nameKey, ""),
+                              item.get(module.nameKey, ""),
                               style: TextStyle(
                                 color: context.theme.primaryColor,
                                 fontWeight: FontWeight.bold,
@@ -465,10 +460,10 @@ class HomeModuleTileMenuHomeCalendar extends ScopedWidget {
                             Text(
                               _timeString(
                                 startTime: item.getAsDateTime(
-                                    config.calendar.startTimeKey),
+                                    module.calendar.startTimeKey),
                                 endTime: endTime,
                                 allDay:
-                                    item.get(config.calendar.allDayKey, false),
+                                    item.get(module.calendar.allDayKey, false),
                               ),
                               style: TextStyle(
                                 color: context.theme.primaryColor,
@@ -671,7 +666,8 @@ class HomeModuleChangeAffiliation extends ScopedWidget {
   }
 }
 
-class HomeModuleChangeAffiliationSelection extends PageScopedWidget {
+class HomeModuleChangeAffiliationSelection
+    extends PageModuleWidget<HomeModule> {
   const HomeModuleChangeAffiliationSelection({
     required this.title,
     this.roleKey = Const.role,
@@ -692,7 +688,7 @@ class HomeModuleChangeAffiliationSelection extends PageScopedWidget {
   final String targetPath;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, HomeModule module) {
     final user = ref.watchUserDocumentModel();
     final affiliationId = user.get(affiliationKey, "");
     final affiliationList = user.getAsList<String>(affiliationListKey, []);

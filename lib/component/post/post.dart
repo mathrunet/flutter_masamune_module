@@ -29,9 +29,9 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.postQuery,
-    this.home,
-    this.edit,
-    this.view,
+    this.homePage = const PostModuleHome(),
+    this.editPage = const PostModuleEdit(),
+    this.viewPage = const PostModuleView(),
   }) : super(
           enabled: enabled,
           title: title,
@@ -45,19 +45,18 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
       return const {};
     }
     final route = {
-      "/$routePath": RouteConfig((_) => home ?? PostModuleHome(this)),
-      "/$routePath/edit": RouteConfig((_) => edit ?? PostModuleEdit(this)),
-      "/$routePath/{post_id}": RouteConfig((_) => view ?? PostModuleView(this)),
-      "/$routePath/{post_id}/edit":
-          RouteConfig((_) => edit ?? PostModuleEdit(this)),
+      "/$routePath": RouteConfig((_) => homePage),
+      "/$routePath/edit": RouteConfig((_) => editPage),
+      "/$routePath/{post_id}": RouteConfig((_) => viewPage),
+      "/$routePath/{post_id}/edit": RouteConfig((_) => editPage),
     };
     return route;
   }
 
   /// ページ設定。
-  final Widget? home;
-  final Widget? edit;
-  final Widget? view;
+  final PageModuleWidget<PostModule> homePage;
+  final PageModuleWidget<PostModule> editPage;
+  final PageModuleWidget<PostModule> viewPage;
 
   /// ホームをスライバーレイアウトにする場合True.
   final bool sliverLayoutWhenModernDesignOnHome;
@@ -93,22 +92,21 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
   final ModelQuery? postQuery;
 }
 
-class PostModuleHome extends PageScopedWidget {
-  const PostModuleHome(this.config);
-  final PostModule config;
+class PostModuleHome extends PageModuleWidget<PostModule> {
+  const PostModuleHome();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, PostModule module) {
     final now = ref.useNow();
-    final user = ref.watchUserDocumentModel(config.userPath);
+    final user = ref.watchUserDocumentModel(module.userPath);
     final post =
-        ref.watchCollectionModel(config.postQuery?.value ?? config.queryPath);
+        ref.watchCollectionModel(module.postQuery?.value ?? module.queryPath);
     final postWithUser = post.mergeUserInformation(
       ref,
-      userCollectionPath: config.userPath,
+      userCollectionPath: module.userPath,
     );
     final controller = ref.useNavigatorController(
-      "/${config.routePath}/${postWithUser.firstOrNull.get(Const.uid, "")}",
+      "/${module.routePath}/${postWithUser.firstOrNull.get(Const.uid, "")}",
       (route) => postWithUser.isEmpty,
     );
 
@@ -120,9 +118,9 @@ class PostModuleHome extends PageScopedWidget {
       ],
       inlineNavigatorControllerOnWeb: controller,
       appBar: UIAppBar(
-        title: Text(config.title ?? "Post".localize()),
-        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
-        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
+        title: Text(module.title ?? "Post".localize()),
+        sliverLayoutWhenModernDesign: module.sliverLayoutWhenModernDesignOnHome,
+        automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
       ),
       body: UIListBuilder<DynamicMap>(
         source: postWithUser,
@@ -133,21 +131,21 @@ class PostModuleHome extends PageScopedWidget {
                   controller.route?.name.last() == item.get(Const.uid, ""),
               selectedColor: context.theme.textColorOnPrimary,
               selectedTileColor: context.theme.primaryColor.withOpacity(0.8),
-              title: Text(item.get(config.nameKey, "")),
+              title: Text(item.get(module.nameKey, "")),
               subtitle: Text(
                 DateTime.fromMillisecondsSinceEpoch(
-                  item.get(config.createdTimeKey, now.millisecondsSinceEpoch),
+                  item.get(module.createdTimeKey, now.millisecondsSinceEpoch),
                 ).format("yyyy/MM/dd HH:mm"),
               ),
               onTap: () {
                 if (context.isMobile) {
                   context.navigator.pushNamed(
-                    "/${config.routePath}/${item.get(Const.uid, "")}",
+                    "/${module.routePath}/${item.get(Const.uid, "")}",
                     arguments: RouteQuery.fullscreen,
                   );
                 } else {
                   controller.navigator.pushReplacementNamed(
-                    "/${config.routePath}/${item.get(Const.uid, "")}",
+                    "/${module.routePath}/${item.get(Const.uid, "")}",
                   );
                 }
               },
@@ -156,13 +154,13 @@ class PostModuleHome extends PageScopedWidget {
         },
       ),
       floatingActionButton:
-          config.permission.canEdit(user.get(config.roleKey, ""))
+          module.permission.canEdit(user.get(module.roleKey, ""))
               ? FloatingActionButton.extended(
                   label: Text("Add".localize()),
                   icon: const Icon(Icons.add),
                   onPressed: () {
                     context.navigator.pushNamed(
-                      "/${config.routePath}/edit",
+                      "/${module.routePath}/edit",
                       arguments: RouteQuery.fullscreenOrModal,
                     );
                   },
@@ -172,34 +170,33 @@ class PostModuleHome extends PageScopedWidget {
   }
 }
 
-class PostModuleView extends PageScopedWidget {
-  const PostModuleView(this.config);
-  final PostModule config;
+class PostModuleView extends PageModuleWidget<PostModule> {
+  const PostModuleView();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchUserDocumentModel(config.userPath);
+  Widget build(BuildContext context, WidgetRef ref, PostModule module) {
+    final user = ref.watchUserDocumentModel(module.userPath);
     final item = ref.watchDocumentModel(
-        "${config.queryPath}/${context.get("post_id", "")}");
+        "${module.queryPath}/${context.get("post_id", "")}");
     final now = ref.useNow();
-    final name = item.get(config.nameKey, "");
-    final text = item.get(config.textKey, "");
+    final name = item.get(module.nameKey, "");
+    final text = item.get(module.textKey, "");
     final createdTime =
-        item.get(config.createdTimeKey, now.millisecondsSinceEpoch);
+        item.get(module.createdTimeKey, now.millisecondsSinceEpoch);
 
     final editingType = text.isNotEmpty && !text.startsWith(RegExp(r"^(\[|\{)"))
         ? PostEditingType.planeText
-        : config.editingType;
+        : module.editingType;
 
     final appBar = UIAppBar(
       title: Text(name),
       actions: [
-        if (config.permission.canEdit(user.get(config.roleKey, "")))
+        if (module.permission.canEdit(user.get(module.roleKey, "")))
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
               context.rootNavigator.pushNamed(
-                "/${config.routePath}/${context.get("post_id", "")}/edit",
+                "/${module.routePath}/${context.get("post_id", "")}/edit",
                 arguments: RouteQuery.fullscreenOrModal,
               );
             },
@@ -289,20 +286,19 @@ class PostModuleView extends PageScopedWidget {
   }
 }
 
-class PostModuleEdit extends PageScopedWidget {
-  const PostModuleEdit(this.config);
-  final PostModule config;
+class PostModuleEdit extends PageModuleWidget<PostModule> {
+  const PostModuleEdit();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, PostModule module) {
     final form = ref.useForm("post_id");
     final now = ref.useNow();
-    final user = ref.watchUserDocumentModel(config.userPath);
-    final item = ref.watchDocumentModel("${config.queryPath}/${form.uid}");
-    final name = item.get(config.nameKey, "");
-    final text = item.get(config.textKey, "");
+    final user = ref.watchUserDocumentModel(module.userPath);
+    final item = ref.watchDocumentModel("${module.queryPath}/${form.uid}");
+    final name = item.get(module.nameKey, "");
+    final text = item.get(module.textKey, "");
     final dateTime =
-        item.get(config.createdTimeKey, now.millisecondsSinceEpoch);
+        item.get(module.createdTimeKey, now.millisecondsSinceEpoch);
 
     final appBar = UIAppBar(
       sliverLayoutWhenModernDesign: false,
@@ -312,7 +308,7 @@ class PostModuleEdit extends PageScopedWidget {
       )),
       actions: [
         if (form.exists &&
-            config.permission.canDelete(user.get(config.roleKey, "")))
+            module.permission.canDelete(user.get(module.roleKey, "")))
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () {
@@ -339,7 +335,7 @@ class PostModuleEdit extends PageScopedWidget {
 
     final editingType = text.isNotEmpty && !text.startsWith(RegExp(r"^(\[|\{)"))
         ? PostEditingType.planeText
-        : config.editingType;
+        : module.editingType;
 
     final header = [
       FormItemTextField(
@@ -347,9 +343,9 @@ class PostModuleEdit extends PageScopedWidget {
         hintText: "Title".localize(),
         errorText: "No input %s".localize().format(["Title".localize()]),
         subColor: context.theme.disabledColor,
-        controller: ref.useTextEditingController(config.nameKey, name),
+        controller: ref.useTextEditingController(module.nameKey, name),
         onSaved: (value) {
-          context[config.nameKey] = value;
+          context[module.nameKey] = value;
         },
       ),
       const Divid(),
@@ -358,11 +354,11 @@ class PostModuleEdit extends PageScopedWidget {
         hintText: "Post time".localize(),
         errorText: "No input %s".localize().format(["Post time".localize()]),
         controller: ref.useTextEditingController(
-          config.createdTimeKey,
+          module.createdTimeKey,
           FormItemDateTimeField.formatDateTime(dateTime),
         ),
         onSaved: (value) {
-          context[config.createdTimeKey] =
+          context[module.createdTimeKey] =
               value?.millisecondsSinceEpoch ?? now.millisecondsSinceEpoch;
         },
       ),
@@ -441,11 +437,11 @@ class PostModuleEdit extends PageScopedWidget {
                 return;
               }
               try {
-                item[config.nameKey] = context.get(config.nameKey, "");
-                item[config.textKey] =
+                item[module.nameKey] = context.get(module.nameKey, "");
+                item[module.textKey] =
                     jsonEncode(controller.document.toDelta().toJson());
-                item[config.createdTimeKey] = context.get(
-                    config.createdTimeKey, now.millisecondsSinceEpoch);
+                item[module.createdTimeKey] = context.get(
+                    module.createdTimeKey, now.millisecondsSinceEpoch);
                 await context.model?.saveDocument(item).showIndicator(context);
                 context.navigator.pop();
               } catch (e) {
@@ -486,9 +482,9 @@ class PostModuleEdit extends PageScopedWidget {
                   hintText: "Text".localize(),
                   subColor: context.theme.disabledColor,
                   controller:
-                      ref.useTextEditingController(config.textKey, text),
+                      ref.useTextEditingController(module.textKey, text),
                   onSaved: (value) {
-                    context[config.textKey] = value;
+                    context[module.textKey] = value;
                   },
                 ),
               ),
@@ -500,10 +496,10 @@ class PostModuleEdit extends PageScopedWidget {
                 return;
               }
               try {
-                item[config.nameKey] = context.get(config.nameKey, "");
-                item[config.textKey] = context.get(config.textKey, "");
-                item[config.createdTimeKey] = context.get(
-                    config.createdTimeKey, now.millisecondsSinceEpoch);
+                item[module.nameKey] = context.get(module.nameKey, "");
+                item[module.textKey] = context.get(module.textKey, "");
+                item[module.createdTimeKey] = context.get(
+                    module.createdTimeKey, now.millisecondsSinceEpoch);
                 await context.model?.saveDocument(item).showIndicator(context);
                 context.navigator.pop();
               } catch (e) {

@@ -1,4 +1,3 @@
-import 'package:masamune/masamune.dart';
 import 'package:masamune_module/masamune_module.dart';
 
 @immutable
@@ -15,7 +14,7 @@ class EditModule extends PageModule {
     this.sliverLayoutWhenModernDesignOnHome = false,
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
-    this.home,
+    this.homePage = const EditModuleHome(),
   }) : super(
           enabled: enabled,
           title: title,
@@ -30,15 +29,14 @@ class EditModule extends PageModule {
     }
 
     final route = {
-      "/$routePath/edit": RouteConfig((_) => home ?? EditModuleHome(this)),
-      "/$routePath/{$queryKey}/edit":
-          RouteConfig((_) => home ?? EditModuleHome(this)),
+      "/$routePath/edit": RouteConfig((_) => homePage),
+      "/$routePath/{$queryKey}/edit": RouteConfig((_) => homePage),
     };
     return route;
   }
 
   // Page settings.
-  final Widget? home;
+  final PageModuleWidget<EditModule> homePage;
 
   /// Route path.
   final String routePath;
@@ -62,23 +60,22 @@ class EditModule extends PageModule {
   final bool automaticallyImplyLeadingOnHome;
 }
 
-class EditModuleHome extends PageScopedWidget {
-  const EditModuleHome(this.config);
-  final EditModule config;
+class EditModuleHome extends PageModuleWidget<EditModule> {
+  const EditModuleHome();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final form = ref.useForm(config.queryKey);
-    final doc = ref.watchDocumentModel("${config.queryPath}/${form.uid}");
-    final variables = config.variables;
+  Widget build(BuildContext context, WidgetRef ref, EditModule module) {
+    final form = ref.useForm(module.queryKey);
+    final doc = ref.watchDocumentModel("${module.queryPath}/${form.uid}");
+    final variables = module.variables;
 
     return UIScaffold(
       appBar: UIAppBar(
-        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
-        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
-        title: Text(config.title ?? "Edit".localize()),
+        automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
+        sliverLayoutWhenModernDesign: module.sliverLayoutWhenModernDesignOnHome,
+        title: Text(module.title ?? "Edit".localize()),
         actions: [
-          if (config.enableDelete && form.exists)
+          if (module.enableDelete && form.exists)
             IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () {
@@ -166,7 +163,7 @@ class EditModuleHome extends PageScopedWidget {
               if (model == null) {
                 return;
               }
-              final collection = ref.readCollectionModel(config.queryPath);
+              final collection = ref.readCollectionModel(module.queryPath);
               final doc = model.createDocument(collection);
               variables.buildValue(doc, context, ref, updated: form.exists);
               await context.model?.saveDocument(doc).showIndicator(context);

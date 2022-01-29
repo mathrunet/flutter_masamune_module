@@ -16,11 +16,12 @@ class UserAccountModule extends UserWidgetModule {
     this.automaticallyImplyLeadingOnHome = true,
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
-    this.home,
-    this.reauth,
-    this.editEmail,
-    this.editPassword,
-    this.blockList,
+    this.homePage = const UserAccountModuleHome(),
+    this.contentWidget = const UserAccountModuleContent(),
+    this.reauthPage = const UserAccountModuleReauth(),
+    this.editEmailPage = const UserAccountModuleEditEmail(),
+    this.editPasswordPage = const UserAccountModuleEditPassword(),
+    this.blockListPage = const UserAccountModuleBlockList(),
   }) : super(
           enabled: enabled,
           title: title,
@@ -34,27 +35,23 @@ class UserAccountModule extends UserWidgetModule {
       return const {};
     }
     final route = {
-      "/$routePath/account":
-          RouteConfig((_) => home ?? UserAccountModuleHome(this)),
-      "/$routePath/account/reauth":
-          RouteConfig((_) => reauth ?? UserAccountModuleReauth(this)),
-      "/$routePath/account/email":
-          RouteConfig((_) => editEmail ?? UserAccountModuleEditEmail(this)),
-      "/$routePath/account/password": RouteConfig(
-          (_) => editPassword ?? UserAccountModuleEditPassword(this)),
-      "/$routePath/account/block":
-          RouteConfig((_) => blockList ?? UserAccountModuleBlockList(this)),
+      "/$routePath/account": RouteConfig((_) => homePage),
+      "/$routePath/account/reauth": RouteConfig((_) => reauthPage),
+      "/$routePath/account/email": RouteConfig((_) => editEmailPage),
+      "/$routePath/account/password": RouteConfig((_) => editPasswordPage),
+      "/$routePath/account/block": RouteConfig((_) => blockListPage),
     };
 
     return route;
   }
 
   /// ページ設定。
-  final Widget? home;
-  final Widget? reauth;
-  final Widget? editEmail;
-  final Widget? editPassword;
-  final Widget? blockList;
+  final PageModuleWidget<UserAccountModule> homePage;
+  final ModuleWidget<UserAccountModule> contentWidget;
+  final PageModuleWidget<UserAccountModule> reauthPage;
+  final PageModuleWidget<UserAccountModule> editEmailPage;
+  final PageModuleWidget<UserAccountModule> editPasswordPage;
+  final PageModuleWidget<UserAccountModule> blockListPage;
 
   /// ホームをスライバーレイアウトにする場合True.
   final bool sliverLayoutWhenModernDesignOnHome;
@@ -84,35 +81,33 @@ class UserAccountModule extends UserWidgetModule {
   final String blockPath;
 
   @override
-  Widget build(BuildContext context) => UserAccountModuleContent(this);
+  Widget build(BuildContext context) => contentWidget;
 }
 
-class UserAccountModuleHome extends PageScopedWidget {
-  const UserAccountModuleHome(this.config);
-  final UserAccountModule config;
+class UserAccountModuleHome extends PageModuleWidget<UserAccountModule> {
+  const UserAccountModuleHome();
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, UserAccountModule module) {
     return UIScaffold(
       appBar: UIAppBar(
-        title: Text(config.title ?? "Account".localize()),
-        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
-        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
+        title: Text(module.title ?? "Account".localize()),
+        sliverLayoutWhenModernDesign: module.sliverLayoutWhenModernDesignOnHome,
+        automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
       ),
       body: SingleChildScrollView(
         child: PlatformScrollbar(
-          child: UserAccountModuleContent(config),
+          child: module.contentWidget,
         ),
       ),
     );
   }
 }
 
-class UserAccountModuleContent extends ScopedWidget {
-  const UserAccountModuleContent(this.config);
-  final UserAccountModule config;
+class UserAccountModuleContent extends ModuleWidget<UserAccountModule> {
+  const UserAccountModuleContent();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, UserAccountModule module) {
     final userId = context.get("user_id", context.model?.userId ?? "");
     final own = userId == context.model?.userId;
 
@@ -135,17 +130,17 @@ class UserAccountModuleContent extends ScopedWidget {
                 if (context.model?.requiredReauthInEmailAndPassword() ??
                     false) {
                   context.navigator.pushNamed(
-                    "/${config.routePath}/account/reauth",
+                    "/${module.routePath}/account/reauth",
                     arguments: RouteQuery(
                       parameters: {
-                        "redirect_to": "/${config.routePath}/account/email"
+                        "redirect_to": "/${module.routePath}/account/email"
                       },
                     ),
                   );
                   return;
                 }
                 context.navigator
-                    .pushNamed("/${config.routePath}/account/email");
+                    .pushNamed("/${module.routePath}/account/email");
               },
             ),
           ),
@@ -162,27 +157,27 @@ class UserAccountModuleContent extends ScopedWidget {
                 if (context.model?.requiredReauthInEmailAndPassword() ??
                     false) {
                   context.navigator.pushNamed(
-                    "/${config.routePath}/account/reauth",
+                    "/${module.routePath}/account/reauth",
                     arguments: RouteQuery(
                       parameters: {
-                        "redirect_to": "/${config.routePath}/account/password"
+                        "redirect_to": "/${module.routePath}/account/password"
                       },
                     ),
                   );
                   return;
                 }
                 context.navigator
-                    .pushNamed("/${config.routePath}/account/password");
+                    .pushNamed("/${module.routePath}/account/password");
               },
             ),
           ),
           Headline("Menu".localize()),
-          if (config.allowEditingBlockList)
+          if (module.allowEditingBlockList)
             ListItem(
               title: Text("%s list".localize().format(["Block".localize()])),
               onTap: () {
                 context.navigator
-                    .pushNamed("/${config.routePath}/account/block");
+                    .pushNamed("/${module.routePath}/account/block");
               },
             ),
           ListItem(
@@ -221,7 +216,7 @@ class UserAccountModuleContent extends ScopedWidget {
               );
             },
           ),
-          if (config.allowUserDeleting)
+          if (module.allowUserDeleting)
             ListItem(
               title: Text(
                 "Account deletion".localize(),
@@ -266,12 +261,11 @@ class UserAccountModuleContent extends ScopedWidget {
   }
 }
 
-class UserAccountModuleReauth extends PageScopedWidget {
-  const UserAccountModuleReauth(this.config);
-  final UserAccountModule config;
+class UserAccountModuleReauth extends PageModuleWidget<UserAccountModule> {
+  const UserAccountModuleReauth();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, UserAccountModule module) {
     final form = ref.useForm();
     final showPassword = ref.state("showPassword", false);
 
@@ -354,12 +348,11 @@ class UserAccountModuleReauth extends PageScopedWidget {
   }
 }
 
-class UserAccountModuleEditEmail extends PageScopedWidget {
-  const UserAccountModuleEditEmail(this.config);
-  final UserAccountModule config;
+class UserAccountModuleEditEmail extends PageModuleWidget<UserAccountModule> {
+  const UserAccountModuleEditEmail();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, UserAccountModule module) {
     final form = ref.useForm();
     final controller = ref.useTextEditingController(
       "email",
@@ -437,12 +430,12 @@ class UserAccountModuleEditEmail extends PageScopedWidget {
   }
 }
 
-class UserAccountModuleEditPassword extends PageScopedWidget {
-  const UserAccountModuleEditPassword(this.config);
-  final UserAccountModule config;
+class UserAccountModuleEditPassword
+    extends PageModuleWidget<UserAccountModule> {
+  const UserAccountModuleEditPassword();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, UserAccountModule module) {
     final form = ref.useForm();
 
     return UIScaffold(
@@ -537,17 +530,16 @@ class UserAccountModuleEditPassword extends PageScopedWidget {
   }
 }
 
-class UserAccountModuleBlockList extends PageScopedWidget {
-  const UserAccountModuleBlockList(this.config);
-  final UserAccountModule config;
+class UserAccountModuleBlockList extends PageModuleWidget<UserAccountModule> {
+  const UserAccountModuleBlockList();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, UserAccountModule module) {
     final blocks = ref.watchCollectionModel(
-        "${config.queryPath}/${context.model?.userId}/${config.blockPath}");
+        "${module.queryPath}/${context.model?.userId}/${module.blockPath}");
     final users = ref.watchCollectionModel(
       ModelQuery(
-        config.queryPath,
+        module.queryPath,
         key: Const.uid,
         whereIn: blocks.map((e) => e.get(Const.user, "")).distinct(),
       ).value,
@@ -577,7 +569,7 @@ class UserAccountModuleBlockList extends PageScopedWidget {
         builder: (context, item, index) {
           return [
             ListItem(
-              title: Text(item.get("${Const.user}${config.nameKey}", "")),
+              title: Text(item.get("${Const.user}${module.nameKey}", "")),
               trailing: IconButton(
                 icon: const Icon(Icons.delete),
                 onPressed: () {

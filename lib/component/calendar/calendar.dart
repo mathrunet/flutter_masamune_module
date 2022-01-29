@@ -46,11 +46,11 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
     Permission permission = const Permission(),
     this.initialCommentTemplate = const [],
     List<RerouteConfig> rerouteConfigs = const [],
-    this.home,
-    this.dayView,
-    this.detail,
-    this.template,
-    this.edit,
+    this.homePage = const CalendarModuleHome(),
+    this.dayViewPage = const CalendarModuleDayView(),
+    this.detailPage = const CalendarModuleDetail(),
+    this.templatePage = const CalendarModuleTemplate(),
+    this.editPage = const CalendarModuleEdit(),
   }) : super(
           enabled: enabled,
           title: title,
@@ -64,29 +64,24 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
       return const {};
     }
     final route = {
-      "/$routePath": RouteConfig((_) => home ?? CalendarModuleHome(this)),
-      "/$routePath/templates":
-          RouteConfig((_) => template ?? CalendarModuleTemplate(this)),
-      "/$routePath/edit": RouteConfig((_) => edit ?? CalendarModuleEdit(this)),
-      "/$routePath/edit/{date_id}":
-          RouteConfig((_) => edit ?? CalendarModuleEdit(this)),
+      "/$routePath": RouteConfig((_) => homePage),
+      "/$routePath/templates": RouteConfig((_) => templatePage),
+      "/$routePath/edit": RouteConfig((_) => editPage),
+      "/$routePath/edit/{date_id}": RouteConfig((_) => editPage),
       "/$routePath/empty": RouteConfig((_) => const EmptyPage()),
-      "/$routePath/{date_id}":
-          RouteConfig((_) => dayView ?? CalendarModuleDayView(this)),
-      "/$routePath/{event_id}/detail":
-          RouteConfig((_) => detail ?? CalendarModuleDetail(this)),
-      "/$routePath/{event_id}/edit":
-          RouteConfig((_) => edit ?? CalendarModuleEdit(this)),
+      "/$routePath/{date_id}": RouteConfig((_) => dayViewPage),
+      "/$routePath/{event_id}/detail": RouteConfig((_) => detailPage),
+      "/$routePath/{event_id}/edit": RouteConfig((_) => editPage),
     };
     return route;
   }
 
   // ページ設定
-  final Widget? home;
-  final Widget? dayView;
-  final Widget? template;
-  final Widget? detail;
-  final Widget? edit;
+  final PageModuleWidget<CalendarModule> homePage;
+  final PageModuleWidget<CalendarModule> dayViewPage;
+  final PageModuleWidget<CalendarModule> templatePage;
+  final PageModuleWidget<CalendarModule> detailPage;
+  final PageModuleWidget<CalendarModule> editPage;
 
   /// ホームをスライバーレイアウトにする場合True.
   final bool sliverLayoutWhenModernDesignOnHome;
@@ -173,38 +168,37 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
   final bool showAddingButton;
 }
 
-class CalendarModuleHome extends PageScopedWidget {
-  const CalendarModuleHome(this.config);
-  final CalendarModule config;
+class CalendarModuleHome extends PageModuleWidget<CalendarModule> {
+  const CalendarModuleHome();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, CalendarModule module) {
     final selected = ref.state("selected", DateTime.now());
-    final events = ref.watchCollectionModel(config.queryPath);
-    final user = ref.watchUserDocumentModel(config.userPath);
+    final events = ref.watchCollectionModel(module.queryPath);
+    final user = ref.watchUserDocumentModel(module.userPath);
 
     return UIScaffold(
       waitTransition: true,
       appBar: UIAppBar(
-        title: Text(config.title ?? "Calendar".localize()),
-        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
-        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
+        title: Text(module.title ?? "Calendar".localize()),
+        sliverLayoutWhenModernDesign: module.sliverLayoutWhenModernDesignOnHome,
+        automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
       ),
       body: UICalendar(
-        markerType: config.markerType,
-        markerIcon: config.markerIcon ?? const Icon(Icons.access_alarm),
+        markerType: module.markerType,
+        markerIcon: module.markerIcon ?? const Icon(Icons.access_alarm),
         events: events,
         expand: true,
         onDaySelect: (day, events, holidays) {
           selected.value = day;
           context.rootNavigator.pushNamed(
-            "/${config.routePath}/${day.toDateID()}",
+            "/${module.routePath}/${day.toDateID()}",
             arguments: RouteQuery.fullscreenOrModal,
           );
         },
       ),
-      floatingActionButton: config.showAddingButton &&
-              config.permission.canEdit(user.get(config.roleKey, ""))
+      floatingActionButton: module.showAddingButton &&
+              module.permission.canEdit(user.get(module.roleKey, ""))
           ? FloatingActionButton.extended(
               label: Text("Add".localize()),
               icon: const Icon(Icons.add),
@@ -214,7 +208,7 @@ class CalendarModuleHome extends PageScopedWidget {
                     .round(const Duration(minutes: 15))
                     .toDateTimeID();
                 context.navigator.pushNamed(
-                  "/${config.routePath}/edit/$dateId}",
+                  "/${module.routePath}/edit/$dateId}",
                   arguments: RouteQuery.fullscreen,
                 );
               },
@@ -224,24 +218,23 @@ class CalendarModuleHome extends PageScopedWidget {
   }
 }
 
-class CalendarModuleDayView extends PageScopedWidget {
-  const CalendarModuleDayView(this.config);
-  final CalendarModule config;
+class CalendarModuleDayView extends PageModuleWidget<CalendarModule> {
+  const CalendarModuleDayView();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, CalendarModule module) {
     final now = ref.useNow();
-    final user = ref.watchUserDocumentModel(config.userPath);
+    final user = ref.watchUserDocumentModel(module.userPath);
     final date = context.get("date_id", now.toDateID()).toDateTime();
     final startTime = date;
     final endTime = date.add(const Duration(days: 1));
 
     final events = ref
-        .watchCollectionModel(config.queryPath)
+        .watchCollectionModel(module.queryPath)
         .where(
           (element) => _inEvent(
-            sourceStartTime: element.get(config.startTimeKey, 0),
-            sourceEndTime: element.get<int?>(config.endTimeKey, null),
+            sourceStartTime: element.get(module.startTimeKey, 0),
+            sourceEndTime: element.get<int?>(module.endTimeKey, null),
             targetStartTime: startTime.millisecondsSinceEpoch,
             targetEndTime: endTime.millisecondsSinceEpoch,
           ),
@@ -260,7 +253,7 @@ class CalendarModuleDayView extends PageScopedWidget {
           return InkWell(
             onTap: () {
               context.navigator.pushNamed(
-                "/${config.routePath}/${item.uid}/detail",
+                "/${module.routePath}/${item.uid}/detail",
                 arguments: RouteQuery.fullscreenOrModal,
               );
             },
@@ -272,14 +265,14 @@ class CalendarModuleDayView extends PageScopedWidget {
                   width: 1,
                   backgroundColor: context.theme.primaryColor,
                   radius: 8.0),
-              child: Text(item.get(config.nameKey, ""),
+              child: Text(item.get(module.nameKey, ""),
                   style: TextStyle(color: context.theme.textColorOnPrimary)),
             ),
           );
         },
       ),
-      floatingActionButton: config.showAddingButton &&
-              config.permission.canEdit(user.get(config.roleKey, ""))
+      floatingActionButton: module.showAddingButton &&
+              module.permission.canEdit(user.get(module.roleKey, ""))
           ? FloatingActionButton.extended(
               label: Text("Add".localize()),
               icon: const Icon(Icons.add),
@@ -289,7 +282,7 @@ class CalendarModuleDayView extends PageScopedWidget {
                     .round(const Duration(minutes: 15))
                     .toDateTimeID();
                 context.navigator.pushNamed(
-                  "/${config.routePath}/edit/$dateId",
+                  "/${module.routePath}/edit/$dateId",
                   arguments: RouteQuery.fullscreen,
                 );
               },
@@ -299,27 +292,26 @@ class CalendarModuleDayView extends PageScopedWidget {
   }
 }
 
-class CalendarModuleDetail extends PageScopedWidget {
-  const CalendarModuleDetail(this.config);
-  final CalendarModule config;
+class CalendarModuleDetail extends PageModuleWidget<CalendarModule> {
+  const CalendarModuleDetail();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchUserDocumentModel(config.userPath);
+  Widget build(BuildContext context, WidgetRef ref, CalendarModule module) {
+    final user = ref.watchUserDocumentModel(module.userPath);
     final event = ref.watchDocumentModel(
-        "${config.queryPath}/${context.get("event_id", "")}");
+        "${module.queryPath}/${context.get("event_id", "")}");
     final author = ref.watchDocumentModel(
-        "${config.userPath}/${event.get(config.userKey, uuid)}");
-    final name = event.get(config.nameKey, "");
-    final text = event.get(config.textKey, "");
-    final noteValue = event.get(config.noteKey, "");
+        "${module.userPath}/${event.get(module.userKey, uuid)}");
+    final name = event.get(module.nameKey, "");
+    final text = event.get(module.textKey, "");
+    final noteValue = event.get(module.noteKey, "");
     final note = noteValue.isEmpty
-        ? "No %s".localize().format([config.noteLabel.localize()])
+        ? "No %s".localize().format([module.noteLabel.localize()])
         : noteValue;
-    final allDay = event.get(config.allDayKey, false);
-    final startTime = event.getAsDateTime(config.startTimeKey);
-    final authorName = author.get(config.nameKey, "");
-    final endTimeValue = event.get<int?>(config.endTimeKey, null);
+    final allDay = event.get(module.allDayKey, false);
+    final startTime = event.getAsDateTime(module.startTimeKey);
+    final authorName = author.get(module.nameKey, "");
+    final endTimeValue = event.get<int?>(module.endTimeKey, null);
     final endTime = endTimeValue != null
         ? DateTime.fromMillisecondsSinceEpoch(endTimeValue)
         : null;
@@ -328,20 +320,20 @@ class CalendarModuleDetail extends PageScopedWidget {
 
     final _comments = ref.watchCollectionModel(
       ModelQuery(
-              "${config.queryPath}/${context.get("event_id", "")}/${config.commentPath}",
+              "${module.queryPath}/${context.get("event_id", "")}/${module.commentPath}",
               order: ModelQueryOrder.desc,
               orderBy: Const.time)
           .value,
     );
     final comments = _comments.mergeUserInformation(
       ref,
-      userCollectionPath: config.userPath,
-      userKey: config.userKey,
+      userCollectionPath: module.userPath,
+      userKey: module.userKey,
     );
 
     final editingType = note.isNotEmpty && !note.startsWith(RegExp(r"^(\[|\{)"))
         ? CalendarEditingType.planeText
-        : config.editingType;
+        : module.editingType;
 
     final appBar = UIAppBar(
       title: Text(name),
@@ -351,12 +343,12 @@ class CalendarModuleDetail extends PageScopedWidget {
         allDay: allDay,
       )),
       actions: [
-        if (config.permission.canEdit(user.get(config.roleKey, "")))
+        if (module.permission.canEdit(user.get(module.roleKey, "")))
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
               context.rootNavigator.pushNamed(
-                "/${config.routePath}/${context.get("event_id", "")}/edit",
+                "/${module.routePath}/${context.get("event_id", "")}/edit",
                 arguments: RouteQuery.fullscreenOrModal,
               );
             },
@@ -382,7 +374,7 @@ class CalendarModuleDetail extends PageScopedWidget {
           text: Text(authorName),
         ),
       const Space.height(16),
-      DividHeadline(config.detailLabel.localize()),
+      DividHeadline(module.detailLabel.localize()),
       const Space.height(16),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -398,7 +390,7 @@ class CalendarModuleDetail extends PageScopedWidget {
 
     final footer = [
       const Space.height(24),
-      DividHeadline(config.commentLabel.localize()),
+      DividHeadline(module.commentLabel.localize()),
       FormItemCommentField(
         maxLines: 4,
         controller: commentController,
@@ -413,12 +405,12 @@ class CalendarModuleDetail extends PageScopedWidget {
             return;
           }
           doc[Const.user] = userId;
-          doc[config.textKey] = value;
+          doc[module.textKey] = value;
           context.model?.saveDocument(doc);
         },
         onTapTemplateIcon: () async {
           final res = await context.rootNavigator.pushNamed(
-            "/${config.routePath}/templates",
+            "/${module.routePath}/templates",
             arguments: RouteQuery.fullscreenOrModal,
           );
           if (res is! String || res.isEmpty) {
@@ -431,7 +423,7 @@ class CalendarModuleDetail extends PageScopedWidget {
       const Space.height(16),
     ];
 
-    if (!config.enableNote) {
+    if (!module.enableNote) {
       return UIScaffold(
         waitTransition: true,
         appBar: appBar,
@@ -442,10 +434,10 @@ class CalendarModuleDetail extends PageScopedWidget {
             ...comments.mapListenable((item) {
               return CommentTile(
                 avatar: NetworkOrAsset.image(
-                    item.get("${Const.user}${config.imageKey}", "")),
-                name: item.get("${Const.user}${config.nameKey}", ""),
+                    item.get("${Const.user}${module.imageKey}", "")),
+                name: item.get("${Const.user}${module.nameKey}", ""),
                 date: item.getAsDateTime(Const.time),
-                text: item.get(config.textKey, ""),
+                text: item.get(module.textKey, ""),
               );
             }),
             const Space.height(24),
@@ -474,7 +466,7 @@ class CalendarModuleDetail extends PageScopedWidget {
             children: [
               ...header,
               const Space.height(16),
-              DividHeadline(config.noteLabel.localize()),
+              DividHeadline(module.noteLabel.localize()),
               const Space.height(16),
               QuillEditor(
                 scrollController: ScrollController(),
@@ -482,7 +474,7 @@ class CalendarModuleDetail extends PageScopedWidget {
                 focusNode: ref.useFocusNode("note", false),
                 autoFocus: false,
                 controller: controller,
-                placeholder: config.noteLabel.localize(),
+                placeholder: module.noteLabel.localize(),
                 readOnly: true,
                 expands: false,
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -499,10 +491,10 @@ class CalendarModuleDetail extends PageScopedWidget {
               ...comments.mapListenable((item) {
                 return CommentTile(
                   avatar: NetworkOrAsset.image(
-                      item.get("${Const.user}${config.imageKey}", "")),
-                  name: item.get("${Const.user}${config.nameKey}", ""),
+                      item.get("${Const.user}${module.imageKey}", "")),
+                  name: item.get("${Const.user}${module.nameKey}", ""),
                   date: item.getAsDateTime(Const.time),
-                  text: item.get(config.textKey, ""),
+                  text: item.get(module.textKey, ""),
                 );
               }),
               const Space.height(24),
@@ -517,7 +509,7 @@ class CalendarModuleDetail extends PageScopedWidget {
             children: [
               ...header,
               const Space.height(16),
-              DividHeadline(config.noteLabel.localize()),
+              DividHeadline(module.noteLabel.localize()),
               const Space.height(16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -533,10 +525,10 @@ class CalendarModuleDetail extends PageScopedWidget {
               ...comments.mapListenable((item) {
                 return CommentTile(
                   avatar: NetworkOrAsset.image(
-                      item.get("${Const.user}${config.imageKey}", "")),
-                  name: item.get("${Const.user}${config.nameKey}", ""),
+                      item.get("${Const.user}${module.imageKey}", "")),
+                  name: item.get("${Const.user}${module.nameKey}", ""),
                   date: item.getAsDateTime(Const.time),
-                  text: item.get(config.textKey, ""),
+                  text: item.get(module.textKey, ""),
                 );
               }),
               const Space.height(24),
@@ -547,14 +539,13 @@ class CalendarModuleDetail extends PageScopedWidget {
   }
 }
 
-class CalendarModuleTemplate extends PageScopedWidget {
-  const CalendarModuleTemplate(this.config);
-  final CalendarModule config;
+class CalendarModuleTemplate extends PageModuleWidget<CalendarModule> {
+  const CalendarModuleTemplate();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, CalendarModule module) {
     final template = ref.watchCollectionModel(
-      "${config.userPath}/${context.model?.userId}/${config.commentTemplatePath}",
+      "${module.userPath}/${context.model?.userId}/${module.commentTemplatePath}",
     );
 
     return UIScaffold(
@@ -562,9 +553,9 @@ class CalendarModuleTemplate extends PageScopedWidget {
       appBar: UIAppBar(title: Text("Template".localize())),
       body: UIListBuilder<String>(
         source: [
-          ...config.initialCommentTemplate,
+          ...module.initialCommentTemplate,
           ...template.mapAndRemoveEmpty(
-            (item) => item.get<String?>(config.textKey, null),
+            (item) => item.get<String?>(module.textKey, null),
           )
         ],
         bottom: [
@@ -579,7 +570,7 @@ class CalendarModuleTemplate extends PageScopedWidget {
                 if (doc == null) {
                   return;
                 }
-                doc[config.textKey] = value;
+                doc[module.textKey] = value;
                 await context.model?.saveDocument(doc).showIndicator(context);
               } catch (e) {
                 UIDialog.show(
@@ -597,14 +588,14 @@ class CalendarModuleTemplate extends PageScopedWidget {
           return [
             ListItem(
               title: Text(item),
-              trailing: config.initialCommentTemplate.contains(item)
+              trailing: module.initialCommentTemplate.contains(item)
                   ? null
                   : IconButton(
                       icon: const Icon(Icons.delete),
                       onPressed: () async {
                         try {
                           final tmp = template.firstWhereOrNull(
-                              (e) => e.get(config.textKey, "") == item);
+                              (e) => e.get(module.textKey, "") == item);
                           if (tmp == null) {
                             return;
                           }
@@ -633,23 +624,22 @@ class CalendarModuleTemplate extends PageScopedWidget {
   }
 }
 
-class CalendarModuleEdit extends PageScopedWidget {
-  const CalendarModuleEdit(this.config);
-  final CalendarModule config;
+class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
+  const CalendarModuleEdit();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, CalendarModule module) {
     final date = context.get<String?>("date_id", null)?.toDateTime();
     final now = ref.useDateTime("now", date ?? DateTime.now());
     final form = ref.useForm("event_id");
-    final user = ref.watchUserDocumentModel(config.userPath);
-    final item = ref.watchDocumentModel("${config.queryPath}/${form.uid}");
-    final name = item.get(config.nameKey, "");
-    final text = item.get(config.textKey, "");
-    final note = item.get(config.noteKey, "");
-    final startTime = item.getAsDateTime(config.startTimeKey, now);
-    final allDay = item.get(config.allDayKey, false);
-    final endTimeValue = item.get<int?>(config.endTimeKey, null);
+    final user = ref.watchUserDocumentModel(module.userPath);
+    final item = ref.watchDocumentModel("${module.queryPath}/${form.uid}");
+    final name = item.get(module.nameKey, "");
+    final text = item.get(module.textKey, "");
+    final note = item.get(module.noteKey, "");
+    final startTime = item.getAsDateTime(module.startTimeKey, now);
+    final allDay = item.get(module.allDayKey, false);
+    final endTimeValue = item.get<int?>(module.endTimeKey, null);
     final endTime = endTimeValue != null
         ? DateTime.fromMillisecondsSinceEpoch(endTimeValue)
         : null;
@@ -678,13 +668,13 @@ class CalendarModuleEdit extends PageScopedWidget {
 
     final editingType = note.isNotEmpty && !note.startsWith(RegExp(r"^(\[|\{)"))
         ? CalendarEditingType.planeText
-        : config.editingType;
+        : module.editingType;
 
     final appBar = UIAppBar(
       sliverLayoutWhenModernDesign: false,
       title: Text(
         form.select(
-          item.get(config.nameKey, ""),
+          item.get(module.nameKey, ""),
           "New Events".localize(),
         ),
       ),
@@ -698,7 +688,7 @@ class CalendarModuleEdit extends PageScopedWidget {
       ),
       actions: [
         if (form.exists &&
-            config.permission.canDelete(user.get(config.roleKey, "")))
+            module.permission.canDelete(user.get(module.roleKey, "")))
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () {
@@ -727,7 +717,7 @@ class CalendarModuleEdit extends PageScopedWidget {
         type: FormItemSwitchType.list,
         controller: allDayController,
         onSaved: (value) {
-          context[config.allDayKey] = value ?? false;
+          context[module.allDayKey] = value ?? false;
         },
         onChanged: (value) {
           allDayState.value = value ?? false;
@@ -744,7 +734,7 @@ class CalendarModuleEdit extends PageScopedWidget {
         // format: allDayState.value ? "yyyy/MM/dd(E)" : "yyyy/MM/dd(E) HH:mm",
         onSaved: (value) {
           value ??= now;
-          context[config.startTimeKey] = value.millisecondsSinceEpoch;
+          context[module.startTimeKey] = value.millisecondsSinceEpoch;
         },
       ),
       Collapse(
@@ -779,7 +769,7 @@ class CalendarModuleEdit extends PageScopedWidget {
             },
             onSaved: (value) {
               value ??= now.add(const Duration(hours: 1));
-              context[config.endTimeKey] = value.millisecondsSinceEpoch;
+              context[module.endTimeKey] = value.millisecondsSinceEpoch;
             },
           ),
         ],
@@ -791,24 +781,24 @@ class CalendarModuleEdit extends PageScopedWidget {
         subColor: context.theme.disabledColor,
         controller: titleController,
         onSaved: (value) {
-          context[config.nameKey] = value ?? "";
+          context[module.nameKey] = value ?? "";
         },
       ),
-      DividHeadline(config.detailLabel.localize()),
+      DividHeadline(module.detailLabel.localize()),
       FormItemTextField(
         dense: true,
         allowEmpty: true,
         keyboardType: TextInputType.multiline,
-        expands: !config.enableNote,
+        expands: !module.enableNote,
         subColor: context.theme.disabledColor,
         controller: textController,
         onSaved: (value) {
-          context[config.textKey] = value ?? "";
+          context[module.textKey] = value ?? "";
         },
       ),
     ];
 
-    if (!config.enableNote) {
+    if (!module.enableNote) {
       return UIScaffold(
         waitTransition: true,
         appBar: appBar,
@@ -824,15 +814,15 @@ class CalendarModuleEdit extends PageScopedWidget {
               return;
             }
             try {
-              final allDay = context.get(config.allDayKey, false);
-              item[config.nameKey] = context.get(config.nameKey, "");
-              item[config.textKey] = context.get(config.textKey, "");
-              item[config.allDayKey] = allDay;
-              item[config.userKey] = user.uid;
-              item[config.startTimeKey] =
-                  context.get(config.startTimeKey, now.millisecondsSinceEpoch);
-              item[config.endTimeKey] =
-                  allDay ? null : context.get<int?>(config.endTimeKey, null);
+              final allDay = context.get(module.allDayKey, false);
+              item[module.nameKey] = context.get(module.nameKey, "");
+              item[module.textKey] = context.get(module.textKey, "");
+              item[module.allDayKey] = allDay;
+              item[module.userKey] = user.uid;
+              item[module.startTimeKey] =
+                  context.get(module.startTimeKey, now.millisecondsSinceEpoch);
+              item[module.endTimeKey] =
+                  allDay ? null : context.get<int?>(module.endTimeKey, null);
               await context.model?.saveDocument(item).showIndicator(context);
               context.navigator.pop();
             } catch (e) {
@@ -902,7 +892,7 @@ class CalendarModuleEdit extends PageScopedWidget {
                   focusNode: ref.useFocusNode("note"),
                   autoFocus: false,
                   controller: controller,
-                  placeholder: config.noteLabel.localize(),
+                  placeholder: module.noteLabel.localize(),
                   readOnly: false,
                   expands: false,
                   padding: const EdgeInsets.all(12),
@@ -924,17 +914,17 @@ class CalendarModuleEdit extends PageScopedWidget {
                 return;
               }
               try {
-                final allDay = context.get(config.allDayKey, false);
-                item[config.nameKey] = context.get(config.nameKey, "");
-                item[config.textKey] = context.get(config.textKey, "");
-                item[config.noteKey] =
+                final allDay = context.get(module.allDayKey, false);
+                item[module.nameKey] = context.get(module.nameKey, "");
+                item[module.textKey] = context.get(module.textKey, "");
+                item[module.noteKey] =
                     jsonEncode(controller.document.toDelta().toJson());
-                item[config.allDayKey] = allDay;
-                item[config.userKey] = user.uid;
-                item[config.startTimeKey] = context.get(
-                    config.startTimeKey, now.millisecondsSinceEpoch);
-                item[config.endTimeKey] =
-                    allDay ? null : context.get<int?>(config.endTimeKey, null);
+                item[module.allDayKey] = allDay;
+                item[module.userKey] = user.uid;
+                item[module.startTimeKey] = context.get(
+                    module.startTimeKey, now.millisecondsSinceEpoch);
+                item[module.endTimeKey] =
+                    allDay ? null : context.get<int?>(module.endTimeKey, null);
                 await context.model?.saveDocument(item).showIndicator(context);
                 context.navigator.pop();
               } catch (e) {
@@ -972,11 +962,11 @@ class CalendarModuleEdit extends PageScopedWidget {
                   expands: true,
                   textAlignVertical: TextAlignVertical.top,
                   keyboardType: TextInputType.multiline,
-                  hintText: config.noteLabel.localize(),
+                  hintText: module.noteLabel.localize(),
                   subColor: context.theme.disabledColor,
                   controller: ref.useTextEditingController("note", note),
                   onSaved: (value) {
-                    context[config.noteKey] = value;
+                    context[module.noteKey] = value;
                   },
                 ),
               ),
@@ -988,16 +978,16 @@ class CalendarModuleEdit extends PageScopedWidget {
                 return;
               }
               try {
-                final allDay = context.get(config.allDayKey, false);
-                item[config.nameKey] = context.get(config.nameKey, "");
-                item[config.textKey] = context.get(config.textKey, "");
-                item[config.noteKey] = context.get(config.noteKey, "");
-                item[config.allDayKey] = allDay;
-                item[config.userKey] = user.uid;
-                item[config.startTimeKey] = context.get(
-                    config.startTimeKey, now.millisecondsSinceEpoch);
-                item[config.endTimeKey] =
-                    allDay ? null : context.get<int?>(config.endTimeKey, null);
+                final allDay = context.get(module.allDayKey, false);
+                item[module.nameKey] = context.get(module.nameKey, "");
+                item[module.textKey] = context.get(module.textKey, "");
+                item[module.noteKey] = context.get(module.noteKey, "");
+                item[module.allDayKey] = allDay;
+                item[module.userKey] = user.uid;
+                item[module.startTimeKey] = context.get(
+                    module.startTimeKey, now.millisecondsSinceEpoch);
+                item[module.endTimeKey] =
+                    allDay ? null : context.get<int?>(module.endTimeKey, null);
                 await context.model?.saveDocument(item).showIndicator(context);
                 context.navigator.pop();
               } catch (e) {

@@ -38,15 +38,14 @@ class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
     List<RerouteConfig> rerouteConfigs = const [],
     this.contentQuery,
     this.categoryQuery,
-    this.home,
-    this.gridView,
-    this.grid,
-    this.edit,
-    this.tileView,
-    this.tileViewWithTab,
-    this.tileViewWithList,
-    this.mediaView,
-    this.mediaDetail,
+    this.homePage = const GalleryModuleHome(),
+    this.gridViewPage = const GalleryModuleGridView(),
+    this.editPage = const GalleryModuleEdit(),
+    this.tileViewPage = const GalleryModuleTileView(),
+    this.tileViewWithTabPage = const GalleryModuleTileViewWithTab(),
+    this.tileViewWithListPage = const GalleryModuleTileViewWithList(),
+    this.mediaViewPage = const GalleryModuleMediaView(),
+    this.mediaDetailPage = const GalleryModuleMediaDetail(),
   }) : super(
           enabled: enabled,
           title: title,
@@ -60,30 +59,25 @@ class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
       return const {};
     }
     final route = {
-      "/$routePath": RouteConfig((_) => home ?? GalleryModuleHome(this)),
-      "/$routePath/edit": RouteConfig((_) => edit ?? GalleryModuleEdit(this)),
-      "/$routePath/{category_id}":
-          RouteConfig((context) => gridView ?? GalleryModuleGridView(this)),
-      "/$routePath/media/{media_id}":
-          RouteConfig((_) => mediaDetail ?? GalleryModuleMediaDetail(this)),
-      "/$routePath/media/{media_id}/view":
-          RouteConfig((_) => mediaView ?? GalleryModuleMediaView(this)),
-      "/$routePath/media/{media_id}/edit":
-          RouteConfig((_) => edit ?? GalleryModuleEdit(this)),
+      "/$routePath": RouteConfig((_) => homePage),
+      "/$routePath/edit": RouteConfig((_) => editPage),
+      "/$routePath/{category_id}": RouteConfig((context) => gridViewPage),
+      "/$routePath/media/{media_id}": RouteConfig((_) => mediaDetailPage),
+      "/$routePath/media/{media_id}/view": RouteConfig((_) => mediaViewPage),
+      "/$routePath/media/{media_id}/edit": RouteConfig((_) => editPage),
     };
     return route;
   }
 
   // ページ設定。
-  final Widget? home;
-  final Widget? gridView;
-  final Widget? grid;
-  final Widget? edit;
-  final Widget? mediaDetail;
-  final Widget? mediaView;
-  final Widget? tileView;
-  final Widget? tileViewWithTab;
-  final Widget? tileViewWithList;
+  final PageModuleWidget<GalleryModule> homePage;
+  final PageModuleWidget<GalleryModule> gridViewPage;
+  final PageModuleWidget<GalleryModule> editPage;
+  final PageModuleWidget<GalleryModule> mediaDetailPage;
+  final PageModuleWidget<GalleryModule> mediaViewPage;
+  final PageModuleWidget<GalleryModule> tileViewPage;
+  final PageModuleWidget<GalleryModule> tileViewWithTabPage;
+  final PageModuleWidget<GalleryModule> tileViewWithListPage;
 
   /// ホームをスライバーレイアウトにする場合True.
   final bool sliverLayoutWhenModernDesignOnHome;
@@ -151,53 +145,53 @@ class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
   final bool skipDetailPage;
 }
 
-class GalleryModuleHome extends PageScopedWidget {
-  const GalleryModuleHome(this.config);
-  final GalleryModule config;
+class GalleryModuleHome extends PageModuleWidget<GalleryModule> {
+  const GalleryModuleHome();
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    switch (config.galleryType) {
+  Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
+    switch (module.galleryType) {
       case GalleryType.tile:
-        return config.tileView ?? GalleryModuleTileView(config);
+        return module.tileViewPage;
       case GalleryType.tileWithTab:
-        return config.tileViewWithTab ?? GalleryModuleTileViewWithTab(config);
+        return module.tileViewWithTabPage;
       case GalleryType.tileWithList:
-        return config.tileViewWithList ?? GalleryModuleTileViewWithList(config);
+        return module.tileViewWithListPage;
       default:
         return const Empty();
     }
   }
 }
 
-class GalleryModuleTileViewWithList extends PageScopedWidget {
-  const GalleryModuleTileViewWithList(this.config);
-  final GalleryModule config;
+class GalleryModuleTileViewWithList extends PageModuleWidget<GalleryModule> {
+  const GalleryModuleTileViewWithList();
 
-  List<GroupConfig> _categories(BuildContext context, WidgetRef ref) {
-    if (config.categoryQuery != null) {
-      final categories = ref.watchCollectionModel(config.categoryQuery!.value);
+  List<GroupConfig> _categories(
+      BuildContext context, WidgetRef ref, GalleryModule module) {
+    if (module.categoryQuery != null) {
+      final categories = ref.watchCollectionModel(module.categoryQuery!.value);
       return categories.mapAndRemoveEmpty((item) =>
-          GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
-        ..addAll(config.categoryConfig);
+          GroupConfig(id: item.uid, label: item.get(module.nameKey, "")))
+        ..addAll(module.categoryConfig);
     }
-    return config.categoryConfig;
+    return module.categoryConfig;
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchUserDocumentModel(config.userPath);
-    final list = _categories(context, ref);
+  Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
+    final user = ref.watchUserDocumentModel(module.userPath);
+    final list = _categories(context, ref, module);
     final controller = ref.useNavigatorController(
-      "/${config.routePath}/${list.firstOrNull?.id}",
+      "/${module.routePath}/${list.firstOrNull?.id}",
     );
 
     return UIScaffold(
       waitTransition: true,
       inlineNavigatorControllerOnWeb: controller,
       appBar: UIAppBar(
-        title: Text(config.title ?? "Gallery".localize()),
-        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
-        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
+        title: Text(module.title ?? "Gallery".localize()),
+        sliverLayoutWhenModernDesign: module.sliverLayoutWhenModernDesignOnHome,
+        automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
       ),
       body: UIListBuilder<GroupConfig>(
         source: list,
@@ -206,20 +200,20 @@ class GalleryModuleTileViewWithList extends PageScopedWidget {
             ListItem(
               title: Text(item.label),
               onTap: () {
-                context.navigator.pushNamed("/${config.routePath}/${item.id}");
+                context.navigator.pushNamed("/${module.routePath}/${item.id}");
               },
             )
           ];
         },
       ),
       floatingActionButton:
-          config.permission.canEdit(user.get(config.roleKey, ""))
+          module.permission.canEdit(user.get(module.roleKey, ""))
               ? FloatingActionButton.extended(
                   label: Text("Add".localize()),
                   icon: const Icon(Icons.add),
                   onPressed: () {
                     context.navigator.pushNamed(
-                      "/${config.routePath}/edit",
+                      "/${module.routePath}/edit",
                       arguments: RouteQuery.fullscreenOrModal,
                     );
                   },
@@ -229,50 +223,50 @@ class GalleryModuleTileViewWithList extends PageScopedWidget {
   }
 }
 
-class GalleryModuleTileViewWithTab extends PageScopedWidget {
-  const GalleryModuleTileViewWithTab(this.config);
-  final GalleryModule config;
+class GalleryModuleTileViewWithTab extends PageModuleWidget<GalleryModule> {
+  const GalleryModuleTileViewWithTab();
 
-  List<GroupConfig> _categories(BuildContext context, WidgetRef ref) {
-    if (config.categoryQuery != null) {
-      final categories = ref.watchCollectionModel(config.categoryQuery!.value);
+  List<GroupConfig> _categories(
+      BuildContext context, WidgetRef ref, GalleryModule module) {
+    if (module.categoryQuery != null) {
+      final categories = ref.watchCollectionModel(module.categoryQuery!.value);
       return categories.mapAndRemoveEmpty((item) =>
-          GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
-        ..addAll(config.categoryConfig);
+          GroupConfig(id: item.uid, label: item.get(module.nameKey, "")))
+        ..addAll(module.categoryConfig);
     }
-    return config.categoryConfig;
+    return module.categoryConfig;
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchUserDocumentModel(config.userPath);
-    final list = _categories(context, ref);
+  Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
+    final user = ref.watchUserDocumentModel(module.userPath);
+    final list = _categories(context, ref, module);
     final tab = ref.useTab(list);
     final controller = ref.useNavigatorController(
-      "/${config.routePath}/${config.categoryConfig.firstOrNull?.id}",
+      "/${module.routePath}/${module.categoryConfig.firstOrNull?.id}",
     );
 
     return UIScaffold(
       waitTransition: true,
       inlineNavigatorControllerOnWeb: controller,
       appBar: UIAppBar(
-        title: Text(config.title ?? "Gallery".localize()),
+        title: Text(module.title ?? "Gallery".localize()),
         bottom: UITabBar<GroupConfig>(tab),
       ),
       body: UITabView<GroupConfig>(
         tab,
         builder: (context, item, key) {
-          return config.grid ?? GalleryModuleGrid(config, category: item);
+          return GalleryModuleGrid(category: item);
         },
       ),
       floatingActionButton:
-          config.permission.canEdit(user.get(config.roleKey, ""))
+          module.permission.canEdit(user.get(module.roleKey, ""))
               ? FloatingActionButton.extended(
                   label: Text("Add".localize()),
                   icon: const Icon(Icons.add),
                   onPressed: () {
                     context.navigator.pushNamed(
-                      "/${config.routePath}/edit",
+                      "/${module.routePath}/edit",
                       arguments: RouteQuery.fullscreenOrModal,
                     );
                   },
@@ -282,32 +276,31 @@ class GalleryModuleTileViewWithTab extends PageScopedWidget {
   }
 }
 
-class GalleryModuleTileView extends PageScopedWidget {
-  const GalleryModuleTileView(this.config);
-  final GalleryModule config;
+class GalleryModuleTileView extends PageModuleWidget<GalleryModule> {
+  const GalleryModuleTileView();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchUserDocumentModel(config.userPath);
+  Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
+    final user = ref.watchUserDocumentModel(module.userPath);
     final controller = ref.useNavigatorController(
-      "/${config.routePath}/${config.categoryConfig.firstOrNull?.id}",
+      "/${module.routePath}/${module.categoryConfig.firstOrNull?.id}",
     );
 
     return UIScaffold(
       waitTransition: true,
       inlineNavigatorControllerOnWeb: controller,
       appBar: UIAppBar(
-        title: Text(config.title ?? "Gallery".localize()),
+        title: Text(module.title ?? "Gallery".localize()),
       ),
-      body: config.grid ?? GalleryModuleGrid(config),
+      body: const GalleryModuleGrid(),
       floatingActionButton:
-          config.permission.canEdit(user.get(config.roleKey, ""))
+          module.permission.canEdit(user.get(module.roleKey, ""))
               ? FloatingActionButton.extended(
                   label: Text("Add".localize()),
                   icon: const Icon(Icons.add),
                   onPressed: () {
                     context.navigator.pushNamed(
-                      "/${config.routePath}/edit",
+                      "/${module.routePath}/edit",
                       arguments: RouteQuery.fullscreen,
                     );
                   },
@@ -317,30 +310,30 @@ class GalleryModuleTileView extends PageScopedWidget {
   }
 }
 
-class GalleryModuleGridView extends PageScopedWidget {
-  const GalleryModuleGridView(this.config);
-  final GalleryModule config;
+class GalleryModuleGridView extends PageModuleWidget<GalleryModule> {
+  const GalleryModuleGridView();
 
-  List<GroupConfig> _categories(BuildContext context, WidgetRef ref) {
-    if (config.categoryQuery != null) {
-      final categories = ref.watchCollectionModel(config.categoryQuery!.value);
+  List<GroupConfig> _categories(
+      BuildContext context, WidgetRef ref, GalleryModule module) {
+    if (module.categoryQuery != null) {
+      final categories = ref.watchCollectionModel(module.categoryQuery!.value);
       return categories.mapAndRemoveEmpty((item) =>
-          GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
-        ..addAll(config.categoryConfig);
+          GroupConfig(id: item.uid, label: item.get(module.nameKey, "")))
+        ..addAll(module.categoryConfig);
     }
-    return config.categoryConfig;
+    return module.categoryConfig;
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final list = _categories(context, ref);
+  Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
+    final list = _categories(context, ref, module);
     final category = list
         .firstWhereOrNull((item) => item.id == context.get("category_id", ""));
 
     if (category == null) {
       return UIScaffold(
         appBar: UIAppBar(
-          title: Text(config.title ?? "Gallery".localize()),
+          title: Text(module.title ?? "Gallery".localize()),
         ),
         body: Center(
           child: Text("No data.".localize()),
@@ -353,41 +346,41 @@ class GalleryModuleGridView extends PageScopedWidget {
       appBar: UIAppBar(
         title: Text(category.label.localize()),
       ),
-      body: GalleryModuleGrid(config, category: category),
+      body: GalleryModuleGrid(category: category),
     );
   }
 }
 
-class GalleryModuleGrid extends ScopedWidget {
-  const GalleryModuleGrid(this.config, {this.category});
-  final GalleryModule config;
+class GalleryModuleGrid extends ModuleWidget<GalleryModule> {
+  const GalleryModuleGrid({this.category});
   final GroupConfig? category;
 
-  DynamicCollectionModel _gallery(BuildContext context, WidgetRef ref) {
+  DynamicCollectionModel _gallery(
+      BuildContext context, WidgetRef ref, GalleryModule module) {
     if (category == null) {
       return ref
-          .watchCollectionModel(config.contentQuery?.value ?? config.queryPath);
+          .watchCollectionModel(module.contentQuery?.value ?? module.queryPath);
     }
     return ref.watchCollectionModel(
       category!.query?.value ??
-          config.contentQuery?.value ??
+          module.contentQuery?.value ??
           ModelQuery(
-            config.queryPath,
-            key: config.categoryKey,
+            module.queryPath,
+            key: module.categoryKey,
             isEqualTo: category!.id,
           ).value,
     );
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final gallery = _gallery(context, ref);
+  Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
+    final gallery = _gallery(context, ref, module);
     final filtered = gallery.where(
       (item) {
         if (category == null) {
           return true;
         }
-        return item.get(config.categoryKey, "") == category!.id;
+        return item.get(module.categoryKey, "") == category!.id;
       },
     );
 
@@ -398,16 +391,16 @@ class GalleryModuleGrid extends ScopedWidget {
       builder: (context) {
         return UIGridBuilder<DynamicDocumentModel>.extent(
           maxCrossAxisExtent: context.isMobile
-              ? config.maxCrossAxisExtentForMobile
-              : config.maxCrossAxisExtentForDesktop,
+              ? module.maxCrossAxisExtentForMobile
+              : module.maxCrossAxisExtentForDesktop,
           childAspectRatio: context.isMobile
-              ? config.childAspectRatioForMobile
-              : config.childAspectRatioForDesktop,
-          mainAxisSpacing: config.tileSpacing,
-          crossAxisSpacing: config.tileSpacing,
+              ? module.childAspectRatioForMobile
+              : module.childAspectRatioForDesktop,
+          mainAxisSpacing: module.tileSpacing,
+          crossAxisSpacing: module.tileSpacing,
           source: filtered.toList(),
           builder: (context, item) {
-            final path = item.get(config.mediaKey, "");
+            final path = item.get(module.mediaKey, "");
             final type = getPlatformMediaType(path);
             switch (type) {
               case PlatformMediaType.video:
@@ -419,9 +412,9 @@ class GalleryModuleGrid extends ScopedWidget {
                       fit: BoxFit.cover,
                       onTap: () {
                         context.rootNavigator.pushNamed(
-                          config.skipDetailPage
-                              ? "/${config.routePath}/media/${item.get(Const.uid, "")}/view"
-                              : "/${config.routePath}/media/${item.get(Const.uid, "")}",
+                          module.skipDetailPage
+                              ? "/${module.routePath}/media/${item.get(Const.uid, "")}/view"
+                              : "/${module.routePath}/media/${item.get(Const.uid, "")}",
                           arguments: RouteQuery.fullscreenOrModal,
                         );
                       },
@@ -434,9 +427,9 @@ class GalleryModuleGrid extends ScopedWidget {
                   fit: BoxFit.cover,
                   onTap: () {
                     context.rootNavigator.pushNamed(
-                      config.skipDetailPage
-                          ? "/${config.routePath}/media/${item.get(Const.uid, "")}/view"
-                          : "/${config.routePath}/media/${item.get(Const.uid, "")}",
+                      module.skipDetailPage
+                          ? "/${module.routePath}/media/${item.get(Const.uid, "")}/view"
+                          : "/${module.routePath}/media/${item.get(Const.uid, "")}",
                       arguments: RouteQuery.fullscreenOrModal,
                     );
                   },
@@ -449,22 +442,21 @@ class GalleryModuleGrid extends ScopedWidget {
   }
 }
 
-class GalleryModuleMediaDetail extends PageScopedWidget {
-  const GalleryModuleMediaDetail(this.config);
-  final GalleryModule config;
+class GalleryModuleMediaDetail extends PageModuleWidget<GalleryModule> {
+  const GalleryModuleMediaDetail();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchUserDocumentModel(config.userPath);
+  Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
+    final user = ref.watchUserDocumentModel(module.userPath);
     final item = ref.watchDocumentModel(
-        "${config.queryPath}/${context.get("media_id", "")}");
+        "${module.queryPath}/${context.get("media_id", "")}");
 
     final now = ref.useNow();
-    final name = item.get(config.nameKey, "");
-    final text = item.get(config.textKey, "");
-    final media = item.get(config.mediaKey, "");
+    final name = item.get(module.nameKey, "");
+    final text = item.get(module.textKey, "");
+    final media = item.get(module.mediaKey, "");
     final createdTime =
-        item.get(config.createdTimeKey, now.millisecondsSinceEpoch);
+        item.get(module.createdTimeKey, now.millisecondsSinceEpoch);
     final type = getPlatformMediaType(media);
 
     return UIScaffold(
@@ -472,12 +464,12 @@ class GalleryModuleMediaDetail extends PageScopedWidget {
       appBar: UIAppBar(
         title: Text(name),
         actions: [
-          if (config.permission.canEdit(user.get(config.roleKey, "")))
+          if (module.permission.canEdit(user.get(module.roleKey, "")))
             IconButton(
                 icon: const Icon(Icons.edit),
                 onPressed: () {
                   context.navigator.pushNamed(
-                    "/${config.routePath}/media/${context.get("media_id", "")}/edit",
+                    "/${module.routePath}/media/${context.get("media_id", "")}/edit",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
                 })
@@ -488,7 +480,7 @@ class GalleryModuleMediaDetail extends PageScopedWidget {
           InkWell(
             onTap: () {
               context.navigator.pushNamed(
-                "/${config.routePath}/media/${context.get("media_id", "")}/view",
+                "/${module.routePath}/media/${context.get("media_id", "")}/view",
                 arguments: RouteQuery.fullscreenOrModal,
               );
             },
@@ -497,7 +489,7 @@ class GalleryModuleMediaDetail extends PageScopedWidget {
                 case PlatformMediaType.video:
                   return Container(
                     color: context.theme.dividerColor,
-                    height: config.heightOnDetailView,
+                    height: module.heightOnDetailView,
                     child: ClipRRect(
                       child: Video(
                         NetworkOrAsset.video(media),
@@ -510,7 +502,7 @@ class GalleryModuleMediaDetail extends PageScopedWidget {
                   );
                 default:
                   return Container(
-                    height: config.heightOnDetailView,
+                    height: module.heightOnDetailView,
                     decoration: BoxDecoration(
                       image: DecorationImage(
                         image: NetworkOrAsset.image(media),
@@ -559,17 +551,16 @@ class GalleryModuleMediaDetail extends PageScopedWidget {
   }
 }
 
-class GalleryModuleMediaView extends PageScopedWidget {
-  const GalleryModuleMediaView(this.config);
-  final GalleryModule config;
+class GalleryModuleMediaView extends PageModuleWidget<GalleryModule> {
+  const GalleryModuleMediaView();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watchUserDocumentModel(config.userPath);
+  Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
+    final user = ref.watchUserDocumentModel(module.userPath);
     final item = ref.watchDocumentModel(
-        "${config.queryPath}/${context.get("media_id", "")}");
-    final name = item.get(config.nameKey, "");
-    final media = item.get(config.mediaKey, "");
+        "${module.queryPath}/${context.get("media_id", "")}");
+    final name = item.get(module.nameKey, "");
+    final media = item.get(module.mediaKey, "");
     final type = getPlatformMediaType(media);
 
     return UIScaffold(
@@ -577,13 +568,13 @@ class GalleryModuleMediaView extends PageScopedWidget {
       appBar: UIAppBar(
         title: Text(name),
         actions: [
-          if (config.skipDetailPage &&
-              config.permission.canEdit(user.get(config.roleKey, "")))
+          if (module.skipDetailPage &&
+              module.permission.canEdit(user.get(module.roleKey, "")))
             IconButton(
                 icon: const Icon(Icons.edit),
                 onPressed: () {
                   context.navigator.pushNamed(
-                    "/${config.routePath}/media/${context.get("media_id", "")}/edit",
+                    "/${module.routePath}/media/${context.get("media_id", "")}/edit",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
                 })
@@ -618,29 +609,29 @@ class GalleryModuleMediaView extends PageScopedWidget {
   }
 }
 
-class GalleryModuleEdit extends PageScopedWidget {
-  const GalleryModuleEdit(this.config);
-  final GalleryModule config;
+class GalleryModuleEdit extends PageModuleWidget<GalleryModule> {
+  const GalleryModuleEdit();
 
-  List<GroupConfig> _categories(BuildContext context, WidgetRef ref) {
-    if (config.categoryQuery != null) {
-      final categories = ref.watchCollectionModel(config.categoryQuery!.value);
+  List<GroupConfig> _categories(
+      BuildContext context, WidgetRef ref, GalleryModule module) {
+    if (module.categoryQuery != null) {
+      final categories = ref.watchCollectionModel(module.categoryQuery!.value);
       return categories.mapAndRemoveEmpty((item) =>
-          GroupConfig(id: item.uid, label: item.get(config.nameKey, "")))
-        ..addAll(config.categoryConfig);
+          GroupConfig(id: item.uid, label: item.get(module.nameKey, "")))
+        ..addAll(module.categoryConfig);
     }
-    return config.categoryConfig;
+    return module.categoryConfig;
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
     final form = ref.useForm("media_id");
-    final user = ref.watchUserDocumentModel(config.userPath);
-    final item = ref.watchDocumentModel("${config.queryPath}/${form.uid}");
-    final name = item.get(config.nameKey, "");
-    final text = item.get(config.textKey, "");
-    final media = item.get(config.mediaKey, "");
-    final categories = _categories(context, ref);
+    final user = ref.watchUserDocumentModel(module.userPath);
+    final item = ref.watchDocumentModel("${module.queryPath}/${form.uid}");
+    final name = item.get(module.nameKey, "");
+    final text = item.get(module.textKey, "");
+    final media = item.get(module.mediaKey, "");
+    final categories = _categories(context, ref, module);
 
     return UIScaffold(
       waitTransition: true,
@@ -652,7 +643,7 @@ class GalleryModuleEdit extends PageScopedWidget {
         )),
         actions: [
           if (form.exists &&
-              config.permission.canDelete(user.get(config.roleKey, "")))
+              module.permission.canDelete(user.get(module.roleKey, "")))
             IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () {
@@ -667,7 +658,7 @@ class GalleryModuleEdit extends PageScopedWidget {
                     await context.model
                         ?.deleteDocument(item)
                         .showIndicator(context);
-                    context.navigator.popUntilNamed("/${config.routePath}");
+                    context.navigator.popUntilNamed("/${module.routePath}");
                   },
                 );
               },
@@ -682,7 +673,7 @@ class GalleryModuleEdit extends PageScopedWidget {
             height: 200,
             dense: true,
             controller: ref.useTextEditingController(
-              config.mediaKey,
+              module.mediaKey,
               form.select(media, ""),
             ),
             errorText: "No input %s".localize().format(["Image".localize()]),
@@ -692,12 +683,12 @@ class GalleryModuleEdit extends PageScopedWidget {
                 title: "Please select your %s"
                     .localize()
                     .format(["Media".localize().toLowerCase()]),
-                type: config.mediaType,
+                type: module.mediaType,
               );
               onUpdate(media?.path);
             },
             onSaved: (value) {
-              context[config.mediaKey] = value;
+              context[module.mediaKey] = value;
             },
           ),
           const Space.height(12),
@@ -707,11 +698,11 @@ class GalleryModuleEdit extends PageScopedWidget {
             hintText: "Input %s".localize().format(["Title".localize()]),
             errorText: "No input %s".localize().format(["Title".localize()]),
             controller: ref.useTextEditingController(
-              config.nameKey,
+              module.nameKey,
               form.select(name, ""),
             ),
             onSaved: (value) {
-              context[config.nameKey] = value;
+              context[module.nameKey] = value;
             },
           ),
           DividHeadline("Description".localize()),
@@ -723,11 +714,11 @@ class GalleryModuleEdit extends PageScopedWidget {
             hintText: "Input %s".localize().format(["Description".localize()]),
             allowEmpty: true,
             controller: ref.useTextEditingController(
-              config.textKey,
+              module.textKey,
               form.select(text, ""),
             ),
             onSaved: (value) {
-              context[config.textKey] = value;
+              context[module.textKey] = value;
             },
           ),
           if (categories.isNotEmpty) ...[
@@ -737,9 +728,9 @@ class GalleryModuleEdit extends PageScopedWidget {
               // labelText: "Category".localize(),
               hintText: "Input %s".localize().format(["Category".localize()]),
               controller: ref.useTextEditingController(
-                config.categoryKey,
+                module.categoryKey,
                 form.select(
-                  item.get(config.categoryKey, categories.first.id),
+                  item.get(module.categoryKey, categories.first.id),
                   categories.first.id,
                 ),
               ),
@@ -747,7 +738,7 @@ class GalleryModuleEdit extends PageScopedWidget {
                 for (final category in categories) category.id: category.label
               },
               onSaved: (value) {
-                context[config.categoryKey] = value;
+                context[module.categoryKey] = value;
               },
             ),
           ],
@@ -761,11 +752,11 @@ class GalleryModuleEdit extends PageScopedWidget {
             return;
           }
 
-          item[config.nameKey] = context.get(config.nameKey, "");
-          item[config.textKey] = context.get(config.textKey, "");
-          item[config.categoryKey] = context.get(config.categoryKey, "");
-          item[config.mediaKey] = await context.model
-              ?.uploadMedia(context.get(config.mediaKey, ""))
+          item[module.nameKey] = context.get(module.nameKey, "");
+          item[module.textKey] = context.get(module.textKey, "");
+          item[module.categoryKey] = context.get(module.categoryKey, "");
+          item[module.mediaKey] = await context.model
+              ?.uploadMedia(context.get(module.mediaKey, ""))
               .showIndicator(context);
           await context.model?.saveDocument(item).showIndicator(context);
           context.navigator.pop();

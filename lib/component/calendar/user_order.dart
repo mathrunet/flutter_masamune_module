@@ -1,48 +1,39 @@
+import 'package:masamune_module/component/calendar/calendar.dart';
 import 'package:masamune_module/masamune_module.dart';
 
-class CalendarModuleUserOrder extends PageScopedWidget {
+class CalendarModuleUserOrder extends PageModuleWidget<CalendarModule> {
   const CalendarModuleUserOrder({
     required this.title,
     this.subtitle,
     this.queryPath = "order",
-    this.userKey = Const.user,
-    this.nameKey = Const.name,
-    this.userPath = Const.user,
     this.userQuery,
-    this.roleKey = Const.role,
-    this.startTimeKey = Const.startTime,
-    this.permission = const Permission(),
   });
   final String title;
   final String? subtitle;
   final String queryPath;
-  final String userKey;
-  final String userPath;
-  final String nameKey;
-  final String startTimeKey;
   final ModelQuery? userQuery;
-  final Permission permission;
-  final String roleKey;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, CalendarModule module) {
     final now = ref.useNow();
     final orderList = <DynamicMap>[];
     final user = ref.watchUserDocumentModel();
     final role = context.roles.firstWhereOrNull(
-      (item) => item.id == user.get(roleKey, ""),
+      (item) => item.id == user.get(module.roleKey, ""),
     );
     final date = context.get("date_id", now.toDateID()).toDateTime();
-    final users = ref.watchCollectionModel(userQuery?.value ?? userPath);
+    final users = ref.watchCollectionModel(userQuery?.value ?? module.userPath);
 
-    final canEdit = permission.canEdit(role?.id ?? "");
+    final canEdit = module.permission.canEdit(role?.id ?? "");
     final orders = ref.watchCollectionModel(queryPath);
-    orders.sort((a, b) => b.get(startTimeKey, 0) - a.get(startTimeKey, 0));
+    orders.sort((a, b) =>
+        b.get(module.startTimeKey, 0) - a.get(module.startTimeKey, 0));
     final order = orders.firstWhereOrNull((element) {
-          return element.get(startTimeKey, 0) <= date.millisecondsSinceEpoch;
+          return element.get(module.startTimeKey, 0) <=
+              date.millisecondsSinceEpoch;
         }) ??
         orders.lastOrNull;
-    final userOrder = order.getAsList<DynamicMap>(userKey, []);
+    final userOrder = order.getAsList<DynamicMap>(module.userKey, []);
 
     for (final o in userOrder) {
       final user = users.firstWhereOrNull((item) => item.uid == o.uid);
@@ -76,33 +67,33 @@ class CalendarModuleUserOrder extends PageScopedWidget {
                   if (doc == null) {
                     return;
                   }
-                  doc[userKey] = reordered.mapAndRemoveEmpty((item) {
+                  doc[module.userKey] = reordered.mapAndRemoveEmpty((item) {
                     return {
                       Const.uid: item.uid,
                     };
                   });
-                  doc[startTimeKey] = date.millisecondsSinceEpoch;
+                  doc[module.startTimeKey] = date.millisecondsSinceEpoch;
                   await context.model?.saveDocument(doc).showIndicator(context);
-                } else if (order.get(startTimeKey, 0) !=
+                } else if (order.get(module.startTimeKey, 0) !=
                     date.millisecondsSinceEpoch) {
                   final doc = context.model?.createDocument(orders);
                   if (doc == null) {
                     return;
                   }
-                  doc[userKey] = reordered.mapAndRemoveEmpty((item) {
+                  doc[module.userKey] = reordered.mapAndRemoveEmpty((item) {
                     return {
                       Const.uid: item.uid,
                     };
                   });
-                  doc[startTimeKey] = date.millisecondsSinceEpoch;
+                  doc[module.startTimeKey] = date.millisecondsSinceEpoch;
                   await context.model?.saveDocument(doc).showIndicator(context);
                 } else {
-                  order[userKey] = reordered.mapAndRemoveEmpty((item) {
+                  order[module.userKey] = reordered.mapAndRemoveEmpty((item) {
                     return {
                       Const.uid: item.uid,
                     };
                   });
-                  order[startTimeKey] = date.millisecondsSinceEpoch;
+                  order[module.startTimeKey] = date.millisecondsSinceEpoch;
                   await context.model
                       ?.saveDocument(order)
                       .showIndicator(context);
@@ -116,7 +107,7 @@ class CalendarModuleUserOrder extends PageScopedWidget {
                       (index + 1).toString(),
                       style: const TextStyle(fontSize: 20),
                     ),
-                    title: Text(item.get(nameKey, "")),
+                    title: Text(item.get(module.nameKey, "")),
                     trailing: canEdit ? const Icon(Icons.reorder) : null,
                   ),
                 ];
@@ -131,7 +122,7 @@ class CalendarModuleUserOrder extends PageScopedWidget {
                       (index + 1).toString(),
                       style: const TextStyle(fontSize: 20),
                     ),
-                    title: Text(item.get(nameKey, "")),
+                    title: Text(item.get(module.nameKey, "")),
                     trailing: canEdit ? const Icon(Icons.reorder) : null,
                   ),
                 ];

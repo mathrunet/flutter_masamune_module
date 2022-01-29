@@ -25,7 +25,7 @@ class LoginModule extends PageModule {
     this.featureImageFit = BoxFit.cover,
     this.titleTextStyle,
     this.titleAlignment = Alignment.bottomLeft,
-    this.login = const LoginConfig(
+    this.loginConfig = const LoginConfig(
       label: "Login",
       icon: FontAwesomeIcons.signInAlt,
     ),
@@ -38,6 +38,11 @@ class LoginModule extends PageModule {
     List<RerouteConfig> rerouteConfigs = const [],
     this.registerVariables = const [],
     this.showOnlyRequiredVariable = true,
+    this.landingPage = const LoginModuleLanding(),
+    this.loginPage = const LoginModuleLogin(),
+    this.resetPage = const LoginModulePasswordReset(),
+    this.registerPage = const LoginModuleRegister(),
+    this.registerAnonymousPage = const LoginModuleRegisterAnonymous(),
   }) : super(
           enabled: enabled,
           title: title,
@@ -51,16 +56,22 @@ class LoginModule extends PageModule {
       return const {};
     }
     final route = {
-      "/landing": RouteConfig((_) => LoginModuleLanding(this)),
-      "/login": RouteConfig((_) => LoginModuleLogin(this)),
-      "/reset": RouteConfig((_) => LoginModulePasswordReset(this)),
-      "/register": RouteConfig((_) => LoginModuleRegister(this)),
-      "/register/anonymous":
-          RouteConfig((_) => LoginModuleRegisterAnonymous(this)),
-      "/register/{role_id}": RouteConfig((_) => LoginModuleRegister(this)),
+      "/landing": RouteConfig((_) => landingPage),
+      "/login": RouteConfig((_) => loginPage),
+      "/reset": RouteConfig((_) => resetPage),
+      "/register": RouteConfig((_) => registerPage),
+      "/register/anonymous": RouteConfig((_) => registerAnonymousPage),
+      "/register/{role_id}": RouteConfig((_) => registerPage),
     };
     return route;
   }
+
+  // ページ。
+  final PageModuleWidget<LoginModule> landingPage;
+  final PageModuleWidget<LoginModule> loginPage;
+  final PageModuleWidget<LoginModule> resetPage;
+  final PageModuleWidget<LoginModule> registerPage;
+  final PageModuleWidget<LoginModule> registerAnonymousPage;
 
   /// レイアウトタイプ。
   final LoginLayoutType layoutType;
@@ -126,7 +137,7 @@ class LoginModule extends PageModule {
   final EdgeInsetsGeometry padding;
 
   /// ログイン用の設定。
-  final LoginConfig login;
+  final LoginConfig loginConfig;
 
   /// ゲストログイン用の設定。
   final LoginConfig? guestLogin;
@@ -141,11 +152,11 @@ class LoginModule extends PageModule {
   final bool showOnlyRequiredVariable;
 }
 
-class LoginModuleLanding extends PageScopedWidget {
-  const LoginModuleLanding(this.config);
-  final LoginModule config;
+class LoginModuleLanding extends PageModuleWidget<LoginModule> {
+  const LoginModuleLanding();
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, LoginModule module) {
     final animation = ref.useAutoPlayAnimationScenario(
       "main",
       [
@@ -158,18 +169,18 @@ class LoginModuleLanding extends PageScopedWidget {
       ],
     );
 
-    final color = config.color ?? Colors.white;
-    final buttonColor = config.buttonColor ?? config.color ?? Colors.white;
+    final color = module.color ?? Colors.white;
+    final buttonColor = module.buttonColor ?? module.color ?? Colors.white;
     final buttonBackgroundColor =
-        config.buttonBackgroundColor ?? Colors.transparent;
+        module.buttonBackgroundColor ?? Colors.transparent;
 
-    switch (config.layoutType) {
+    switch (module.layoutType) {
       case LoginLayoutType.fixed:
         return UIScaffold(
           body: Stack(
             fit: StackFit.expand,
             children: [
-              _LoginModuleBackgroundImage(config, opacity: 0.75),
+              _LoginModuleBackgroundImage(module, opacity: 0.75),
               AnimationScope(
                 animation: animation,
                 builder: (context, child, animation) {
@@ -186,25 +197,25 @@ class LoginModuleLanding extends PageScopedWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                if (config.featureImage.isNotEmpty)
+                                if (module.featureImage.isNotEmpty)
                                   SizedBox(
-                                    width: config.featureImageSize?.width,
-                                    height: config.featureImageSize?.height,
+                                    width: module.featureImageSize?.width,
+                                    height: module.featureImageSize?.height,
                                     child: ClipRRect(
-                                      borderRadius: config.featureImageRadius ??
+                                      borderRadius: module.featureImageRadius ??
                                           BorderRadius.zero,
                                       child: Image(
                                         image: NetworkOrAsset.image(
-                                            config.featureImage!),
-                                        fit: config.featureImageFit,
+                                            module.featureImage!),
+                                        fit: module.featureImageFit,
                                       ),
                                     ),
                                   ),
-                                if (config.title.isNotEmpty)
+                                if (module.title.isNotEmpty)
                                   Align(
-                                    alignment: config.titleAlignment,
+                                    alignment: module.titleAlignment,
                                     child: Padding(
-                                      padding: config.titlePadding,
+                                      padding: module.titlePadding,
                                       child: DefaultTextStyle(
                                         style: TextStyle(
                                           fontSize: 56,
@@ -213,8 +224,8 @@ class LoginModuleLanding extends PageScopedWidget {
                                           color: color,
                                         ),
                                         child: Text(
-                                          config.title ?? "",
-                                          style: config.titleTextStyle,
+                                          module.title ?? "",
+                                          style: module.titleTextStyle,
                                         ),
                                       ),
                                     ),
@@ -227,7 +238,7 @@ class LoginModuleLanding extends PageScopedWidget {
                           flex: 1,
                           child: SingleChildScrollView(
                             child: Padding(
-                              padding: config.padding,
+                              padding: module.padding,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 mainAxisSize: MainAxisSize.max,
@@ -263,9 +274,9 @@ class LoginModuleLanding extends PageScopedWidget {
                                         }
                                       },
                                     ),
-                                  if (config.guestLogin != null)
+                                  if (module.guestLogin != null)
                                     FormItemSubmit(
-                                      config.guestLogin!.label?.localize() ??
+                                      module.guestLogin!.label?.localize() ??
                                           "Guest login".localize(),
                                       borderRadius: 35,
                                       height: 70,
@@ -273,20 +284,21 @@ class LoginModuleLanding extends PageScopedWidget {
                                       color: buttonColor,
                                       borderColor: buttonColor,
                                       backgroundColor: buttonBackgroundColor,
-                                      icon: config.guestLogin!.icon,
+                                      icon: module.guestLogin!.icon,
                                       onPressed: () async {
                                         try {
                                           await context.model
                                               ?.signInAnonymously()
                                               .showIndicator(context);
-                                          if (_hasRegistrationData(context)) {
+                                          if (_hasRegistrationData(
+                                              context, module)) {
                                             context.navigator
                                                 .pushReplacementNamed(
                                                     "/register/anonymous");
                                           } else {
                                             context.navigator
                                                 .pushReplacementNamed(
-                                                    config.redirectTo);
+                                                    module.redirectTo);
                                           }
                                         } catch (e) {
                                           UIDialog.show(
@@ -300,7 +312,7 @@ class LoginModuleLanding extends PageScopedWidget {
                                       },
                                     ),
                                   FormItemSubmit(
-                                    config.login.label?.localize() ??
+                                    module.loginConfig.label?.localize() ??
                                         "Login".localize(),
                                     borderRadius: 35,
                                     height: 70,
@@ -308,7 +320,7 @@ class LoginModuleLanding extends PageScopedWidget {
                                     color: buttonColor,
                                     borderColor: buttonColor,
                                     backgroundColor: buttonBackgroundColor,
-                                    icon: config.login.icon,
+                                    icon: module.loginConfig.icon,
                                     onPressed: () {
                                       context.navigator.pushNamed("/login",
                                           arguments: RouteQuery.fade);
@@ -330,38 +342,37 @@ class LoginModuleLanding extends PageScopedWidget {
     }
   }
 
-  bool _hasRegistrationData(BuildContext context) {
+  bool _hasRegistrationData(BuildContext context, LoginModule module) {
     return (context.app?.userVariables
                     .where(
-                        (e) => !config.showOnlyRequiredVariable || e.required)
+                        (e) => !module.showOnlyRequiredVariable || e.required)
                     .length ??
                 0) +
-            config.registerVariables
-                .where((e) => !config.showOnlyRequiredVariable || e.required)
+            module.registerVariables
+                .where((e) => !module.showOnlyRequiredVariable || e.required)
                 .length >
         0;
   }
 }
 
-class LoginModuleLogin extends PageScopedWidget {
-  const LoginModuleLogin(this.config);
-  final LoginModule config;
+class LoginModuleLogin extends PageModuleWidget<LoginModule> {
+  const LoginModuleLogin();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, LoginModule module) {
     final form = ref.useForm();
     final emailFocus = ref.useFocusNode("email");
     final passFocus = ref.useFocusNode("pass");
     final showPassword = ref.state("showPassword", false);
 
-    final color = config.color ?? Colors.white;
-    final buttonColor = config.buttonColor ?? config.color ?? Colors.white;
+    final color = module.color ?? Colors.white;
+    final buttonColor = module.buttonColor ?? module.color ?? Colors.white;
     final buttonBackgroundColor =
-        config.buttonBackgroundColor ?? Colors.transparent;
-    final imageSize = _imageSize();
+        module.buttonBackgroundColor ?? Colors.transparent;
+    final imageSize = _imageSize(module);
 
     return Scaffold(
-      backgroundColor: config.backgroundColor,
+      backgroundColor: module.backgroundColor,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         elevation: 0,
@@ -371,23 +382,23 @@ class LoginModuleLogin extends PageScopedWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          _LoginModuleBackgroundImage(config, opacity: 0.75),
+          _LoginModuleBackgroundImage(module, opacity: 0.75),
           FormBuilder(
             type: FormBuilderType.center,
             key: form.key,
             padding: const EdgeInsets.all(0),
             children: [
               const Space.height(24),
-              if (config.featureImage.isNotEmpty)
+              if (module.featureImage.isNotEmpty)
                 Center(
                   child: SizedBox(
                     width: imageSize?.width,
                     height: imageSize?.height,
                     child: ClipRRect(
-                      borderRadius: config.featureImageRadius,
+                      borderRadius: module.featureImageRadius,
                       child: Image(
-                        image: NetworkOrAsset.image(config.featureImage!),
-                        fit: config.featureImageFit,
+                        image: NetworkOrAsset.image(module.featureImage!),
+                        fit: module.featureImageFit,
                       ),
                     ),
                   ),
@@ -395,11 +406,11 @@ class LoginModuleLogin extends PageScopedWidget {
               else
                 Center(
                   child: Text(
-                    config.login.label?.localize() ?? "Login".localize(),
+                    module.loginConfig.label?.localize() ?? "Login".localize(),
                     textAlign: TextAlign.center,
                     style: context.theme.textTheme.headline5
-                            ?.copyWith(color: config.color) ??
-                        TextStyle(color: config.color),
+                            ?.copyWith(color: module.color) ??
+                        TextStyle(color: module.color),
                   ),
                 ),
               const Space.height(36),
@@ -461,13 +472,14 @@ class LoginModuleLogin extends PageScopedWidget {
                 ),
                 suffixIconConstraints:
                     const BoxConstraints(minHeight: 0, minWidth: 0),
-                onSubmitted: (value) => _onSubmitted(context, ref, form),
+                onSubmitted: (value) =>
+                    _onSubmitted(context, ref, module, form),
               ),
               Divid(color: color.withOpacity(0.75)),
               const Space.height(16),
               Indent(
                 padding: EdgeInsets.symmetric(
-                    horizontal: config.padding.horizontal / 2.0),
+                    horizontal: module.padding.horizontal / 2.0),
                 children: [
                   Center(
                     child: TextButton(
@@ -486,7 +498,7 @@ class LoginModuleLogin extends PageScopedWidget {
                   ),
                   const Space.height(16),
                   FormItemSubmit(
-                    config.login.label?.localize() ?? "Login".localize(),
+                    module.loginConfig.label?.localize() ?? "Login".localize(),
                     borderRadius: 35,
                     height: 70,
                     width: 1.6,
@@ -494,7 +506,7 @@ class LoginModuleLogin extends PageScopedWidget {
                     backgroundColor: buttonBackgroundColor,
                     borderColor: buttonColor,
                     icon: Icons.check,
-                    onPressed: () => _onSubmitted(context, ref, form),
+                    onPressed: () => _onSubmitted(context, ref, module, form),
                   )
                 ],
               ),
@@ -506,12 +518,12 @@ class LoginModuleLogin extends PageScopedWidget {
     );
   }
 
-  Size? _imageSize() {
-    if (config.formImageSize != null) {
-      return config.formImageSize;
+  Size? _imageSize(LoginModule module) {
+    if (module.formImageSize != null) {
+      return module.formImageSize;
     }
-    if (config.featureImageSize != null) {
-      return config.featureImageSize! / 2.0;
+    if (module.featureImageSize != null) {
+      return module.featureImageSize! / 2.0;
     }
     return null;
   }
@@ -519,6 +531,7 @@ class LoginModuleLogin extends PageScopedWidget {
   Future<void> _onSubmitted(
     BuildContext context,
     WidgetRef ref,
+    LoginModule module,
     FormContext form,
   ) async {
     if (!form.validate()) {
@@ -529,10 +542,10 @@ class LoginModuleLogin extends PageScopedWidget {
           ?.signInEmailAndPassword(
             email: context.get("email", ""),
             password: context.get("password", ""),
-            userPath: config.userPath,
+            userPath: module.userPath,
           )
           .showIndicator(context);
-      context.navigator.pushReplacementNamed(config.redirectTo);
+      context.navigator.pushReplacementNamed(module.redirectTo);
     } catch (e) {
       UIDialog.show(
         context,
@@ -545,12 +558,11 @@ class LoginModuleLogin extends PageScopedWidget {
   }
 }
 
-class LoginModuleRegister extends PageScopedWidget {
-  const LoginModuleRegister(this.config);
-  final LoginModule config;
+class LoginModuleRegister extends PageModuleWidget<LoginModule> {
+  const LoginModuleRegister();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, LoginModule module) {
     final form = ref.useForm();
     final emailFocus = ref.useFocusNode("email");
     final passFocus = ref.useFocusNode("pass");
@@ -562,14 +574,14 @@ class LoginModuleRegister extends PageScopedWidget {
         : context.roles
             .firstWhere((element) => element.id == context.get("role_id", ""));
 
-    final color = config.color ?? Colors.white;
-    final buttonColor = config.buttonColor ?? config.color ?? Colors.white;
+    final color = module.color ?? Colors.white;
+    final buttonColor = module.buttonColor ?? module.color ?? Colors.white;
     final buttonBackgroundColor =
-        config.buttonBackgroundColor ?? Colors.transparent;
-    final imageSize = _imageSize();
+        module.buttonBackgroundColor ?? Colors.transparent;
+    final imageSize = _imageSize(module);
 
     return Scaffold(
-      backgroundColor: config.backgroundColor,
+      backgroundColor: module.backgroundColor,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         elevation: 0,
@@ -579,23 +591,23 @@ class LoginModuleRegister extends PageScopedWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          _LoginModuleBackgroundImage(config, opacity: 0.75),
+          _LoginModuleBackgroundImage(module, opacity: 0.75),
           FormBuilder(
             type: FormBuilderType.center,
             key: form.key,
             padding: const EdgeInsets.all(0),
             children: [
               const Space.height(24),
-              if (config.featureImage.isNotEmpty)
+              if (module.featureImage.isNotEmpty)
                 Center(
                   child: SizedBox(
                     width: imageSize?.width,
                     height: imageSize?.height,
                     child: ClipRRect(
-                      borderRadius: config.featureImageRadius,
+                      borderRadius: module.featureImageRadius,
                       child: Image(
-                        image: NetworkOrAsset.image(config.featureImage!),
-                        fit: config.featureImageFit,
+                        image: NetworkOrAsset.image(module.featureImage!),
+                        fit: module.featureImageFit,
                       ),
                     ),
                   ),
@@ -610,8 +622,8 @@ class LoginModuleRegister extends PageScopedWidget {
                         : "Registration".localize(),
                     textAlign: TextAlign.center,
                     style: context.theme.textTheme.headline5
-                            ?.copyWith(color: config.color) ??
-                        TextStyle(color: config.color),
+                            ?.copyWith(color: module.color) ??
+                        TextStyle(color: module.color),
                   ),
                 ),
               const Space.height(36),
@@ -713,19 +725,19 @@ class LoginModuleRegister extends PageScopedWidget {
                 suffixIconConstraints:
                     const BoxConstraints(minHeight: 0, minWidth: 0),
                 onSubmitted: (value) {
-                  _onSubmitted(context, ref, form, role);
+                  _onSubmitted(context, ref, module, form, role);
                 },
               ),
               ...context.app?.userVariables.buildForm(
                     context,
                     ref,
-                    onlyRequired: config.showOnlyRequiredVariable,
+                    onlyRequired: module.showOnlyRequiredVariable,
                   ) ??
                   [],
-              ...config.registerVariables.buildForm(
+              ...module.registerVariables.buildForm(
                 context,
                 ref,
-                onlyRequired: config.showOnlyRequiredVariable,
+                onlyRequired: module.showOnlyRequiredVariable,
               ),
               Divid(color: color.withOpacity(0.75)),
               if (context.app?.termsUrl != null)
@@ -753,7 +765,7 @@ class LoginModuleRegister extends PageScopedWidget {
               const Space.height(24),
               Indent(
                 padding: EdgeInsets.symmetric(
-                    horizontal: config.padding.horizontal / 2.0),
+                    horizontal: module.padding.horizontal / 2.0),
                 children: [
                   FormItemSubmit(
                     role.label.isNotEmpty
@@ -768,7 +780,8 @@ class LoginModuleRegister extends PageScopedWidget {
                     backgroundColor: buttonBackgroundColor,
                     borderColor: buttonColor,
                     icon: Icons.check,
-                    onPressed: () => _onSubmitted(context, ref, form, role),
+                    onPressed: () =>
+                        _onSubmitted(context, ref, module, form, role),
                   )
                 ],
               ),
@@ -780,12 +793,12 @@ class LoginModuleRegister extends PageScopedWidget {
     );
   }
 
-  Size? _imageSize() {
-    if (config.formImageSize != null) {
-      return config.formImageSize;
+  Size? _imageSize(LoginModule module) {
+    if (module.formImageSize != null) {
+      return module.formImageSize;
     }
-    if (config.featureImageSize != null) {
-      return config.featureImageSize! / 2.0;
+    if (module.featureImageSize != null) {
+      return module.featureImageSize! / 2.0;
     }
     return null;
   }
@@ -793,14 +806,15 @@ class LoginModuleRegister extends PageScopedWidget {
   Future<void> _onSubmitted(
     BuildContext context,
     WidgetRef ref,
+    LoginModule module,
     FormContext form,
     RoleConfig role,
   ) async {
     if (await context.model?.skipRegistration(data: {
-          config.roleKey: role.id,
+          module.roleKey: role.id,
         }) ??
         false) {
-      context.navigator.pushReplacementNamed(config.redirectTo);
+      context.navigator.pushReplacementNamed(module.redirectTo);
       return;
     }
     if (!form.validate()) {
@@ -828,19 +842,19 @@ class LoginModuleRegister extends PageScopedWidget {
       await context.model?.registerInEmailAndPassword(
         email: context.get("email", ""),
         password: context.get("password", ""),
-        userPath: config.userPath,
+        userPath: module.userPath,
         data: {
-          config.roleKey: role.id,
+          module.roleKey: role.id,
           ...context.app?.userVariables.buildMap(
                 context,
                 ref,
-                onlyRequired: config.showOnlyRequiredVariable,
+                onlyRequired: module.showOnlyRequiredVariable,
               ) ??
               {},
-          ...config.registerVariables.buildMap(
+          ...module.registerVariables.buildMap(
             context,
             ref,
-            onlyRequired: config.showOnlyRequiredVariable,
+            onlyRequired: module.showOnlyRequiredVariable,
           ),
         },
       ).showIndicator(context);
@@ -850,7 +864,7 @@ class LoginModuleRegister extends PageScopedWidget {
         text: "Registration has been completed.".localize(),
         submitText: "Forward".localize(),
         onSubmit: () {
-          context.navigator.pushReplacementNamed(config.redirectTo);
+          context.navigator.pushReplacementNamed(module.redirectTo);
         },
       );
     } catch (e) {
@@ -866,22 +880,21 @@ class LoginModuleRegister extends PageScopedWidget {
   }
 }
 
-class LoginModulePasswordReset extends PageScopedWidget {
-  const LoginModulePasswordReset(this.config);
-  final LoginModule config;
+class LoginModulePasswordReset extends PageModuleWidget<LoginModule> {
+  const LoginModulePasswordReset();
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, LoginModule module) {
     final form = ref.useForm();
     final emailFocus = ref.useFocusNode("main");
 
-    final color = config.color ?? Colors.white;
-    final buttonColor = config.buttonColor ?? config.color ?? Colors.white;
+    final color = module.color ?? Colors.white;
+    final buttonColor = module.buttonColor ?? module.color ?? Colors.white;
     final buttonBackgroundColor =
-        config.buttonBackgroundColor ?? Colors.transparent;
-    final imageSize = _imageSize();
+        module.buttonBackgroundColor ?? Colors.transparent;
+    final imageSize = _imageSize(module);
 
     return Scaffold(
-      backgroundColor: config.backgroundColor,
+      backgroundColor: module.backgroundColor,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         elevation: 0,
@@ -891,23 +904,23 @@ class LoginModulePasswordReset extends PageScopedWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          _LoginModuleBackgroundImage(config, opacity: 0.75),
+          _LoginModuleBackgroundImage(module, opacity: 0.75),
           FormBuilder(
             type: FormBuilderType.center,
             key: form.key,
             padding: const EdgeInsets.all(0),
             children: [
               const Space.height(24),
-              if (config.featureImage.isNotEmpty)
+              if (module.featureImage.isNotEmpty)
                 Center(
                   child: SizedBox(
                     width: imageSize?.width,
                     height: imageSize?.height,
                     child: ClipRRect(
-                      borderRadius: config.featureImageRadius,
+                      borderRadius: module.featureImageRadius,
                       child: Image(
-                        image: NetworkOrAsset.image(config.featureImage!),
-                        fit: config.featureImageFit,
+                        image: NetworkOrAsset.image(module.featureImage!),
+                        fit: module.featureImageFit,
                       ),
                     ),
                   ),
@@ -918,8 +931,8 @@ class LoginModulePasswordReset extends PageScopedWidget {
                     "Password reset".localize(),
                     textAlign: TextAlign.center,
                     style: context.theme.textTheme.headline5
-                            ?.copyWith(color: config.color) ??
-                        TextStyle(color: config.color),
+                            ?.copyWith(color: module.color) ??
+                        TextStyle(color: module.color),
                   ),
                 ),
               const Space.height(24),
@@ -947,13 +960,14 @@ class LoginModulePasswordReset extends PageScopedWidget {
                 onSaved: (value) {
                   context["email"] = value;
                 },
-                onSubmitted: (value) => _onSubmitted(context, ref, form),
+                onSubmitted: (value) =>
+                    _onSubmitted(context, ref, module, form),
               ),
               Divid(color: color.withOpacity(0.75)),
               const Space.height(24),
               Indent(
                 padding: EdgeInsets.symmetric(
-                    horizontal: config.padding.horizontal / 2.0),
+                    horizontal: module.padding.horizontal / 2.0),
                 children: [
                   FormItemSubmit(
                     "Send mail".localize(),
@@ -964,7 +978,7 @@ class LoginModulePasswordReset extends PageScopedWidget {
                     backgroundColor: buttonBackgroundColor,
                     borderColor: buttonColor,
                     icon: Icons.send,
-                    onPressed: () => _onSubmitted(context, ref, form),
+                    onPressed: () => _onSubmitted(context, ref, module, form),
                   ),
                 ],
               ),
@@ -976,12 +990,12 @@ class LoginModulePasswordReset extends PageScopedWidget {
     );
   }
 
-  Size? _imageSize() {
-    if (config.formImageSize != null) {
-      return config.formImageSize;
+  Size? _imageSize(LoginModule module) {
+    if (module.formImageSize != null) {
+      return module.formImageSize;
     }
-    if (config.featureImageSize != null) {
-      return config.featureImageSize! / 2.0;
+    if (module.featureImageSize != null) {
+      return module.featureImageSize! / 2.0;
     }
     return null;
   }
@@ -989,6 +1003,7 @@ class LoginModulePasswordReset extends PageScopedWidget {
   Future<void> _onSubmitted(
     BuildContext context,
     WidgetRef ref,
+    LoginModule module,
     FormContext form,
   ) async {
     if (!form.validate()) {
@@ -1026,10 +1041,10 @@ class LoginModulePasswordReset extends PageScopedWidget {
 
 class _LoginModuleBackgroundImage extends StatelessWidget {
   const _LoginModuleBackgroundImage(
-    this.config, {
+    this.module, {
     this.opacity = 0.75,
   });
-  final LoginModule config;
+  final LoginModule module;
   final double opacity;
 
   @override
@@ -1037,16 +1052,16 @@ class _LoginModuleBackgroundImage extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (config.backgroundImage.isNotEmpty) ...[
+        if (module.backgroundImage.isNotEmpty) ...[
           Image(
-            image: NetworkOrAsset.image(config.backgroundImage!),
+            image: NetworkOrAsset.image(module.backgroundImage!),
             fit: BoxFit.cover,
           ),
-          if (config.backgroundImageBlur != null)
+          if (module.backgroundImageBlur != null)
             BackdropFilter(
               filter: ImageFilter.blur(
-                  sigmaX: config.backgroundImageBlur!,
-                  sigmaY: config.backgroundImageBlur!),
+                  sigmaX: module.backgroundImageBlur!,
+                  sigmaY: module.backgroundImageBlur!),
               child: _backgroundColor(context, opacity),
             )
           else
@@ -1059,30 +1074,29 @@ class _LoginModuleBackgroundImage extends StatelessWidget {
   }
 
   Widget _backgroundColor(BuildContext context, [double opacity = 1.0]) {
-    if (config.backgroundGradient != null) {
+    if (module.backgroundGradient != null) {
       return DecoratedBox(
         decoration: BoxDecoration(
-          gradient: config.backgroundGradient,
+          gradient: module.backgroundGradient,
         ),
       );
     } else if (opacity < 1.0) {
       return ColoredBox(
-        color: (config.backgroundColor ?? context.theme.backgroundColor)
+        color: (module.backgroundColor ?? context.theme.backgroundColor)
             .withOpacity(opacity),
       );
     } else {
       return ColoredBox(
-          color: config.backgroundColor ?? context.theme.backgroundColor);
+          color: module.backgroundColor ?? context.theme.backgroundColor);
     }
   }
 }
 
-class LoginModuleRegisterAnonymous extends PageScopedWidget {
-  const LoginModuleRegisterAnonymous(this.config);
-  final LoginModule config;
+class LoginModuleRegisterAnonymous extends PageModuleWidget<LoginModule> {
+  const LoginModuleRegisterAnonymous();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, LoginModule module) {
     final form = ref.useForm();
 
     return UIScaffold(
@@ -1098,13 +1112,13 @@ class LoginModuleRegisterAnonymous extends PageScopedWidget {
           ...context.app?.userVariables.buildForm(
                 context,
                 ref,
-                onlyRequired: config.showOnlyRequiredVariable,
+                onlyRequired: module.showOnlyRequiredVariable,
               ) ??
               [],
-          ...config.registerVariables.buildForm(
+          ...module.registerVariables.buildForm(
             context,
             ref,
-            onlyRequired: config.showOnlyRequiredVariable,
+            onlyRequired: module.showOnlyRequiredVariable,
           ),
           const Divid(),
           const Space.height(120),
@@ -1120,7 +1134,7 @@ class LoginModuleRegisterAnonymous extends PageScopedWidget {
             if (userId.isEmpty) {
               throw Exception("User id is not found.");
             }
-            final collection = ref.readCollectionModel(config.userPath);
+            final collection = ref.readCollectionModel(module.userPath);
             final doc = context.model?.createDocument(collection, userId);
             if (doc == null) {
               throw Exception("User document has not created.");
@@ -1128,7 +1142,7 @@ class LoginModuleRegisterAnonymous extends PageScopedWidget {
             context.app?.userVariables
                 .buildValue(doc, context, ref, updated: false);
             await context.model?.saveDocument(doc).showIndicator(context);
-            context.navigator.pushReplacementNamed(config.redirectTo);
+            context.navigator.pushReplacementNamed(module.redirectTo);
           } catch (e) {
             UIDialog.show(
               context,

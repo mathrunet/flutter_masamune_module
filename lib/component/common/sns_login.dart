@@ -36,6 +36,8 @@ class SnsLoginModule extends PageModule {
     this.showOnlyRequiredVariable = true,
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
+    this.landingPage = const SnsLoginModuleLanding(),
+    this.registerPage = const SnsLoginModuleRegister(),
   }) : super(
           enabled: enabled,
           title: title,
@@ -50,11 +52,15 @@ class SnsLoginModule extends PageModule {
     }
 
     final route = {
-      "/landing": RouteConfig((_) => SnsLoginModuleLanding(this)),
-      "/register": RouteConfig((_) => SnsLoginModuleRegister(this)),
+      "/landing": RouteConfig((_) => landingPage),
+      "/register": RouteConfig((_) => registerPage),
     };
     return route;
   }
+
+  /// Widget.
+  final PageModuleWidget<SnsLoginModule> landingPage;
+  final PageModuleWidget<SnsLoginModule> registerPage;
 
   /// レイアウトタイプ。
   final LoginLayoutType layoutType;
@@ -135,11 +141,11 @@ class SnsLoginModule extends PageModule {
   final bool showOnlyRequiredVariable;
 }
 
-class SnsLoginModuleLanding extends PageScopedWidget {
-  const SnsLoginModuleLanding(this.config);
-  final SnsLoginModule config;
+class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
+  const SnsLoginModuleLanding();
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, SnsLoginModule module) {
     final animation = ref.useAutoPlayAnimationScenario(
       "main",
       [
@@ -152,19 +158,19 @@ class SnsLoginModuleLanding extends PageScopedWidget {
       ],
     );
 
-    final color = config.color ?? context.theme.textColor;
+    final color = module.color ?? context.theme.textColor;
     final buttonColor =
-        config.buttonColor ?? config.color ?? context.theme.textColorOnPrimary;
+        module.buttonColor ?? module.color ?? context.theme.textColorOnPrimary;
     final buttonBackgroundColor =
-        config.buttonBackgroundColor ?? context.theme.primaryColor;
+        module.buttonBackgroundColor ?? context.theme.primaryColor;
 
-    switch (config.layoutType) {
+    switch (module.layoutType) {
       case LoginLayoutType.fixed:
         return UIScaffold(
           body: Stack(
             fit: StackFit.expand,
             children: [
-              _LoginModuleBackgroundImage(config, opacity: 0.75),
+              _LoginModuleBackgroundImage(module, opacity: 0.75),
               AnimationScope(
                 animation: animation,
                 builder: (context, child, animation) {
@@ -181,27 +187,27 @@ class SnsLoginModuleLanding extends PageScopedWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                if (config.featureImage.isNotEmpty)
+                                if (module.featureImage.isNotEmpty)
                                   SizedBox(
-                                    width: config.featureImageSize?.width,
-                                    height: config.featureImageSize?.height,
+                                    width: module.featureImageSize?.width,
+                                    height: module.featureImageSize?.height,
                                     child: ClipRRect(
-                                      borderRadius: config.featureImageRadius ??
+                                      borderRadius: module.featureImageRadius ??
                                           BorderRadius.zero,
                                       child: Image(
                                         image: NetworkOrAsset.image(
-                                          config.featureImage!,
+                                          module.featureImage!,
                                           ImageSize.medium,
                                         ),
-                                        fit: config.featureImageFit,
+                                        fit: module.featureImageFit,
                                       ),
                                     ),
                                   ),
-                                if (config.title.isNotEmpty)
+                                if (module.title.isNotEmpty)
                                   Align(
-                                    alignment: config.titleAlignment,
+                                    alignment: module.titleAlignment,
                                     child: Padding(
-                                      padding: config.titlePadding,
+                                      padding: module.titlePadding,
                                       child: DefaultTextStyle(
                                         style: TextStyle(
                                           fontSize: 56,
@@ -210,9 +216,9 @@ class SnsLoginModuleLanding extends PageScopedWidget {
                                           color: color,
                                         ),
                                         child: Text(
-                                          config.title ?? "",
-                                          textAlign: config.titleTextAlignment,
-                                          style: config.titleTextStyle,
+                                          module.title ?? "",
+                                          textAlign: module.titleTextAlignment,
+                                          style: module.titleTextStyle,
                                         ),
                                       ),
                                     ),
@@ -225,7 +231,7 @@ class SnsLoginModuleLanding extends PageScopedWidget {
                           flex: 1,
                           child: SingleChildScrollView(
                             child: Padding(
-                              padding: config.padding,
+                              padding: module.padding,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 mainAxisSize: MainAxisSize.max,
@@ -233,10 +239,10 @@ class SnsLoginModuleLanding extends PageScopedWidget {
                                   if (context.plugin != null)
                                     for (final adapter
                                         in context.plugin!.snsSignIns)
-                                      _snsButton(context, adapter),
-                                  if (config.guestLogin != null)
+                                      _snsButton(context, adapter, module),
+                                  if (module.guestLogin != null)
                                     FormItemSubmit(
-                                      config.guestLogin!.label?.localize() ??
+                                      module.guestLogin!.label?.localize() ??
                                           "Guest login".localize(),
                                       borderRadius: 35,
                                       height: 70,
@@ -244,20 +250,21 @@ class SnsLoginModuleLanding extends PageScopedWidget {
                                       color: buttonColor,
                                       borderColor: buttonColor,
                                       backgroundColor: buttonBackgroundColor,
-                                      icon: config.guestLogin!.icon,
+                                      icon: module.guestLogin!.icon,
                                       onPressed: () async {
                                         try {
                                           await context.model
                                               ?.signInAnonymously()
                                               .showIndicator(context);
-                                          if (_hasRegistrationData(context)) {
+                                          if (_hasRegistrationData(
+                                              context, module)) {
                                             context.navigator
                                                 .pushReplacementNamed(
                                                     "/register");
                                           } else {
                                             context.navigator
                                                 .pushReplacementNamed(
-                                                    config.redirectTo);
+                                                    module.redirectTo);
                                           }
                                         } catch (e) {
                                           UIDialog.show(
@@ -286,11 +293,12 @@ class SnsLoginModuleLanding extends PageScopedWidget {
     }
   }
 
-  Widget _snsButton(BuildContext context, SNSSignInAdapter adapter) {
+  Widget _snsButton(
+      BuildContext context, SNSSignInAdapter adapter, SnsLoginModule module) {
     final buttonColor =
-        config.buttonColor ?? config.color ?? context.theme.textColorOnPrimary;
+        module.buttonColor ?? module.color ?? context.theme.textColorOnPrimary;
     final buttonBackgroundColor =
-        config.buttonBackgroundColor ?? context.theme.primaryColor;
+        module.buttonBackgroundColor ?? context.theme.primaryColor;
     switch (adapter.provider) {
       case "mock":
         return FormItemSubmit(
@@ -305,10 +313,10 @@ class SnsLoginModuleLanding extends PageScopedWidget {
           onPressed: () async {
             try {
               await adapter.signIn();
-              if (_hasRegistrationData(context)) {
+              if (_hasRegistrationData(context, module)) {
                 context.navigator.pushReplacementNamed("/register");
               } else {
-                context.navigator.pushReplacementNamed(config.redirectTo);
+                context.navigator.pushReplacementNamed(module.redirectTo);
               }
             } catch (e) {
               print(e.toString());
@@ -337,10 +345,10 @@ class SnsLoginModuleLanding extends PageScopedWidget {
           onPressed: () async {
             try {
               await adapter.signIn();
-              if (_hasRegistrationData(context)) {
+              if (_hasRegistrationData(context, module)) {
                 context.navigator.pushReplacementNamed("/register");
               } else {
-                context.navigator.pushReplacementNamed(config.redirectTo);
+                context.navigator.pushReplacementNamed(module.redirectTo);
               }
             } catch (e) {
               print(e.toString());
@@ -366,10 +374,10 @@ class SnsLoginModuleLanding extends PageScopedWidget {
           onPressed: () async {
             try {
               await adapter.signIn();
-              if (_hasRegistrationData(context)) {
+              if (_hasRegistrationData(context, module)) {
                 context.navigator.pushReplacementNamed("/register");
               } else {
-                context.navigator.pushReplacementNamed(config.redirectTo);
+                context.navigator.pushReplacementNamed(module.redirectTo);
               }
             } catch (e) {
               print(e.toString());
@@ -395,10 +403,10 @@ class SnsLoginModuleLanding extends PageScopedWidget {
           onPressed: () async {
             try {
               await adapter.signIn();
-              if (_hasRegistrationData(context)) {
+              if (_hasRegistrationData(context, module)) {
                 context.navigator.pushReplacementNamed("/register");
               } else {
-                context.navigator.pushReplacementNamed(config.redirectTo);
+                context.navigator.pushReplacementNamed(module.redirectTo);
               }
             } catch (e) {
               print(e.toString());
@@ -424,10 +432,10 @@ class SnsLoginModuleLanding extends PageScopedWidget {
           onPressed: () async {
             try {
               await adapter.signIn();
-              if (_hasRegistrationData(context)) {
+              if (_hasRegistrationData(context, module)) {
                 context.navigator.pushReplacementNamed("/register");
               } else {
-                context.navigator.pushReplacementNamed(config.redirectTo);
+                context.navigator.pushReplacementNamed(module.redirectTo);
               }
             } catch (e) {
               print(e.toString());
@@ -444,14 +452,14 @@ class SnsLoginModuleLanding extends PageScopedWidget {
     return const Empty();
   }
 
-  bool _hasRegistrationData(BuildContext context) {
+  bool _hasRegistrationData(BuildContext context, SnsLoginModule module) {
     return (context.app?.userVariables
                     .where(
-                        (e) => !config.showOnlyRequiredVariable || e.required)
+                        (e) => !module.showOnlyRequiredVariable || e.required)
                     .length ??
                 0) +
-            config.registerVariables
-                .where((e) => !config.showOnlyRequiredVariable || e.required)
+            module.registerVariables
+                .where((e) => !module.showOnlyRequiredVariable || e.required)
                 .length >
         0;
   }
@@ -459,10 +467,10 @@ class SnsLoginModuleLanding extends PageScopedWidget {
 
 class _LoginModuleBackgroundImage extends StatelessWidget {
   const _LoginModuleBackgroundImage(
-    this.config, {
+    this.module, {
     this.opacity = 0.75,
   });
-  final SnsLoginModule config;
+  final SnsLoginModule module;
   final double opacity;
 
   @override
@@ -470,16 +478,16 @@ class _LoginModuleBackgroundImage extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (config.backgroundImage.isNotEmpty) ...[
+        if (module.backgroundImage.isNotEmpty) ...[
           Image(
-            image: NetworkOrAsset.image(config.backgroundImage!),
+            image: NetworkOrAsset.image(module.backgroundImage!),
             fit: BoxFit.cover,
           ),
-          if (config.backgroundImageBlur != null)
+          if (module.backgroundImageBlur != null)
             BackdropFilter(
               filter: ImageFilter.blur(
-                  sigmaX: config.backgroundImageBlur!,
-                  sigmaY: config.backgroundImageBlur!),
+                  sigmaX: module.backgroundImageBlur!,
+                  sigmaY: module.backgroundImageBlur!),
               child: _backgroundColor(context, opacity),
             )
           else
@@ -492,30 +500,29 @@ class _LoginModuleBackgroundImage extends StatelessWidget {
   }
 
   Widget _backgroundColor(BuildContext context, [double opacity = 1.0]) {
-    if (config.backgroundGradient != null) {
+    if (module.backgroundGradient != null) {
       return DecoratedBox(
         decoration: BoxDecoration(
-          gradient: config.backgroundGradient,
+          gradient: module.backgroundGradient,
         ),
       );
     } else if (opacity < 1.0) {
       return ColoredBox(
-        color: (config.backgroundColor ?? context.theme.backgroundColor)
+        color: (module.backgroundColor ?? context.theme.backgroundColor)
             .withOpacity(opacity),
       );
     } else {
       return ColoredBox(
-          color: config.backgroundColor ?? context.theme.backgroundColor);
+          color: module.backgroundColor ?? context.theme.backgroundColor);
     }
   }
 }
 
-class SnsLoginModuleRegister extends PageScopedWidget {
-  const SnsLoginModuleRegister(this.config);
-  final SnsLoginModule config;
+class SnsLoginModuleRegister extends PageModuleWidget<SnsLoginModule> {
+  const SnsLoginModuleRegister();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, SnsLoginModule module) {
     final form = ref.useForm();
 
     return UIScaffold(
@@ -531,13 +538,13 @@ class SnsLoginModuleRegister extends PageScopedWidget {
           ...context.app?.userVariables.buildForm(
                 context,
                 ref,
-                onlyRequired: config.showOnlyRequiredVariable,
+                onlyRequired: module.showOnlyRequiredVariable,
               ) ??
               [],
-          ...config.registerVariables.buildForm(
+          ...module.registerVariables.buildForm(
             context,
             ref,
-            onlyRequired: config.showOnlyRequiredVariable,
+            onlyRequired: module.showOnlyRequiredVariable,
           ),
           const Divid(),
           const Space.height(120),
@@ -553,7 +560,7 @@ class SnsLoginModuleRegister extends PageScopedWidget {
             if (userId.isEmpty) {
               throw Exception("User id is not found.");
             }
-            final collection = ref.readCollectionModel(config.userPath);
+            final collection = ref.readCollectionModel(module.userPath);
             final doc = context.model?.createDocument(collection, userId);
             if (doc == null) {
               throw Exception("User document has not created.");
@@ -561,7 +568,7 @@ class SnsLoginModuleRegister extends PageScopedWidget {
             context.app?.userVariables
                 .buildValue(doc, context, ref, updated: false);
             await context.model?.saveDocument(doc).showIndicator(context);
-            context.navigator.pushReplacementNamed(config.redirectTo);
+            context.navigator.pushReplacementNamed(module.redirectTo);
           } catch (e) {
             UIDialog.show(
               context,

@@ -39,10 +39,10 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.allowEditRoomName = true,
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
-    this.home,
-    this.timeline,
-    this.mediaView,
-    this.edit,
+    this.homePage = const ChatModuleHome(),
+    this.timelinePage = const ChatModuleTimeline(),
+    this.mediaViewPage = const ChatModuleMediaView(),
+    this.editPage = const ChatModuleEdit(),
   }) : super(
           enabled: enabled,
           title: title,
@@ -56,22 +56,20 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
       return const {};
     }
     final route = {
-      "/$routePath": RouteConfig((_) => home ?? ChatModuleHome(this)),
-      "/$routePath/{chat_id}":
-          RouteConfig((_) => timeline ?? ChatModuleTimeline(this)),
+      "/$routePath": RouteConfig((_) => homePage),
+      "/$routePath/{chat_id}": RouteConfig((_) => timelinePage),
       "/$routePath/{chat_id}/media/{timeline_id}":
-          RouteConfig((_) => mediaView ?? ChatModuleMediaView(this)),
-      "/$routePath/{chat_id}/edit":
-          RouteConfig((_) => edit ?? ChatModuleEdit(this)),
+          RouteConfig((_) => mediaViewPage),
+      "/$routePath/{chat_id}/edit": RouteConfig((_) => editPage),
     };
     return route;
   }
 
   // ページ設定
-  final Widget? home;
-  final Widget? timeline;
-  final Widget? mediaView;
-  final Widget? edit;
+  final PageModuleWidget<ChatModule> homePage;
+  final PageModuleWidget<ChatModule> timelinePage;
+  final PageModuleWidget<ChatModule> mediaViewPage;
+  final PageModuleWidget<ChatModule> editPage;
 
   /// ホームをスライバーレイアウトにする場合True.
   final bool sliverLayoutWhenModernDesignOnHome;
@@ -128,24 +126,23 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
   final ModelQuery? availableMemberQuery;
 }
 
-class ChatModuleHome extends PageScopedWidget {
-  const ChatModuleHome(this.config);
-  final ChatModule config;
+class ChatModuleHome extends PageModuleWidget<ChatModule> {
+  const ChatModuleHome();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, ChatModule module) {
     final now = ref.useNow();
-    final user = ref.watchUserDocumentModel(config.userPath);
+    final user = ref.watchUserDocumentModel(module.userPath);
     final chat = ref.watchCollectionModel(
-      config.chatRoomQuery?.value ??
+      module.chatRoomQuery?.value ??
           ModelQuery(
-            config.queryPath,
-            key: config.memberKey,
+            module.queryPath,
+            key: module.memberKey,
             arrayContains: user.get(Const.uid, ""),
           ).value,
     );
     final membersPath =
-        config.availableMemberQuery?.value ?? config.availableMemberPath;
+        module.availableMemberQuery?.value ?? module.availableMemberPath;
     final members =
         membersPath == null ? null : ref.watchCollectionModel(membersPath);
     final filteredMembers = members?.where((m) {
@@ -153,7 +150,7 @@ class ChatModuleHome extends PageScopedWidget {
         return false;
       }
       return !chat.any((e) {
-        final members = e.get(config.memberKey, []);
+        final members = e.get(module.memberKey, []);
         if (members.length > 2) {
           return false;
         }
@@ -162,12 +159,12 @@ class ChatModuleHome extends PageScopedWidget {
     }).toList();
     final users = ref.watchCollectionModel(
       ModelQuery(
-        config.userPath,
+        module.userPath,
         key: Const.uid,
         order: ModelQueryOrder.desc,
-        orderBy: config.modifiedTimeKey,
+        orderBy: module.modifiedTimeKey,
         whereIn: chat.map((e) {
-          final member = e.get(config.memberKey, []);
+          final member = e.get(module.memberKey, []);
           final u = member.firstWhereOrNull(
               (item) => item.toString() != user.get(Const.uid, ""));
           return u.toString();
@@ -177,7 +174,7 @@ class ChatModuleHome extends PageScopedWidget {
     final chatWithUser = chat.setWhereListenable(
       users,
       test: (o, a) {
-        final member = o.get(config.memberKey, []);
+        final member = o.get(module.memberKey, []);
         final u = member.firstWhereOrNull(
             (item) => item.toString() == a.get(Const.uid, ""));
         return u != null;
@@ -187,7 +184,7 @@ class ChatModuleHome extends PageScopedWidget {
       orElse: (o) => o,
     );
     final controller = ref.useNavigatorController(
-      "/${config.routePath}/${chatWithUser.firstOrNull.get(Const.uid, "")}",
+      "/${module.routePath}/${chatWithUser.firstOrNull.get(Const.uid, "")}",
       (route) => chatWithUser.isEmpty,
     );
 
@@ -199,15 +196,15 @@ class ChatModuleHome extends PageScopedWidget {
       ],
       inlineNavigatorControllerOnWeb: controller,
       appBar: UIAppBar(
-        title: Text(config.title ?? "Chat".localize()),
-        sliverLayoutWhenModernDesign: config.sliverLayoutWhenModernDesignOnHome,
-        automaticallyImplyLeading: config.automaticallyImplyLeadingOnHome,
+        title: Text(module.title ?? "Chat".localize()),
+        sliverLayoutWhenModernDesign: module.sliverLayoutWhenModernDesignOnHome,
+        automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
       ),
       body: UIListView(
         children: [
           ...chatWithUser.mapListenable(
             (item) {
-              final name = item.get(config.nameKey, "");
+              final name = item.get(module.nameKey, "");
               return ListItem(
                 selected: !context.isMobileOrModal &&
                     controller.route?.name.last() == item.get(Const.uid, ""),
@@ -221,22 +218,22 @@ class ChatModuleHome extends PageScopedWidget {
                 title: Text(
                   name.isNotEmpty
                       ? name
-                      : item.get("${Const.user}${config.nameKey}", ""),
+                      : item.get("${Const.user}${module.nameKey}", ""),
                 ),
                 subtitle: Text(
                   DateTime.fromMillisecondsSinceEpoch(
-                    item.get(config.createdTimeKey, now.millisecondsSinceEpoch),
+                    item.get(module.createdTimeKey, now.millisecondsSinceEpoch),
                   ).format("yyyy/MM/dd HH:mm"),
                 ),
                 onTap: () {
                   if (context.isMobile) {
                     context.rootNavigator.pushNamed(
-                      "/${config.routePath}/${item.get(Const.uid, "")}",
+                      "/${module.routePath}/${item.get(Const.uid, "")}",
                       arguments: RouteQuery.fullscreen,
                     );
                   } else {
                     controller.navigator.pushNamed(
-                      "/${config.routePath}/${item.get(Const.uid, "")}",
+                      "/${module.routePath}/${item.get(Const.uid, "")}",
                     );
                   }
                 },
@@ -246,7 +243,7 @@ class ChatModuleHome extends PageScopedWidget {
           if (filteredMembers != null)
             ...filteredMembers.mapListenable(
               (item) {
-                final name = item.get(config.nameKey, "");
+                final name = item.get(module.nameKey, "");
                 return ListItem(
                   selected: !context.isMobileOrModal &&
                       controller.route?.name.last() == item.get(Const.uid, ""),
@@ -257,12 +254,12 @@ class ChatModuleHome extends PageScopedWidget {
                   title: Text(
                     name.isNotEmpty
                         ? name
-                        : item.get("${Const.user}${config.nameKey}", ""),
+                        : item.get("${Const.user}${module.nameKey}", ""),
                   ),
                   subtitle: Text(
                     DateTime.fromMillisecondsSinceEpoch(
                       item.get(
-                          config.createdTimeKey, now.millisecondsSinceEpoch),
+                          module.createdTimeKey, now.millisecondsSinceEpoch),
                     ).format("yyyy/MM/dd HH:mm"),
                   ),
                   onTap: () async {
@@ -273,7 +270,7 @@ class ChatModuleHome extends PageScopedWidget {
                     if (doc == null || userId.isEmpty) {
                       return;
                     }
-                    doc[config.memberKey] = [
+                    doc[module.memberKey] = [
                       userId,
                       memberId,
                     ];
@@ -282,12 +279,12 @@ class ChatModuleHome extends PageScopedWidget {
                         .showIndicator(context);
                     if (context.isMobile) {
                       context.rootNavigator.pushNamed(
-                        "/${config.routePath}/$uid",
+                        "/${module.routePath}/$uid",
                         arguments: RouteQuery.fullscreen,
                       );
                     } else {
                       controller.navigator.pushNamed(
-                        "/${config.routePath}/$uid",
+                        "/${module.routePath}/$uid",
                       );
                     }
                   },
@@ -300,46 +297,45 @@ class ChatModuleHome extends PageScopedWidget {
   }
 }
 
-class ChatModuleTimeline extends PageScopedWidget {
-  const ChatModuleTimeline(this.config);
-  final ChatModule config;
+class ChatModuleTimeline extends PageModuleWidget<ChatModule> {
+  const ChatModuleTimeline();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, ChatModule module) {
     final now = ref.useNow();
     final userId = context.model?.userId;
     final user = ref.watchUserDocumentModel();
     final chat = ref.watchDocumentModel(
-        "${config.queryPath}/${context.get("chat_id", "")}");
+        "${module.queryPath}/${context.get("chat_id", "")}");
     final timeline = ref.watchCollectionModel(
       ModelQuery(
-              "${config.queryPath}/${context.get("chat_id", "")}/${config.queryPath}",
+              "${module.queryPath}/${context.get("chat_id", "")}/${module.queryPath}",
               order: ModelQueryOrder.desc,
-              orderBy: config.createdTimeKey,
+              orderBy: module.createdTimeKey,
               limit: 500)
           .value,
     );
     timeline.sort((a, b) =>
-        b.get(config.createdTimeKey, 0) - a.get(config.createdTimeKey, 0));
+        b.get(module.createdTimeKey, 0) - a.get(module.createdTimeKey, 0));
     final timlineWithUser = timeline.mergeUserInformation(
       ref,
-      userCollectionPath: config.userPath,
+      userCollectionPath: module.userPath,
     );
     final members = ref.watchCollectionModel(
       ModelQuery(
-        config.userPath,
+        module.userPath,
         key: Const.uid,
         whereIn:
-            chat.get(config.memberKey, []).map((e) => e.toString()).distinct(),
+            chat.get(module.memberKey, []).map((e) => e.toString()).distinct(),
       ).value,
     );
     final title = members.fold<List<String>>(
       <String>[],
       (previousValue, element) => element.get(Const.uid, "") == userId
           ? previousValue
-          : (previousValue..add(element.get(config.nameKey, ""))),
+          : (previousValue..add(element.get(module.nameKey, ""))),
     ).join(", ");
-    final name = chat.get(config.nameKey, "");
+    final name = chat.get(module.nameKey, "");
 
     return UIScaffold(
       waitTransition: true,
@@ -347,21 +343,21 @@ class ChatModuleTimeline extends PageScopedWidget {
         title: Text(name.isEmpty ? title : name),
         sliverLayoutWhenModernDesign: false,
         actions: [
-          if (config.permission.canEdit(user.get(config.roleKey, ""))) ...[
-            if (chat.get(config.typeKey, "") == ChatType.group.text)
+          if (module.permission.canEdit(user.get(module.roleKey, ""))) ...[
+            if (chat.get(module.typeKey, "") == ChatType.group.text)
               IconButton(
                   onPressed: () {
                     context.rootNavigator.pushNamed(
-                      "/${config.routePath}/${context.get("chat_id", "")}/member",
+                      "/${module.routePath}/${context.get("chat_id", "")}/member",
                       arguments: RouteQuery.fullscreenOrModal,
                     );
                   },
                   icon: const Icon(Icons.people_alt)),
-            if (config.allowEditRoomName)
+            if (module.allowEditRoomName)
               IconButton(
                 onPressed: () {
                   context.rootNavigator.pushNamed(
-                    "/${config.routePath}/${context.get("chat_id", "")}/edit",
+                    "/${module.routePath}/${context.get("chat_id", "")}/edit",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
                 },
@@ -376,7 +372,7 @@ class ChatModuleTimeline extends PageScopedWidget {
         source: timlineWithUser,
         builder: (context, item, index) {
           final date = DateTime.fromMillisecondsSinceEpoch(
-            item.get(config.createdTimeKey, now.millisecondsSinceEpoch),
+            item.get(module.createdTimeKey, now.millisecondsSinceEpoch),
           );
           return [
             if (item.get(Const.user, "") == userId)
@@ -401,7 +397,6 @@ class ChatModuleTimeline extends PageScopedWidget {
                     const Space.width(4),
                     Flexible(
                       child: ChatModuleTimelineItem(
-                        config,
                         data: item,
                         color: context.theme.colorScheme.onPrimary,
                         backgroundColor: context.theme.primaryColor,
@@ -421,7 +416,7 @@ class ChatModuleTimeline extends PageScopedWidget {
                       width: 48,
                       child: CircleAvatar(
                         backgroundImage: NetworkOrAsset.image(
-                            item.get("${Const.user}${config.mediaKey}", ""),
+                            item.get("${Const.user}${module.mediaKey}", ""),
                             ImageSize.thumbnail),
                       ),
                     ),
@@ -433,7 +428,6 @@ class ChatModuleTimeline extends PageScopedWidget {
                         children: [
                           Flexible(
                             child: ChatModuleTimelineItem(
-                              config,
                               data: item,
                               color: context.theme.colorScheme.onSecondary,
                               backgroundColor:
@@ -479,8 +473,8 @@ class ChatModuleTimeline extends PageScopedWidget {
             return;
           }
           doc[Const.user] = userId;
-          doc[config.textKey] = value;
-          chat[config.modifiedTimeKey] = doc[config.createdTimeKey] =
+          doc[module.textKey] = value;
+          chat[module.modifiedTimeKey] = doc[module.createdTimeKey] =
               DateTime.now().millisecondsSinceEpoch;
           context.model?.saveDocument(doc);
           context.model?.saveDocument(chat);
@@ -491,7 +485,7 @@ class ChatModuleTimeline extends PageScopedWidget {
             title: "Please select your %s"
                 .localize()
                 .format(["Media".localize().toLowerCase()]),
-            type: config.mediaType,
+            type: module.mediaType,
           );
           if (media?.path == null) {
             return;
@@ -509,8 +503,8 @@ class ChatModuleTimeline extends PageScopedWidget {
             return;
           }
           doc[Const.user] = userId;
-          doc[config.mediaKey] = url;
-          chat[config.modifiedTimeKey] = doc[config.createdTimeKey] =
+          doc[module.mediaKey] = url;
+          chat[module.modifiedTimeKey] = doc[module.createdTimeKey] =
               DateTime.now().millisecondsSinceEpoch;
           context.model?.saveDocument(doc);
           context.model?.saveDocument(chat);
@@ -520,22 +514,20 @@ class ChatModuleTimeline extends PageScopedWidget {
   }
 }
 
-class ChatModuleTimelineItem extends ScopedWidget {
-  const ChatModuleTimelineItem(
-    this.config, {
+class ChatModuleTimelineItem extends ModuleWidget<ChatModule> {
+  const ChatModuleTimelineItem({
     required this.data,
     this.color,
     this.backgroundColor,
   });
-  final ChatModule config;
 
   final DynamicMap data;
   final Color? color;
   final Color? backgroundColor;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final media = data.get(config.mediaKey, "");
+  Widget build(BuildContext context, WidgetRef ref, ChatModule module) {
+    final media = data.get(module.mediaKey, "");
     if (media.isNotEmpty) {
       final type = getPlatformMediaType(media);
       switch (type) {
@@ -545,7 +537,7 @@ class ChatModuleTimelineItem extends ScopedWidget {
             child: InkWell(
               onTap: () {
                 context.rootNavigator.pushNamed(
-                  "/${config.routePath}/${context.get("chat_id", "")}/media/${data.get(Const.uid, "")}",
+                  "/${module.routePath}/${context.get("chat_id", "")}/media/${data.get(Const.uid, "")}",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -561,7 +553,7 @@ class ChatModuleTimelineItem extends ScopedWidget {
             child: InkWell(
               onTap: () {
                 context.rootNavigator.pushNamed(
-                  "/${config.routePath}/${context.get("chat_id", "")}/media/${data.get(Const.uid, "")}",
+                  "/${module.routePath}/${context.get("chat_id", "")}/media/${data.get(Const.uid, "")}",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -580,7 +572,7 @@ class ChatModuleTimelineItem extends ScopedWidget {
           backgroundColor: backgroundColor,
         ),
         child: Text(
-          data.get(config.textKey, ""),
+          data.get(module.textKey, ""),
           style: TextStyle(
             fontSize: 16,
             color: color,
@@ -591,15 +583,14 @@ class ChatModuleTimelineItem extends ScopedWidget {
   }
 }
 
-class ChatModuleMediaView extends PageScopedWidget {
-  const ChatModuleMediaView(this.config);
-  final ChatModule config;
+class ChatModuleMediaView extends PageModuleWidget<ChatModule> {
+  const ChatModuleMediaView();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, ChatModule module) {
     final item = ref.watchDocumentModel(
-        "${config.queryPath}/${context.get("chat_id", "")}/${config.queryPath}/${context.get("timeline_id", "")}");
-    final media = item.get(config.mediaKey, "");
+        "${module.queryPath}/${context.get("chat_id", "")}/${module.queryPath}/${context.get("timeline_id", "")}");
+    final media = item.get(module.mediaKey, "");
     final type = getPlatformMediaType(media);
 
     return UIScaffold(
@@ -636,16 +627,15 @@ class ChatModuleMediaView extends PageScopedWidget {
   }
 }
 
-class ChatModuleEdit extends PageScopedWidget {
-  const ChatModuleEdit(this.config);
-  final ChatModule config;
+class ChatModuleEdit extends PageModuleWidget<ChatModule> {
+  const ChatModuleEdit();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, ChatModule module) {
     final form = ref.useForm();
     final chat = ref.watchDocumentModel(
-        "${config.queryPath}/${context.get("chat_id", "")}");
-    final name = chat.get(config.nameKey, "");
+        "${module.queryPath}/${context.get("chat_id", "")}");
+    final name = chat.get(module.nameKey, "");
 
     return UIScaffold(
       waitTransition: true,
@@ -662,9 +652,9 @@ class ChatModuleEdit extends PageScopedWidget {
             dense: true,
             allowEmpty: true,
             hintText: "Input %s".localize().format(["Title".localize()]),
-            controller: ref.useTextEditingController(config.nameKey, name),
+            controller: ref.useTextEditingController(module.nameKey, name),
             onSaved: (value) {
-              context[config.nameKey] = value;
+              context[module.nameKey] = value;
             },
           ),
           const Divid(),
@@ -677,7 +667,7 @@ class ChatModuleEdit extends PageScopedWidget {
             return;
           }
 
-          chat[config.nameKey] = context.get(config.nameKey, "");
+          chat[module.nameKey] = context.get(module.nameKey, "");
           await context.model?.saveDocument(chat).showIndicator(context);
           context.navigator.pop();
         },
