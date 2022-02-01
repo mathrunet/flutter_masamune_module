@@ -239,7 +239,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
                                   if (context.plugin != null)
                                     for (final adapter
                                         in context.plugin!.snsSignIns)
-                                      _snsButton(context, adapter, module),
+                                      _snsButton(context, ref, adapter, module),
                                   if (module.guestLogin != null)
                                     FormItemSubmit(
                                       module.guestLogin!.label?.localize() ??
@@ -256,8 +256,12 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
                                           await context.model
                                               ?.signInAnonymously()
                                               .showIndicator(context);
+                                          final user =
+                                              ref.readUserDocumentModel(
+                                                  module.userPath);
+                                          await user.loading;
                                           if (_hasRegistrationData(
-                                              context, module)) {
+                                              context, module, user)) {
                                             context.navigator
                                                 .pushReplacementNamed(
                                                     "/register");
@@ -293,8 +297,8 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
     }
   }
 
-  Widget _snsButton(
-      BuildContext context, SNSSignInAdapter adapter, SnsLoginModule module) {
+  Widget _snsButton(BuildContext context, WidgetRef ref,
+      SNSSignInAdapter adapter, SnsLoginModule module) {
     final buttonColor =
         module.buttonColor ?? module.color ?? context.theme.textColorOnPrimary;
     final buttonBackgroundColor =
@@ -313,7 +317,9 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn();
-              if (_hasRegistrationData(context, module)) {
+              final user = ref.readUserDocumentModel(module.userPath);
+              await user.loading;
+              if (_hasRegistrationData(context, module, user)) {
                 context.navigator.pushReplacementNamed("/register");
               } else {
                 context.navigator.pushReplacementNamed(module.redirectTo);
@@ -345,7 +351,9 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn();
-              if (_hasRegistrationData(context, module)) {
+              final user = ref.readUserDocumentModel(module.userPath);
+              await user.loading;
+              if (_hasRegistrationData(context, module, user)) {
                 context.navigator.pushReplacementNamed("/register");
               } else {
                 context.navigator.pushReplacementNamed(module.redirectTo);
@@ -374,7 +382,9 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn();
-              if (_hasRegistrationData(context, module)) {
+              final user = ref.readUserDocumentModel(module.userPath);
+              await user.loading;
+              if (_hasRegistrationData(context, module, user)) {
                 context.navigator.pushReplacementNamed("/register");
               } else {
                 context.navigator.pushReplacementNamed(module.redirectTo);
@@ -403,7 +413,9 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn();
-              if (_hasRegistrationData(context, module)) {
+              final user = ref.readUserDocumentModel(module.userPath);
+              await user.loading;
+              if (_hasRegistrationData(context, module, user)) {
                 context.navigator.pushReplacementNamed("/register");
               } else {
                 context.navigator.pushReplacementNamed(module.redirectTo);
@@ -432,7 +444,9 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn();
-              if (_hasRegistrationData(context, module)) {
+              final user = ref.readUserDocumentModel(module.userPath);
+              await user.loading;
+              if (_hasRegistrationData(context, module, user)) {
                 context.navigator.pushReplacementNamed("/register");
               } else {
                 context.navigator.pushReplacementNamed(module.redirectTo);
@@ -452,16 +466,29 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
     return const Empty();
   }
 
-  bool _hasRegistrationData(BuildContext context, SnsLoginModule module) {
-    return (context.app?.userVariables
-                    .where(
-                        (e) => !module.showOnlyRequiredVariable || e.required)
-                    .length ??
-                0) +
-            module.registerVariables
-                .where((e) => !module.showOnlyRequiredVariable || e.required)
-                .length >
+  bool _hasRegistrationData(
+    BuildContext context,
+    SnsLoginModule module,
+    DynamicDocumentModel document,
+  ) {
+    final userVariablesCount = context.app?.userVariables.where(
+          (e) {
+            final required = !module.showOnlyRequiredVariable || e.required;
+            if (!required) {
+              return false;
+            }
+            return !document.containsKey(e.id);
+          },
+        ).length ??
         0;
+    final registerVariablesCount = module.registerVariables.where((e) {
+      final required = !module.showOnlyRequiredVariable || e.required;
+      if (!required) {
+        return false;
+      }
+      return !document.containsKey(e.id);
+    }).length;
+    return userVariablesCount + registerVariablesCount > 0;
   }
 }
 

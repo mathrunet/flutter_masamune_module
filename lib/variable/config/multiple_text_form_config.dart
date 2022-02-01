@@ -1,18 +1,21 @@
 part of masamune_module.variable;
 
-/// FormConfig for using TextField.
+/// FormConfig for using multiple TextField List.
 @immutable
-class TextFormConfig extends FormConfig {
-  const TextFormConfig({
-    this.color,
+class MultipleTextFormConfig extends FormConfig {
+  const MultipleTextFormConfig({
     this.backgroundColor,
     this.obscureText = false,
-    this.minLines,
-    this.maxLines,
+    this.color,
     this.minLength,
     this.maxLength,
-    this.keyboardType = TextInputType.text,
+    this.minLines,
+    this.maxLines,
+    this.maxItems,
+    this.keyboardType = TextInputType.url,
   });
+
+  final int? maxItems;
 
   final Color? backgroundColor;
 
@@ -32,26 +35,19 @@ class TextFormConfig extends FormConfig {
 }
 
 @immutable
-class TextFormConfigBuilder extends FormConfigBuilder {
-  const TextFormConfigBuilder();
-
-  @override
-  bool check(FormConfig? form) {
-    return form is TextFormConfig;
-  }
+class MultipleTextFormConfigBuilder
+    extends FormConfigBuilder<MultipleTextFormConfig> {
+  const MultipleTextFormConfigBuilder();
 
   @override
   Iterable<Widget> form(
     VariableConfig config,
-    FormConfig? form,
+    MultipleTextFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    if (form is! TextFormConfig) {
-      return [];
-    }
     return [
       if (config.label.isNotEmpty)
         DividHeadline(
@@ -65,7 +61,7 @@ class TextFormConfigBuilder extends FormConfigBuilder {
         )
       else
         const Divid(),
-      FormItemTextField(
+      FormItemMultipleTextField(
         dense: true,
         color: form.color,
         minLines: form.minLines ?? 1,
@@ -78,10 +74,10 @@ class TextFormConfigBuilder extends FormConfigBuilder {
         backgroundColor: form.backgroundColor,
         obscureText: form.obscureText,
         allowEmpty: !config.required,
-        controller:
-            ref.useTextEditingController(config.id, data.get(config.id, "")),
+        controller: ref.useTextEditingController(
+            config.id, data.getAsList(config.id).join(",")),
         onSaved: (value) {
-          context[config.id] = value;
+          context[config.id] = value?.where((e) => e.isNotEmpty).toList() ?? [];
         },
       ),
     ];
@@ -90,15 +86,13 @@ class TextFormConfigBuilder extends FormConfigBuilder {
   @override
   Iterable<Widget> view(
     VariableConfig config,
-    FormConfig? form,
+    MultipleTextFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    if (form is! TextFormConfig) {
-      return [];
-    }
+    final list = data.getAsList(config.id);
     return [
       if (config.label.isNotEmpty)
         DividHeadline(
@@ -106,9 +100,10 @@ class TextFormConfigBuilder extends FormConfigBuilder {
         )
       else
         const Divid(),
-      ListItem(
-        title: UIText(data.get(config.id, "")),
-      ),
+      if (list.isEmpty)
+        const ListItem(title: Text("--"))
+      else
+        for (final text in list) ListItem(title: UIText(text)),
     ];
   }
 
@@ -119,6 +114,6 @@ class TextFormConfigBuilder extends FormConfigBuilder {
     WidgetRef ref,
     bool updated,
   ) {
-    return context.get(config.id, "");
+    return context.getAsList(config.id);
   }
 }

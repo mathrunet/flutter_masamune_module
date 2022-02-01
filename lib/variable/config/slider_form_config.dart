@@ -27,25 +27,18 @@ class SliderFormConfig extends FormConfig {
 }
 
 @immutable
-class SliderFormConfigBuilder extends FormConfigBuilder {
+class SliderFormConfigBuilder extends FormConfigBuilder<SliderFormConfig> {
   const SliderFormConfigBuilder();
-  @override
-  bool check(FormConfig? form) {
-    return form is SliderFormConfig;
-  }
 
   @override
   Iterable<Widget> form(
     VariableConfig config,
-    FormConfig? form,
+    SliderFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    if (form is! SliderFormConfig) {
-      return [];
-    }
     return [
       if (config.label.isNotEmpty)
         DividHeadline(
@@ -87,15 +80,12 @@ class SliderFormConfigBuilder extends FormConfigBuilder {
   @override
   Iterable<Widget> view(
     VariableConfig config,
-    FormConfig? form,
+    SliderFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    if (form is! SliderFormConfig) {
-      return [];
-    }
     return [
       if (config.label.isNotEmpty)
         DividHeadline(

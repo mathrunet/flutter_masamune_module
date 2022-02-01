@@ -19,25 +19,19 @@ class MultipleSelectFormConfig extends FormConfig {
 }
 
 @immutable
-class MultipleSelectFormConfigBuilder extends FormConfigBuilder {
+class MultipleSelectFormConfigBuilder
+    extends FormConfigBuilder<MultipleSelectFormConfig> {
   const MultipleSelectFormConfigBuilder();
-  @override
-  bool check(FormConfig? form) {
-    return form is MultipleSelectFormConfig;
-  }
 
   @override
   Iterable<Widget> form(
     VariableConfig config,
-    FormConfig? form,
+    MultipleSelectFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    if (form is! MultipleSelectFormConfig) {
-      return [];
-    }
     return [
       if (config.label.isNotEmpty)
         DividHeadline(
@@ -75,15 +69,12 @@ class MultipleSelectFormConfigBuilder extends FormConfigBuilder {
   @override
   Iterable<Widget> view(
     VariableConfig config,
-    FormConfig? form,
+    MultipleSelectFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    if (form is! MultipleSelectFormConfig) {
-      return [];
-    }
     final list = data.getAsList(config.id, form.initialKeys);
     return [
       if (config.label.isNotEmpty)

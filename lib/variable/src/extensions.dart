@@ -17,7 +17,7 @@ extension VariableConfigBuildExtensions on VariableConfig {
       if (!variable.check(form)) {
         continue;
       }
-      return variable.view(
+      return variable._view(
         this,
         form,
         context,
@@ -42,7 +42,7 @@ extension VariableConfigBuildExtensions on VariableConfig {
       if (!variable.check(form)) {
         continue;
       }
-      return variable.form(
+      return variable._form(
         this,
         form,
         context,
@@ -63,7 +63,7 @@ extension VariableConfigBuildExtensions on VariableConfig {
       if (!variable.check(form)) {
         continue;
       }
-      return variable.value(
+      return variable._value(
         this,
         context,
         ref,

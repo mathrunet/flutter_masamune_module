@@ -34,6 +34,7 @@ class DetailModule extends PageModule {
     List<RerouteConfig> rerouteConfigs = const [],
     this.homePage = const DetailModuleHome(),
     this.imagePage = const DetailModuleImageView(),
+    this.appBarActions = const [],
     this.appBarBottomActions = const [
       DetailModuleDateWidget(),
     ],
@@ -44,6 +45,7 @@ class DetailModule extends PageModule {
       Space.height(16),
       DetailModuleActionWidget(),
     ],
+    this.bottom,
   }) : super(
           enabled: enabled,
           title: title,
@@ -106,6 +108,9 @@ class DetailModule extends PageModule {
   // Widget.
   final List<Widget> appBarBottomActions;
   final List<Widget> contents;
+  final List<Widget> appBarActions;
+
+  final Widget? bottom;
 }
 
 class DetailModuleHome extends PageModuleWidget<DetailModule> {
@@ -115,7 +120,23 @@ class DetailModuleHome extends PageModuleWidget<DetailModule> {
   Widget build(BuildContext context, WidgetRef ref, DetailModule module) {
     // Please describe reference.
     final detailId = context.get("detail_id", "");
+    if (detailId.isEmpty) {
+      return UIScaffold(
+        appBar: AppBar(
+          title: Text("No data.".localize()),
+        ),
+        body: const Empty(),
+      );
+    }
     final detail = ref.watchDocumentModel("${module.queryPath}/$detailId");
+    if (detail.isEmpty) {
+      return UIScaffold(
+        appBar: AppBar(
+          title: Text("No data.".localize()),
+        ),
+        body: const Empty(),
+      );
+    }
     final name = detail.get(module.nameKey, "");
     final images = module.multipleImage
         ? detail.getAsList(module.imageKey)
@@ -146,6 +167,7 @@ class DetailModuleHome extends PageModuleWidget<DetailModule> {
       appBar: module.enableFeatureImage
           ? UIModernDetailAppBar(
               title: Text(name),
+              actions: module.appBarActions,
               onTapImage: () {
                 context.navigator
                     .pushNamed("/${module.routePath}/$detailId/view");
@@ -202,12 +224,29 @@ class DetailModuleHome extends PageModuleWidget<DetailModule> {
           : AppBar(
               title: Text(name),
               automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
+              actions: module.appBarActions,
             ),
       body: ListBuilder<DynamicMap>(
         padding: const EdgeInsets.all(0),
         source: commentWithUser,
         top: [
-          if (!module.enableFeatureImage) ...module.appBarBottomActions,
+          if (!module.enableFeatureImage)
+            if (module.appBarBottomActions.isNotEmpty)
+              Positioned(
+                right: 0.0,
+                bottom: 0.0,
+                child: SizedBox(
+                  height: 40,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: module.appBarBottomActions,
+                    ),
+                  ),
+                ),
+              ),
           ...module.contents,
           if (module.enableComment) ...[
             const Divid(),
@@ -245,6 +284,7 @@ class DetailModuleHome extends PageModuleWidget<DetailModule> {
           ];
         },
       ),
+      bottomNavigationBar: module.bottom,
     );
   }
 }
@@ -258,10 +298,14 @@ class DetailModuleDateWidget extends ModuleWidget<DetailModule> {
     final detail = ref.watchDocumentModel("${module.queryPath}/$detailId");
     final time = detail.getAsDateTime(module.timeKey);
 
-    return Text(
-      time.format("yyyy/MM/dd HH:mm"),
-      style: TextStyle(
-        color: context.theme.textColor.withOpacity(0.5),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+      child: Text(
+        time.format("yyyy/MM/dd HH:mm"),
+        textAlign: TextAlign.right,
+        style: TextStyle(
+          color: context.theme.textColor.withOpacity(0.5),
+        ),
       ),
     );
   }
@@ -312,8 +356,9 @@ class DetailModuleContentWidget extends ModuleWidget<DetailModule> {
     final text = detail.get(module.textKey, "");
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (contentLabel.isNotEmpty) ...[
             Text(
@@ -513,6 +558,125 @@ class DetailModuleProfileWidget extends ModuleWidget<DetailModule> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class DetailModuleBookmarkIcon extends ModuleWidget<DetailModule> {
+  const DetailModuleBookmarkIcon({
+    this.activeIcon = Icons.star,
+    this.deactiveIcon = Icons.star_border,
+    this.bookmarkPath,
+  });
+
+  final IconData activeIcon;
+  final IconData deactiveIcon;
+  final String? bookmarkPath;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref, DetailModule module) {
+    final detailId = context.get("detail_id", "");
+    final detail = ref.watchDocumentModel("${module.queryPath}/$detailId");
+    if (detail.get(module.userKey, "") == context.model?.userId) {
+      return const Empty();
+    }
+    final bookmark = ref
+        .watchDocumentModel(
+            "${module.userPath}/${context.model?.userId}/${bookmarkPath ?? module.bookmarkPath}/$detailId")
+        .isNotEmpty;
+
+    return IconButton(
+      icon: Icon(
+        bookmark ? activeIcon : deactiveIcon,
+        color: bookmark ? context.theme.primaryColor : context.theme.textColor,
+      ),
+      onPressed: () {
+        final counter = context.model?.incrementCounter(
+          collectionPath:
+              "${module.queryPath}/$detailId/${bookmarkPath ?? module.bookmarkPath}",
+          linkedCollectionPath:
+              "${module.userPath}/${context.model!.userId}/${bookmarkPath ?? module.bookmarkPath}",
+        );
+        if (bookmark) {
+          counter?.remove(context.model!.userId, linkId: detailId);
+        } else {
+          counter?.append(context.model!.userId, linkId: detailId);
+        }
+      },
+    );
+  }
+}
+
+class DetailModuleEditIcon extends ModuleWidget<DetailModule> {
+  const DetailModuleEditIcon({
+    this.icon = Icons.edit,
+    this.routePath,
+  });
+
+  final IconData icon;
+  final String? routePath;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref, DetailModule module) {
+    final detailId = context.get("detail_id", "");
+    final detail = ref.watchDocumentModel("${module.queryPath}/$detailId");
+    if (detail.get(module.userKey, "") != context.model?.userId) {
+      return const Empty();
+    }
+
+    return IconButton(
+      icon: Icon(icon),
+      onPressed: () {
+        context.rootNavigator.pushNamed(
+          routePath ?? "/${module.routePath}/$detailId/edit",
+          arguments: RouteQuery.fullscreenOrModal,
+        );
+      },
+    );
+  }
+}
+
+class DetailModuleDeleteIcon extends ModuleWidget<DetailModule> {
+  const DetailModuleDeleteIcon({
+    this.icon = Icons.delete,
+  });
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref, DetailModule module) {
+    final detailId = context.get("detail_id", "");
+    final detail = ref.watchDocumentModel("${module.queryPath}/$detailId");
+    if (detail.get(module.userKey, "") != context.model?.userId) {
+      return const Empty();
+    }
+
+    return IconButton(
+      icon: Icon(icon),
+      onPressed: () {
+        final name = detail.get(module.nameKey, "");
+        UIConfirm.show(
+          context,
+          title: "Confirmation".localize(),
+          text: "You will delete this %s. Are you sure?".localize().format(
+            [name],
+          ),
+          submitText: "Yes".localize(),
+          cacnelText: "No".localize(),
+          onSubmit: () async {
+            await context.model?.deleteDocument(detail).showIndicator(context);
+            UIDialog.show(
+              context,
+              title: "Success".localize(),
+              text: "You have deleted this %s.".localize().format([name]),
+              submitText: "Close".localize(),
+              onSubmit: () {
+                context.rootNavigator.pop();
+              },
+            );
+          },
+        );
+      },
     );
   }
 }

@@ -29,17 +29,13 @@ enum HiddenFormConfigType {
 }
 
 @immutable
-class HiddenFormConfigBuilder extends FormConfigBuilder {
+class HiddenFormConfigBuilder extends FormConfigBuilder<HiddenFormConfig> {
   const HiddenFormConfigBuilder();
-  @override
-  bool check(FormConfig? form) {
-    return form is HiddenFormConfig;
-  }
 
   @override
   Iterable<Widget> form(
     VariableConfig config,
-    FormConfig? form,
+    HiddenFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
@@ -51,7 +47,7 @@ class HiddenFormConfigBuilder extends FormConfigBuilder {
   @override
   Iterable<Widget> view(
     VariableConfig config,
-    FormConfig? form,
+    HiddenFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,

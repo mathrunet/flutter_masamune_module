@@ -1,21 +1,29 @@
 part of masamune_module.variable;
 
-/// FormConfig for using multiple TextField List.
+/// FormConfig for using TextField.
 @immutable
-class MultipleTextFormConfig extends FormConfig {
-  const MultipleTextFormConfig({
+class TextFormConfig extends FormConfig {
+  const TextFormConfig({
+    this.color,
     this.backgroundColor,
     this.obscureText = false,
-    this.color,
-    this.minLength,
-    this.maxLength,
     this.minLines,
     this.maxLines,
-    this.maxItems,
-    this.keyboardType = TextInputType.url,
+    this.minLength,
+    this.maxLength,
+    this.keyboardType = TextInputType.text,
+    this.inputFormatter,
+    this.prefix,
+    this.prefixText,
+    this.suffix,
+    this.suffixText,
   });
 
-  final int? maxItems;
+  final String? prefixText;
+  final String? suffixText;
+
+  final Widget? prefix;
+  final Widget? suffix;
 
   final Color? backgroundColor;
 
@@ -32,29 +40,23 @@ class MultipleTextFormConfig extends FormConfig {
   final int? maxLength;
 
   final bool obscureText;
+
+  final TextInputFormatterConfig? inputFormatter;
 }
 
 @immutable
-class MultipleTextFormConfigBuilder extends FormConfigBuilder {
-  const MultipleTextFormConfigBuilder();
-
-  @override
-  bool check(FormConfig? form) {
-    return form is MultipleTextFormConfig;
-  }
+class TextFormConfigBuilder extends FormConfigBuilder<TextFormConfig> {
+  const TextFormConfigBuilder();
 
   @override
   Iterable<Widget> form(
     VariableConfig config,
-    FormConfig? form,
+    TextFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    if (form is! MultipleTextFormConfig) {
-      return [];
-    }
     return [
       if (config.label.isNotEmpty)
         DividHeadline(
@@ -68,9 +70,12 @@ class MultipleTextFormConfigBuilder extends FormConfigBuilder {
         )
       else
         const Divid(),
-      FormItemMultipleTextField(
+      FormItemTextField(
         dense: true,
         color: form.color,
+        inputFormatters: [
+          if (form.inputFormatter != null) form.inputFormatter!.value
+        ],
         minLines: form.minLines ?? 1,
         hintText: "Input %s".localize().format([config.label.localize()]),
         errorText: "No input %s".localize().format([config.label.localize()]),
@@ -81,11 +86,19 @@ class MultipleTextFormConfigBuilder extends FormConfigBuilder {
         backgroundColor: form.backgroundColor,
         obscureText: form.obscureText,
         allowEmpty: !config.required,
-        controller: ref.useTextEditingController(
-            config.id, data.getAsList(config.id).join(",")),
+        controller:
+            ref.useTextEditingController(config.id, data.get(config.id, "")),
         onSaved: (value) {
-          context[config.id] = value?.where((e) => e.isNotEmpty).toList() ?? [];
+          context[config.id] = value;
         },
+        prefix: form.prefix ??
+            (form.prefixText != null
+                ? Text(form.prefixText?.localize() ?? "")
+                : null),
+        suffix: form.suffix ??
+            (form.suffixText != null
+                ? Text(form.suffixText?.localize() ?? "")
+                : null),
       ),
     ];
   }
@@ -93,16 +106,12 @@ class MultipleTextFormConfigBuilder extends FormConfigBuilder {
   @override
   Iterable<Widget> view(
     VariableConfig config,
-    FormConfig? form,
+    TextFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    if (form is! MultipleTextFormConfig) {
-      return [];
-    }
-    final list = data.getAsList(config.id);
     return [
       if (config.label.isNotEmpty)
         DividHeadline(
@@ -110,10 +119,9 @@ class MultipleTextFormConfigBuilder extends FormConfigBuilder {
         )
       else
         const Divid(),
-      if (list.isEmpty)
-        const ListItem(title: Text("--"))
-      else
-        for (final text in list) ListItem(title: UIText(text)),
+      ListItem(
+        title: UIText(data.get(config.id, "")),
+      ),
     ];
   }
 
@@ -124,6 +132,6 @@ class MultipleTextFormConfigBuilder extends FormConfigBuilder {
     WidgetRef ref,
     bool updated,
   ) {
-    return context.getAsList(config.id);
+    return context.get(config.id, "");
   }
 }

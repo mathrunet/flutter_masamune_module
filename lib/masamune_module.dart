@@ -31,4 +31,3 @@ part 'src/exntensions.dart';
 part 'src/functions.dart';
 part 'src/group_config.dart';
 part 'src/login_config.dart';
-part 'src/form_config_builder.dart';

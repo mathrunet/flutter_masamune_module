@@ -20,25 +20,18 @@ class SelectFormConfig extends FormConfig {
 }
 
 @immutable
-class SelectFormConfigBuilder extends FormConfigBuilder {
+class SelectFormConfigBuilder extends FormConfigBuilder<SelectFormConfig> {
   const SelectFormConfigBuilder();
-  @override
-  bool check(FormConfig? form) {
-    return form is SelectFormConfig;
-  }
 
   @override
   Iterable<Widget> form(
     VariableConfig config,
-    FormConfig? form,
+    SelectFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    if (form is! SelectFormConfig) {
-      return [];
-    }
     return [
       if (config.label.isNotEmpty)
         DividHeadline(
@@ -75,15 +68,12 @@ class SelectFormConfigBuilder extends FormConfigBuilder {
   @override
   Iterable<Widget> view(
     VariableConfig config,
-    FormConfig? form,
+    SelectFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    if (form is! SelectFormConfig) {
-      return [];
-    }
     return [
       if (config.label.isNotEmpty)
         DividHeadline(

@@ -38,13 +38,8 @@ class DateTimeFormConfig extends FormConfig {
 }
 
 @immutable
-class DateTimeFormConfigBuilder extends FormConfigBuilder {
+class DateTimeFormConfigBuilder extends FormConfigBuilder<DateTimeFormConfig> {
   const DateTimeFormConfigBuilder();
-  @override
-  bool check(FormConfig? form) {
-    return form is DateTimeFormConfig;
-  }
-
   FormItemDateTimeFieldPickerType _type(DateTimeFormConfig form) {
     switch (form.type) {
       case DateTimeFormConfigType.date:
@@ -70,7 +65,7 @@ class DateTimeFormConfigBuilder extends FormConfigBuilder {
     }
   }
 
-  DateTime? _value(
+  DateTime? __value(
     VariableConfig config,
     DateTimeFormConfig form,
     DynamicMap? data,
@@ -114,16 +109,13 @@ class DateTimeFormConfigBuilder extends FormConfigBuilder {
   @override
   Iterable<Widget> form(
     VariableConfig config,
-    FormConfig? form,
+    DateTimeFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    if (form is! DateTimeFormConfig) {
-      return [];
-    }
-    final initialValue = _value(config, form, data);
+    final initialValue = __value(config, form, data);
     return [
       if (config.label.isNotEmpty)
         DividHeadline(
@@ -162,16 +154,13 @@ class DateTimeFormConfigBuilder extends FormConfigBuilder {
   @override
   Iterable<Widget> view(
     VariableConfig config,
-    FormConfig? form,
+    DateTimeFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    if (form is! DateTimeFormConfig) {
-      return [];
-    }
-    final initialValue = _value(config, form, data);
+    final initialValue = __value(config, form, data);
     return [
       if (config.label.isNotEmpty)
         DividHeadline(

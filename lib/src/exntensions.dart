@@ -1,5 +1,27 @@
 part of masamune_module;
 
+extension SNSSignInAdapterListExtensions on List<SNSSignInAdapter>? {
+  Future<void> signOut(BuildContext context) async {
+    if (this == null) {
+      return;
+    }
+    final providerIds = context.model?.activeProviders ?? const [];
+    if (providerIds.isEmpty) {
+      await context.model?.signOut();
+      return;
+    }
+    for (final sns in this!) {
+      final id = sns.provider;
+      if (!providerIds.any((tmp) => tmp.contains(id))) {
+        continue;
+      }
+      await sns.signOut();
+      return;
+    }
+    await context.model?.signOut();
+  }
+}
+
 extension ModuleTagsWidgetRefExtensions on WidgetRef {
   static final _converter = RegExp(r"\{([^\{\}]+?)\}");
   String applyModuleTag(String path) {

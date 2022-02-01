@@ -231,7 +231,7 @@ packages:
       name: device_info_plus_macos
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.2.1"
+    version: "2.2.2"
   device_info_plus_platform_interface:
     dependency: transitive
     description:
@@ -517,14 +517,14 @@ packages:
       name: katana_module
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.9.0+42"
+    version: "0.9.0+48"
   katana_routing:
     dependency: transitive
     description:
       name: katana_routing
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.9.0+5"
+    version: "0.9.0+6"
   loading_animations:
     dependency: "direct main"
     description:
@@ -552,7 +552,7 @@ packages:
       name: masamune
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.9.0+28"
+    version: "0.9.0+37"
   matcher:
     dependency: transitive
     description:
@@ -580,7 +580,7 @@ packages:
       name: model_notifier
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.9.0+6"
+    version: "0.9.0+7"
   multi_select_flutter:
     dependency: transitive
     description:
@@ -594,7 +594,7 @@ packages:
       name: nm
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.2"
+    version: "0.4.3"
   octo_image:
     dependency: transitive
     description:
@@ -1117,7 +1117,7 @@ packages:
       name: win32
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.3.8"
+    version: "2.3.10"
   wordpress_api:
     dependency: transitive
     description:
