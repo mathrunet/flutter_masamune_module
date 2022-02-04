@@ -14,8 +14,8 @@ class RangeFormConfig extends FormConfig<num> {
     this.prefixText,
     this.suffix,
     this.suffixText,
-    this.minKeySuffix = "Min",
-    this.maxKeySuffix = "Max",
+    this.minKey = "min",
+    this.maxKey = "max",
   });
 
   final String? prefixText;
@@ -24,8 +24,8 @@ class RangeFormConfig extends FormConfig<num> {
   final Widget? prefix;
   final Widget? suffix;
 
-  final String minKeySuffix;
-  final String maxKeySuffix;
+  final String minKey;
+  final String maxKey;
 
   final Color? backgroundColor;
 
@@ -53,6 +53,7 @@ class RangeFormConfigBuilder extends FormConfigBuilder<num, RangeFormConfig> {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
+    final map = data.getAsMap(config.id, <String, dynamic>{});
     return [
       if (config.label.isNotEmpty)
         DividHeadline(
@@ -68,65 +69,110 @@ class RangeFormConfigBuilder extends FormConfigBuilder<num, RangeFormConfig> {
         const Divid(),
       Row(
         children: [
-          FormItemTextField(
-            dense: true,
-            color: form.color,
-            inputFormatters: [
-              if (form.inputFormatter != null) form.inputFormatter!.value
-            ],
-            errorText:
-                "No input %s".localize().format([config.label.localize()]),
-            minLength: form.minLength,
-            maxLength: form.maxLength,
-            keyboardType: form.keyboardType,
-            backgroundColor: form.backgroundColor,
-            allowEmpty: !config.required,
-            controller: ref.useTextEditingController(
-                config.id, data.get("${config.id}${form.minKeySuffix}", "")),
-            onSaved: (value) {
-              context["${config.id}${form.minKeySuffix}"] = value;
-            },
-            prefix: form.prefix ??
-                (form.prefixText != null
-                    ? Text(form.prefixText?.localize() ?? "")
-                    : null),
-            suffix: form.suffix ??
-                (form.suffixText != null
-                    ? Text(form.suffixText?.localize() ?? "")
-                    : null),
+          Expanded(
+            flex: 1,
+            child: FormItemTextField(
+              dense: true,
+              color: form.color,
+              inputFormatters: [
+                if (form.inputFormatter != null) form.inputFormatter!.value
+              ],
+              errorText:
+                  "No input %s".localize().format([config.label.localize()]),
+              minLength: form.minLength,
+              maxLength: form.maxLength,
+              keyboardType: form.keyboardType,
+              backgroundColor: form.backgroundColor,
+              allowEmpty: !config.required,
+              controller: ref.useTextEditingController(
+                  "${config.id}:${form.minKey}",
+                  map.get(form.minKey, config.value).toString()),
+              onSaved: (value) {
+                if (value.isEmpty) {
+                  return;
+                }
+                final map = context.getAsMap(config.id, <String, dynamic>{});
+                final min = num.tryParse(value!);
+                if (min == null) {
+                  return;
+                }
+                if (map.containsKey(form.maxKey)) {
+                  final max = map.get(form.maxKey, min);
+                  if (min > max) {
+                    map[form.minKey] = max;
+                    map[form.maxKey] = min;
+                  }
+                } else {
+                  map[form.minKey] = min;
+                }
+                context[config.id] = map;
+              },
+              prefix: form.prefix ??
+                  (form.prefixText != null
+                      ? Text(form.prefixText?.localize() ?? "")
+                      : null),
+              suffix: form.suffix ??
+                  (form.suffixText != null
+                      ? Text(form.suffixText?.localize() ?? "")
+                      : null),
+            ),
           ),
           const Space.width(8),
-          const Text("～"),
+          const SizedBox(
+            width: 16,
+            child: Text(
+              "～",
+              textAlign: TextAlign.center,
+            ),
+          ),
           const Space.width(8),
-          FormItemTextField(
-            dense: true,
-            color: form.color,
-            inputFormatters: [
-              if (form.inputFormatter != null) form.inputFormatter!.value
-            ],
-            errorText:
-                "No input %s".localize().format([config.label.localize()]),
-            minLength: form.minLength,
-            maxLength: form.maxLength,
-            keyboardType: form.keyboardType,
-            backgroundColor: form.backgroundColor,
-            allowEmpty: !config.required,
-            controller: ref.useTextEditingController(
-                config.id,
-                data
-                    .get("${config.id}${form.maxKeySuffix}", config.value)
-                    .toString()),
-            onSaved: (value) {
-              context["${config.id}${form.maxKeySuffix}"] = value;
-            },
-            prefix: form.prefix ??
-                (form.prefixText != null
-                    ? Text(form.prefixText?.localize() ?? "")
-                    : null),
-            suffix: form.suffix ??
-                (form.suffixText != null
-                    ? Text(form.suffixText?.localize() ?? "")
-                    : null),
+          Expanded(
+            flex: 1,
+            child: FormItemTextField(
+              dense: true,
+              color: form.color,
+              inputFormatters: [
+                if (form.inputFormatter != null) form.inputFormatter!.value
+              ],
+              errorText:
+                  "No input %s".localize().format([config.label.localize()]),
+              minLength: form.minLength,
+              maxLength: form.maxLength,
+              keyboardType: form.keyboardType,
+              backgroundColor: form.backgroundColor,
+              allowEmpty: !config.required,
+              controller: ref.useTextEditingController(
+                  "${config.id}:${form.maxKey}",
+                  map.get(form.maxKey, config.value).toString()),
+              onSaved: (value) {
+                if (value.isEmpty) {
+                  return;
+                }
+                final map = context.getAsMap(config.id, <String, dynamic>{});
+                final max = num.tryParse(value!);
+                if (max == null) {
+                  return;
+                }
+                if (map.containsKey(form.minKey)) {
+                  final min = map.get(form.minKey, max);
+                  if (min > max) {
+                    map[form.minKey] = max;
+                    map[form.maxKey] = min;
+                  }
+                } else {
+                  map[form.maxKey] = max;
+                }
+                context[config.id] = map;
+              },
+              prefix: form.prefix ??
+                  (form.prefixText != null
+                      ? Text(form.prefixText?.localize() ?? "")
+                      : null),
+              suffix: form.suffix ??
+                  (form.suffixText != null
+                      ? Text(form.suffixText?.localize() ?? "")
+                      : null),
+            ),
           ),
         ],
       ),
@@ -142,6 +188,7 @@ class RangeFormConfigBuilder extends FormConfigBuilder<num, RangeFormConfig> {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
+    final map = data.getAsMap(config.id, <String, dynamic>{});
     return [
       if (config.label.isNotEmpty)
         DividHeadline(
@@ -151,7 +198,7 @@ class RangeFormConfigBuilder extends FormConfigBuilder<num, RangeFormConfig> {
         const Divid(),
       ListItem(
         title: UIText(
-            "${data.get("${config.id}${form.minKeySuffix}", config.value)} ～ ${data.get("${config.id}${form.maxKeySuffix}", config.value)}"),
+            "${map.get(form.minKey, config.value)} ～ ${map.get(form.maxKey, config.value)}"),
       ),
     ];
   }
@@ -163,6 +210,6 @@ class RangeFormConfigBuilder extends FormConfigBuilder<num, RangeFormConfig> {
     WidgetRef ref,
     bool updated,
   ) {
-    return context.get(config.id, config.value);
+    return context.get(config.id, <String, dynamic>{});
   }
 }

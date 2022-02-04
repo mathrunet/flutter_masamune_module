@@ -147,7 +147,7 @@ class MenuModuleHome extends PageModuleWidget<MenuModule> {
                       ? null
                       : () {
                           context.rootNavigator.pushNamed(
-                            menu.path!,
+                            ref.applyModuleTag(menu.path!),
                             arguments: RouteQuery.fullscreenOrModal,
                           );
                         },

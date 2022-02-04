@@ -232,18 +232,14 @@ class DetailModuleHome extends PageModuleWidget<DetailModule> {
         top: [
           if (!module.enableFeatureImage)
             if (module.appBarBottomActions.isNotEmpty)
-              Positioned(
-                right: 0.0,
-                bottom: 0.0,
-                child: SizedBox(
-                  height: 40,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: module.appBarBottomActions,
-                    ),
+              SizedBox(
+                height: 40,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: module.appBarBottomActions,
                   ),
                 ),
               ),

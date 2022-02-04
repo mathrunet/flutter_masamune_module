@@ -1,6 +1,6 @@
 part of masamune_module;
 
-extension DynamicCollectionModelExtensions on DynamicCollectionModel {
+extension ListenableMapListExtensions on List<ListenableMap<String, dynamic>> {
   List<ListenableMap<String, dynamic>> mergeUserInformation(
     WidgetRef ref, {
     String userCollectionPath = "user",
@@ -17,6 +17,28 @@ extension DynamicCollectionModelExtensions on DynamicCollectionModel {
     return setWhereListenable(
       user,
       test: (o, a) => o.get(userKey, "") == a.uid,
+      apply: (o, a) =>
+          o.mergeListenable(a, convertKeys: (key) => "$keyPrefix$key"),
+      orElse: (o) => o,
+    ).toList();
+  }
+
+  List<ListenableMap<String, dynamic>> mergeDetailInformation(
+    WidgetRef ref,
+    String collectionPath, {
+    String idKey = Const.uid,
+    String keyPrefix = "",
+  }) {
+    final collection = ref.watchCollectionModel(
+      ModelQuery(
+        collectionPath,
+        key: Const.uid,
+        whereIn: map((e) => e.get(idKey, "")).distinct(),
+      ).value,
+    );
+    return setWhereListenable(
+      collection,
+      test: (o, a) => o.get(idKey, "") == a.uid,
       apply: (o, a) =>
           o.mergeListenable(a, convertKeys: (key) => "$keyPrefix$key"),
       orElse: (o) => o,
