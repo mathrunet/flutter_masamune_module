@@ -4,7 +4,7 @@ const _kQuillToolbarHeight = 80;
 
 /// FormConfig for using TextField.
 @immutable
-class ContentFormConfig extends FormConfig {
+class ContentFormConfig extends FormConfig<String> {
   const ContentFormConfig({
     this.color,
     this.subColor,
@@ -25,12 +25,13 @@ class ContentFormConfig extends FormConfig {
 }
 
 @immutable
-class ContentFormConfigBuilder extends FormConfigBuilder<ContentFormConfig> {
+class ContentFormConfigBuilder
+    extends FormConfigBuilder<String, ContentFormConfig> {
   const ContentFormConfigBuilder();
 
   @override
   Iterable<Widget> form(
-    VariableConfig config,
+    VariableConfig<String> config,
     ContentFormConfig form,
     BuildContext context,
     WidgetRef ref, {
@@ -55,13 +56,13 @@ class ContentFormConfigBuilder extends FormConfigBuilder<ContentFormConfig> {
   }
 
   List<Widget> _buildForm(
-      VariableConfig config,
+      VariableConfig<String> config,
       ContentFormConfig form,
       BuildContext context,
       WidgetRef ref,
       DynamicMap? data,
       bool onlyRequired) {
-    final text = data.get(config.id, "");
+    final text = data.get(config.id, config.value);
     switch (form.type) {
       case PostEditingType.wysiwyg:
         final controller = ref.cache(
@@ -156,7 +157,7 @@ class ContentFormConfigBuilder extends FormConfigBuilder<ContentFormConfig> {
 
   @override
   Iterable<Widget> view(
-    VariableConfig config,
+    VariableConfig<String> config,
     ContentFormConfig form,
     BuildContext context,
     WidgetRef ref, {
@@ -175,13 +176,13 @@ class ContentFormConfigBuilder extends FormConfigBuilder<ContentFormConfig> {
   }
 
   List<Widget> _buildView(
-      VariableConfig config,
+      VariableConfig<String> config,
       ContentFormConfig form,
       BuildContext context,
       WidgetRef ref,
       DynamicMap? data,
       bool onlyRequired) {
-    final text = data.get(config.id, "");
+    final text = data.get(config.id, config.value);
 
     switch (form.type) {
       case PostEditingType.wysiwyg:
@@ -239,11 +240,11 @@ class ContentFormConfigBuilder extends FormConfigBuilder<ContentFormConfig> {
 
   @override
   dynamic value(
-    VariableConfig config,
+    VariableConfig<String> config,
     BuildContext context,
     WidgetRef ref,
     bool updated,
   ) {
-    return context.get(config.id, "");
+    return context.get(config.id, config.value);
   }
 }

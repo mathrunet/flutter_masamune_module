@@ -2,7 +2,7 @@ part of masamune_module.variable;
 
 /// FormConfig for using rage TextField.
 @immutable
-class RangeFormConfig extends FormConfig {
+class RangeFormConfig extends FormConfig<num> {
   const RangeFormConfig({
     this.color,
     this.backgroundColor,
@@ -41,12 +41,12 @@ class RangeFormConfig extends FormConfig {
 }
 
 @immutable
-class RangeFormConfigBuilder extends FormConfigBuilder<RangeFormConfig> {
+class RangeFormConfigBuilder extends FormConfigBuilder<num, RangeFormConfig> {
   const RangeFormConfigBuilder();
 
   @override
   Iterable<Widget> form(
-    VariableConfig config,
+    VariableConfig<num> config,
     RangeFormConfig form,
     BuildContext context,
     WidgetRef ref, {
@@ -112,7 +112,10 @@ class RangeFormConfigBuilder extends FormConfigBuilder<RangeFormConfig> {
             backgroundColor: form.backgroundColor,
             allowEmpty: !config.required,
             controller: ref.useTextEditingController(
-                config.id, data.get("${config.id}${form.maxKeySuffix}", "")),
+                config.id,
+                data
+                    .get("${config.id}${form.maxKeySuffix}", config.value)
+                    .toString()),
             onSaved: (value) {
               context["${config.id}${form.maxKeySuffix}"] = value;
             },
@@ -132,7 +135,7 @@ class RangeFormConfigBuilder extends FormConfigBuilder<RangeFormConfig> {
 
   @override
   Iterable<Widget> view(
-    VariableConfig config,
+    VariableConfig<num> config,
     RangeFormConfig form,
     BuildContext context,
     WidgetRef ref, {
@@ -148,18 +151,18 @@ class RangeFormConfigBuilder extends FormConfigBuilder<RangeFormConfig> {
         const Divid(),
       ListItem(
         title: UIText(
-            "${data.get("${config.id}${form.minKeySuffix}", 0)} ～ ${data.get("${config.id}${form.maxKeySuffix}", 0)}"),
+            "${data.get("${config.id}${form.minKeySuffix}", config.value)} ～ ${data.get("${config.id}${form.maxKeySuffix}", config.value)}"),
       ),
     ];
   }
 
   @override
   dynamic value(
-    VariableConfig config,
+    VariableConfig<num> config,
     BuildContext context,
     WidgetRef ref,
     bool updated,
   ) {
-    return context.get(config.id, "");
+    return context.get(config.id, config.value);
   }
 }

@@ -2,16 +2,13 @@ part of masamune_module.variable;
 
 /// FormConfig for using Hidden.
 @immutable
-class HiddenFormConfig extends FormConfig {
+class HiddenFormConfig<T> extends FormConfig<T> {
   const HiddenFormConfig({
     this.type = HiddenFormConfigType.variable,
-    this.value,
     this.applyOnUpdate = true,
   });
 
   final HiddenFormConfigType type;
-
-  final Object? value;
 
   final bool applyOnUpdate;
 }
@@ -29,13 +26,14 @@ enum HiddenFormConfigType {
 }
 
 @immutable
-class HiddenFormConfigBuilder extends FormConfigBuilder<HiddenFormConfig> {
+class HiddenFormConfigBuilder<T>
+    extends FormConfigBuilder<T, HiddenFormConfig<T>> {
   const HiddenFormConfigBuilder();
 
   @override
   Iterable<Widget> form(
-    VariableConfig config,
-    HiddenFormConfig form,
+    VariableConfig<T> config,
+    HiddenFormConfig<T> form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
@@ -46,8 +44,8 @@ class HiddenFormConfigBuilder extends FormConfigBuilder<HiddenFormConfig> {
 
   @override
   Iterable<Widget> view(
-    VariableConfig config,
-    HiddenFormConfig form,
+    VariableConfig<T> config,
+    HiddenFormConfig<T> form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
@@ -58,13 +56,13 @@ class HiddenFormConfigBuilder extends FormConfigBuilder<HiddenFormConfig> {
 
   @override
   dynamic value(
-    VariableConfig config,
+    VariableConfig<T> config,
     BuildContext context,
     WidgetRef ref,
     bool updated,
   ) {
     final form = config.form;
-    if (form is! HiddenFormConfig) {
+    if (form is! HiddenFormConfig<T>) {
       return null;
     }
     if (!form.applyOnUpdate && !updated) {
@@ -76,7 +74,7 @@ class HiddenFormConfigBuilder extends FormConfigBuilder<HiddenFormConfig> {
       case HiddenFormConfigType.initialOrder:
         return DateTime.now().millisecondsSinceEpoch.toDouble();
       default:
-        return form.value;
+        return config.value;
     }
   }
 }

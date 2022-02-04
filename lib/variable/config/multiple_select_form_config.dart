@@ -2,16 +2,13 @@ part of masamune_module.variable;
 
 /// FormConfig for using Select/DropdownField.
 @immutable
-class MultipleSelectFormConfig extends FormConfig {
+class MultipleSelectFormConfig extends FormConfig<List<String>> {
   const MultipleSelectFormConfig({
     required this.items,
-    required this.initialKeys,
     this.backgroundColor,
     this.color,
   });
   final Map<String, String> items;
-
-  final List<String> initialKeys;
 
   final Color? backgroundColor;
 
@@ -20,12 +17,12 @@ class MultipleSelectFormConfig extends FormConfig {
 
 @immutable
 class MultipleSelectFormConfigBuilder
-    extends FormConfigBuilder<MultipleSelectFormConfig> {
+    extends FormConfigBuilder<List<String>, MultipleSelectFormConfig> {
   const MultipleSelectFormConfigBuilder();
 
   @override
   Iterable<Widget> form(
-    VariableConfig config,
+    VariableConfig<List<String>> config,
     MultipleSelectFormConfig form,
     BuildContext context,
     WidgetRef ref, {
@@ -54,10 +51,10 @@ class MultipleSelectFormConfigBuilder
         hintText: "Input %s".localize().format([config.label.localize()]),
         errorText: "No input %s".localize().format([config.label.localize()]),
         controller: ref.useTextEditingController(
-            config.id, data.getAsList(config.id, form.initialKeys).join(",")),
+            config.id, data.getAsList(config.id, config.value).join(",")),
         onSaved: (value) {
           if (value.isEmpty) {
-            context[config.id] = form.initialKeys;
+            context[config.id] = config.value;
           } else {
             context[config.id] = value;
           }
@@ -68,14 +65,14 @@ class MultipleSelectFormConfigBuilder
 
   @override
   Iterable<Widget> view(
-    VariableConfig config,
+    VariableConfig<List<String>> config,
     MultipleSelectFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    final list = data.getAsList(config.id, form.initialKeys);
+    final list = data.getAsList(config.id, config.value);
     return [
       if (config.label.isNotEmpty)
         DividHeadline(
@@ -92,11 +89,11 @@ class MultipleSelectFormConfigBuilder
 
   @override
   dynamic value(
-    VariableConfig config,
+    VariableConfig<List<String>> config,
     BuildContext context,
     WidgetRef ref,
     bool updated,
   ) {
-    return context.getAsList(config.id);
+    return context.getAsList(config.id, config.value);
   }
 }

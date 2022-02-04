@@ -2,7 +2,7 @@ part of masamune_module.variable;
 
 /// FormConfig for using ChipsField.
 @immutable
-class ChipsFormConfig extends FormConfig {
+class ChipsFormConfig extends FormConfig<List<String>> {
   const ChipsFormConfig({
     this.color,
     this.backgroundColor,
@@ -23,7 +23,8 @@ class ChipsFormConfig extends FormConfig {
 }
 
 @immutable
-class ChipsFormConfigBuilder extends FormConfigBuilder<ChipsFormConfig> {
+class ChipsFormConfigBuilder
+    extends FormConfigBuilder<List<String>, ChipsFormConfig> {
   const ChipsFormConfigBuilder();
 
   @override
@@ -58,7 +59,10 @@ class ChipsFormConfigBuilder extends FormConfigBuilder<ChipsFormConfig> {
         allowEmpty: !config.required,
         controller: ref.useTextEditingController(
           config.id,
-          data.getAsList(config.id).map((e) => e.toString()).join(","),
+          data
+              .getAsList(config.id, config.value)
+              .map((e) => e.toString())
+              .join(","),
         ),
         onSaved: (value) {
           context[config.id] = value;
@@ -86,7 +90,7 @@ class ChipsFormConfigBuilder extends FormConfigBuilder<ChipsFormConfig> {
 
   @override
   Iterable<Widget> view(
-    VariableConfig config,
+    VariableConfig<List<String>> config,
     ChipsFormConfig form,
     BuildContext context,
     WidgetRef ref, {
@@ -103,7 +107,7 @@ class ChipsFormConfigBuilder extends FormConfigBuilder<ChipsFormConfig> {
       Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         child: Wrap(
-          children: data.getAsList(config.id).mapAndRemoveEmpty(
+          children: data.getAsList(config.id, config.value).mapAndRemoveEmpty(
             (value) {
               return Chip(
                 label: Text(
@@ -124,11 +128,11 @@ class ChipsFormConfigBuilder extends FormConfigBuilder<ChipsFormConfig> {
 
   @override
   dynamic value(
-    VariableConfig config,
+    VariableConfig<List<String>> config,
     BuildContext context,
     WidgetRef ref,
     bool updated,
   ) {
-    return context.getAsList(config.id);
+    return context.getAsList(config.id, config.value);
   }
 }

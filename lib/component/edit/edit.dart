@@ -10,6 +10,8 @@ class EditModule extends PageModule {
     this.queryPath = "edit",
     this.queryKey = "edit_id",
     this.enableDelete = true,
+    this.bottomSpace = 120,
+    this.padding = const EdgeInsets.symmetric(vertical: 16),
     this.automaticallyImplyLeadingOnHome = true,
     this.sliverLayoutWhenModernDesignOnHome = false,
     Permission permission = const Permission(),
@@ -35,6 +37,9 @@ class EditModule extends PageModule {
     return route;
   }
 
+  /// Form padding.
+  final EdgeInsetsGeometry padding;
+
   // Page settings.
   final PageModuleWidget<EditModule> homePage;
 
@@ -58,6 +63,9 @@ class EditModule extends PageModule {
 
   /// True if you want to automatically display the back button when you are at home.
   final bool automaticallyImplyLeadingOnHome;
+
+  /// Space under the form.
+  final double bottomSpace;
 }
 
 class EditModuleHome extends PageModuleWidget<EditModule> {
@@ -126,11 +134,11 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
         builder: (context) {
           return FormBuilder(
             key: form.key,
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: module.padding,
             children: [
               ...variables.buildForm(context, ref, data: doc),
-              if (variables.isNotEmpty) const Divid(),
-              const Space.height(120),
+              if (variables.isNotEmpty && module.bottomSpace > 0) const Divid(),
+              Space.height(module.bottomSpace),
             ],
           );
         },

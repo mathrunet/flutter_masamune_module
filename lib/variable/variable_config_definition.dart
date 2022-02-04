@@ -4,70 +4,77 @@ class VariableConfigDefinition {
   const VariableConfigDefinition._();
 
   /// VariableConfig definition of the name.
-  static const VariableConfig name = VariableConfig(
+  static const VariableConfig<String> name = VariableConfig(
     id: Const.name,
     label: "Name",
+    value: "",
     required: true,
     form: TextFormConfig(),
   );
 
   /// VariableConfig definition of the image.
-  static const VariableConfig image = VariableConfig(
-    id: Const.image,
+  static const VariableConfig<String> image = VariableConfig(
+    id: Const.media,
     label: "Image",
+    value: "assets/default.png",
     form: ImageFormConfig(
       type: PlatformMediaType.image,
     ),
   );
 
   /// VariableConfig definition of the media.
-  static const VariableConfig media = VariableConfig(
+  static const VariableConfig<String> media = VariableConfig(
     id: Const.media,
     label: "Media",
+    value: "assets/default.png",
     form: ImageFormConfig(
       type: PlatformMediaType.all,
     ),
   );
 
   /// VariableConfig definition of the text.
-  static const VariableConfig text = VariableConfig(
+  static const VariableConfig<String> text = VariableConfig(
     id: Const.text,
     label: "Text",
+    value: "",
     form: TextFormConfig(maxLines: 5, minLines: 5),
   );
 
   /// VariableConfig definition of the text.
-  static const VariableConfig content = VariableConfig(
+  static const VariableConfig<String> content = VariableConfig(
     id: Const.text,
     label: "Text",
+    value: "",
     form: ContentFormConfig(),
   );
 
   /// VariableConfig definition of the tags.
-  static const VariableConfig tags = VariableConfig(
+  static const VariableConfig<List<String>> tags = VariableConfig(
     id: Const.tag,
     label: "Tag",
+    value: [],
     form: ChipsFormConfig(),
   );
 
   /// VariableConfig definition of the gender.
-  static const VariableConfig gender = VariableConfig(
+  static const VariableConfig<String> gender = VariableConfig(
     id: "gender",
     label: "gender",
+    value: "other",
     form: SelectFormConfig(
       items: {
         "male": "Male",
         "female": "Female",
         "other": "Others",
       },
-      initialKey: "other",
     ),
   );
 
   /// VariableConfig definition of the age.
-  static const VariableConfig ages = VariableConfig(
+  static const VariableConfig<String> ages = VariableConfig(
     id: "ages",
     label: "Ages",
+    value: "twenties",
     form: SelectFormConfig(
       items: {
         "teens": "10s",
@@ -77,14 +84,14 @@ class VariableConfigDefinition {
         "fifties": "50s",
         "sixties": "60s",
       },
-      initialKey: "twenties",
     ),
   );
 
   /// VariableConfig definition of the order.
-  static const VariableConfig order = VariableConfig(
+  static const VariableConfig<double> order = VariableConfig(
     id: "order",
     label: "Order",
+    value: 0.0,
     form: HiddenFormConfig(
       type: HiddenFormConfigType.initialOrder,
       applyOnUpdate: false,
@@ -92,9 +99,10 @@ class VariableConfigDefinition {
   );
 
   /// VariableConfig definition of the created time.
-  static const VariableConfig createdTime = VariableConfig(
+  static const VariableConfig<int> createdTime = VariableConfig(
     id: "createdTime",
     label: "Created time",
+    value: 0,
     form: HiddenFormConfig(
       type: HiddenFormConfigType.dateTimeNow,
       applyOnUpdate: false,
@@ -102,18 +110,20 @@ class VariableConfigDefinition {
   );
 
   /// VariableConfig definition of the updated time.
-  static const VariableConfig updatedTime = VariableConfig(
+  static const VariableConfig<int> updatedTime = VariableConfig(
     id: "updatedTime",
     label: "Updated time",
+    value: 0,
     form: HiddenFormConfig(
       type: HiddenFormConfigType.dateTimeNow,
     ),
   );
 
   /// VariableConfig definition of the name.
-  static const VariableConfig number = VariableConfig(
+  static const VariableConfig<int> number = VariableConfig(
     id: "number",
     label: "Number",
+    value: 0,
     form: TextFormConfig(
       keyboardType: TextInputType.number,
       inputFormatter: TextInputFormatterConfig(r"[0-9]"),
@@ -121,9 +131,10 @@ class VariableConfigDefinition {
   );
 
   /// VariableConfig definition of the name.
-  static const VariableConfig range = VariableConfig(
+  static const VariableConfig<num> range = VariableConfig(
     id: "range",
     label: "Range",
+    value: 0,
     form: RangeFormConfig(
       inputFormatter: TextInputFormatterConfig(r"[0-9]"),
     ),

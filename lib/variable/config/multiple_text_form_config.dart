@@ -2,7 +2,7 @@ part of masamune_module.variable;
 
 /// FormConfig for using multiple TextField List.
 @immutable
-class MultipleTextFormConfig extends FormConfig {
+class MultipleTextFormConfig extends FormConfig<List<String>> {
   const MultipleTextFormConfig({
     this.backgroundColor,
     this.obscureText = false,
@@ -36,12 +36,12 @@ class MultipleTextFormConfig extends FormConfig {
 
 @immutable
 class MultipleTextFormConfigBuilder
-    extends FormConfigBuilder<MultipleTextFormConfig> {
+    extends FormConfigBuilder<List<String>, MultipleTextFormConfig> {
   const MultipleTextFormConfigBuilder();
 
   @override
   Iterable<Widget> form(
-    VariableConfig config,
+    VariableConfig<List<String>> config,
     MultipleTextFormConfig form,
     BuildContext context,
     WidgetRef ref, {
@@ -75,7 +75,7 @@ class MultipleTextFormConfigBuilder
         obscureText: form.obscureText,
         allowEmpty: !config.required,
         controller: ref.useTextEditingController(
-            config.id, data.getAsList(config.id).join(",")),
+            config.id, data.getAsList(config.id, config.value).join(",")),
         onSaved: (value) {
           context[config.id] = value?.where((e) => e.isNotEmpty).toList() ?? [];
         },
@@ -85,14 +85,14 @@ class MultipleTextFormConfigBuilder
 
   @override
   Iterable<Widget> view(
-    VariableConfig config,
+    VariableConfig<List<String>> config,
     MultipleTextFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    final list = data.getAsList(config.id);
+    final list = data.getAsList(config.id, config.value);
     return [
       if (config.label.isNotEmpty)
         DividHeadline(
@@ -109,11 +109,11 @@ class MultipleTextFormConfigBuilder
 
   @override
   dynamic value(
-    VariableConfig config,
+    VariableConfig<List<String>> config,
     BuildContext context,
     WidgetRef ref,
     bool updated,
   ) {
-    return context.getAsList(config.id);
+    return context.getAsList(config.id, config.value);
   }
 }

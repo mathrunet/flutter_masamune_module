@@ -2,7 +2,7 @@ part of masamune_module.variable;
 
 /// FormConfig for using TextField.
 @immutable
-class TextFormConfig extends FormConfig {
+class TextFormConfig<T> extends FormConfig<T> {
   const TextFormConfig({
     this.color,
     this.backgroundColor,
@@ -45,12 +45,12 @@ class TextFormConfig extends FormConfig {
 }
 
 @immutable
-class TextFormConfigBuilder extends FormConfigBuilder<TextFormConfig> {
+class TextFormConfigBuilder<T> extends FormConfigBuilder<T, TextFormConfig> {
   const TextFormConfigBuilder();
 
   @override
   Iterable<Widget> form(
-    VariableConfig config,
+    VariableConfig<T> config,
     TextFormConfig form,
     BuildContext context,
     WidgetRef ref, {
@@ -86,8 +86,8 @@ class TextFormConfigBuilder extends FormConfigBuilder<TextFormConfig> {
         backgroundColor: form.backgroundColor,
         obscureText: form.obscureText,
         allowEmpty: !config.required,
-        controller:
-            ref.useTextEditingController(config.id, data.get(config.id, "")),
+        controller: ref.useTextEditingController(
+            config.id, data.get(config.id, config.value).toString()),
         onSaved: (value) {
           context[config.id] = value;
         },
@@ -105,7 +105,7 @@ class TextFormConfigBuilder extends FormConfigBuilder<TextFormConfig> {
 
   @override
   Iterable<Widget> view(
-    VariableConfig config,
+    VariableConfig<T> config,
     TextFormConfig form,
     BuildContext context,
     WidgetRef ref, {
@@ -120,18 +120,18 @@ class TextFormConfigBuilder extends FormConfigBuilder<TextFormConfig> {
       else
         const Divid(),
       ListItem(
-        title: UIText(data.get(config.id, "")),
+        title: UIText(data.get(config.id, config.value).toString()),
       ),
     ];
   }
 
   @override
   dynamic value(
-    VariableConfig config,
+    VariableConfig<T> config,
     BuildContext context,
     WidgetRef ref,
     bool updated,
   ) {
-    return context.get(config.id, "");
+    return context.get(config.id, config.value);
   }
 }

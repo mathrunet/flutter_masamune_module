@@ -2,17 +2,14 @@ part of masamune_module.variable;
 
 /// FormConfig for using Select/DropdownField.
 @immutable
-class SelectFormConfig extends FormConfig {
+class SelectFormConfig extends FormConfig<String> {
   const SelectFormConfig({
     required this.items,
-    required this.initialKey,
     this.backgroundColor,
     this.color,
   });
 
   final Map<String, String> items;
-
-  final String initialKey;
 
   final Color? backgroundColor;
 
@@ -20,12 +17,13 @@ class SelectFormConfig extends FormConfig {
 }
 
 @immutable
-class SelectFormConfigBuilder extends FormConfigBuilder<SelectFormConfig> {
+class SelectFormConfigBuilder
+    extends FormConfigBuilder<String, SelectFormConfig> {
   const SelectFormConfigBuilder();
 
   @override
   Iterable<Widget> form(
-    VariableConfig config,
+    VariableConfig<String> config,
     SelectFormConfig form,
     BuildContext context,
     WidgetRef ref, {
@@ -53,10 +51,10 @@ class SelectFormConfigBuilder extends FormConfigBuilder<SelectFormConfig> {
         hintText: "Input %s".localize().format([config.label.localize()]),
         errorText: "No input %s".localize().format([config.label.localize()]),
         controller: ref.useTextEditingController(
-            config.id, data.get(config.id, form.initialKey)),
+            config.id, data.get(config.id, config.value)),
         onSaved: (value) {
           if (value.isEmpty) {
-            context[config.id] = form.initialKey;
+            context[config.id] = config.value;
           } else {
             context[config.id] = value;
           }
@@ -67,7 +65,7 @@ class SelectFormConfigBuilder extends FormConfigBuilder<SelectFormConfig> {
 
   @override
   Iterable<Widget> view(
-    VariableConfig config,
+    VariableConfig<String> config,
     SelectFormConfig form,
     BuildContext context,
     WidgetRef ref, {
@@ -82,18 +80,18 @@ class SelectFormConfigBuilder extends FormConfigBuilder<SelectFormConfig> {
       else
         const Divid(),
       ListItem(
-        title: Text(form.items[data.get(config.id, "")] ?? ""),
+        title: Text(form.items[data.get(config.id, config.value)] ?? ""),
       ),
     ];
   }
 
   @override
   dynamic value(
-    VariableConfig config,
+    VariableConfig<String> config,
     BuildContext context,
     WidgetRef ref,
     bool updated,
   ) {
-    return context.get(config.id, "");
+    return context.get(config.id, config.value);
   }
 }

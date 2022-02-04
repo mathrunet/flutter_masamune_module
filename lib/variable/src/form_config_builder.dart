@@ -1,15 +1,15 @@
 part of masamune_module.variable;
 
 @immutable
-abstract class FormConfigBuilder<T extends FormConfig> {
+abstract class FormConfigBuilder<TVariable, TForm extends FormConfig> {
   const FormConfigBuilder();
   bool check(FormConfig? form) {
-    return form is T;
+    return form is TForm;
   }
 
   Iterable<Widget> view(
-    VariableConfig config,
-    T form,
+    VariableConfig<TVariable> config,
+    TForm form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
@@ -17,8 +17,8 @@ abstract class FormConfigBuilder<T extends FormConfig> {
   });
 
   Iterable<Widget> form(
-    VariableConfig config,
-    T form,
+    VariableConfig<TVariable> config,
+    TForm form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
@@ -26,7 +26,7 @@ abstract class FormConfigBuilder<T extends FormConfig> {
   });
 
   dynamic value(
-    VariableConfig config,
+    VariableConfig<TVariable> config,
     BuildContext context,
     WidgetRef ref,
     bool updated,
@@ -44,9 +44,9 @@ abstract class FormConfigBuilder<T extends FormConfig> {
       return [];
     }
     return view(
-      config,
+      config as VariableConfig<TVariable>,
       // ignore: cast_nullable_to_non_nullable
-      form as T,
+      form as TForm,
       context,
       ref,
       data: data,
@@ -66,9 +66,9 @@ abstract class FormConfigBuilder<T extends FormConfig> {
       return [];
     }
     return this.form(
-      config,
+      config as VariableConfig<TVariable>,
       // ignore: cast_nullable_to_non_nullable
-      form as T,
+      form as TForm,
       context,
       ref,
       data: data,
@@ -83,7 +83,7 @@ abstract class FormConfigBuilder<T extends FormConfig> {
     bool updated,
   ) {
     return value(
-      config,
+      config as VariableConfig<TVariable>,
       context,
       ref,
       updated,

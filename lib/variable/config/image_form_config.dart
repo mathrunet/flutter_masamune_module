@@ -2,10 +2,11 @@ part of masamune_module.variable;
 
 /// FormConfig for using Image.
 @immutable
-class ImageFormConfig extends FormConfig {
+class ImageFormConfig extends FormConfig<String> {
   const ImageFormConfig({
     this.color,
     this.backgroundColor,
+    this.height = 160,
     this.type = PlatformMediaType.all,
   });
 
@@ -14,15 +15,18 @@ class ImageFormConfig extends FormConfig {
   final Color? color;
 
   final PlatformMediaType type;
+
+  final double height;
 }
 
 @immutable
-class ImageFormConfigBuilder extends FormConfigBuilder<ImageFormConfig> {
+class ImageFormConfigBuilder
+    extends FormConfigBuilder<String, ImageFormConfig> {
   const ImageFormConfigBuilder();
 
   @override
   Iterable<Widget> form(
-    VariableConfig config,
+    VariableConfig<String> config,
     ImageFormConfig form,
     BuildContext context,
     WidgetRef ref, {
@@ -32,12 +36,14 @@ class ImageFormConfigBuilder extends FormConfigBuilder<ImageFormConfig> {
     return [
       FormItemMedia(
         dense: true,
+        height: form.height,
         color: form.color,
+        padding: const EdgeInsets.only(bottom: 4),
         hintText: "Select %s".localize().format([config.label.localize()]),
         errorText: "No select %s".localize().format([config.label.localize()]),
         allowEmpty: !config.required,
-        controller:
-            ref.useTextEditingController(config.id, data.get(config.id, "")),
+        controller: ref.useTextEditingController(
+            config.id, data.get(config.id, config.value)),
         onSaved: (value) {
           context[config.id] = value;
         },
@@ -75,14 +81,14 @@ class ImageFormConfigBuilder extends FormConfigBuilder<ImageFormConfig> {
 
   @override
   Iterable<Widget> view(
-    VariableConfig config,
+    VariableConfig<String> config,
     ImageFormConfig form,
     BuildContext context,
     WidgetRef ref, {
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
-    final path = data.get(config.id, "");
+    final path = data.get(config.id, config.value);
     final type = getPlatformMediaType(path);
     switch (type) {
       case PlatformMediaType.image:
@@ -102,11 +108,11 @@ class ImageFormConfigBuilder extends FormConfigBuilder<ImageFormConfig> {
 
   @override
   dynamic value(
-    VariableConfig config,
+    VariableConfig<String> config,
     BuildContext context,
     WidgetRef ref,
     bool updated,
   ) {
-    return context.get(config.id, "");
+    return context.get(config.id, config.value);
   }
 }

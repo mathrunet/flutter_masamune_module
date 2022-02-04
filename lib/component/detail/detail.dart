@@ -346,14 +346,16 @@ class DetailModuleTextWidget extends ModuleWidget<DetailModule> {
 class DetailModuleContentWidget extends ModuleWidget<DetailModule> {
   const DetailModuleContentWidget({
     this.contentLabel,
+    this.textKey,
   });
   final String? contentLabel;
+  final String? textKey;
 
   @override
   Widget build(BuildContext context, WidgetRef ref, DetailModule module) {
     final detailId = context.get("detail_id", "");
     final detail = ref.watchDocumentModel("${module.queryPath}/$detailId");
-    final text = detail.get(module.textKey, "");
+    final text = detail.get(textKey ?? module.textKey, "");
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),

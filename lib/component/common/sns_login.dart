@@ -53,7 +53,6 @@ class SnsLoginModule extends PageModule {
 
     final route = {
       "/landing": RouteConfig((_) => landingPage),
-      "/register": RouteConfig((_) => registerPage),
     };
     return route;
   }
@@ -260,16 +259,9 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
                                               ref.readUserDocumentModel(
                                                   module.userPath);
                                           await user.loading;
-                                          if (_hasRegistrationData(
-                                              context, module, user)) {
-                                            context.navigator
-                                                .pushReplacementNamed(
-                                                    "/register");
-                                          } else {
-                                            context.navigator
-                                                .pushReplacementNamed(
-                                                    module.redirectTo);
-                                          }
+                                          context.navigator
+                                              .pushReplacementNamed(
+                                                  module.redirectTo);
                                         } catch (e) {
                                           UIDialog.show(
                                             context,
@@ -317,13 +309,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn();
-              final user = ref.readUserDocumentModel(module.userPath);
-              await user.loading;
-              if (_hasRegistrationData(context, module, user)) {
-                context.navigator.pushReplacementNamed("/register");
-              } else {
-                context.navigator.pushReplacementNamed(module.redirectTo);
-              }
+              context.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -351,13 +337,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn();
-              final user = ref.readUserDocumentModel(module.userPath);
-              await user.loading;
-              if (_hasRegistrationData(context, module, user)) {
-                context.navigator.pushReplacementNamed("/register");
-              } else {
-                context.navigator.pushReplacementNamed(module.redirectTo);
-              }
+              context.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -382,13 +362,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn();
-              final user = ref.readUserDocumentModel(module.userPath);
-              await user.loading;
-              if (_hasRegistrationData(context, module, user)) {
-                context.navigator.pushReplacementNamed("/register");
-              } else {
-                context.navigator.pushReplacementNamed(module.redirectTo);
-              }
+              context.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -413,13 +387,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn();
-              final user = ref.readUserDocumentModel(module.userPath);
-              await user.loading;
-              if (_hasRegistrationData(context, module, user)) {
-                context.navigator.pushReplacementNamed("/register");
-              } else {
-                context.navigator.pushReplacementNamed(module.redirectTo);
-              }
+              context.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -444,13 +412,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn();
-              final user = ref.readUserDocumentModel(module.userPath);
-              await user.loading;
-              if (_hasRegistrationData(context, module, user)) {
-                context.navigator.pushReplacementNamed("/register");
-              } else {
-                context.navigator.pushReplacementNamed(module.redirectTo);
-              }
+              context.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -464,31 +426,6 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
         );
     }
     return const Empty();
-  }
-
-  bool _hasRegistrationData(
-    BuildContext context,
-    SnsLoginModule module,
-    DynamicDocumentModel document,
-  ) {
-    final userVariablesCount = context.app?.userVariables.where(
-          (e) {
-            final required = !module.showOnlyRequiredVariable || e.required;
-            if (!required) {
-              return false;
-            }
-            return !document.containsKey(e.id);
-          },
-        ).length ??
-        0;
-    final registerVariablesCount = module.registerVariables.where((e) {
-      final required = !module.showOnlyRequiredVariable || e.required;
-      if (!required) {
-        return false;
-      }
-      return !document.containsKey(e.id);
-    }).length;
-    return userVariablesCount + registerVariablesCount > 0;
   }
 }
 

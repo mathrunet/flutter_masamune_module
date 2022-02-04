@@ -15,6 +15,7 @@ class UserModule extends PageModule {
     this.imageKey = Const.image,
     this.iconKey = Const.icon,
     this.roleKey = Const.role,
+    this.guestName = "Guest",
     this.expandedHeight = 160,
     this.additionalInformation = const {},
     this.allowImageEditing = false,
@@ -104,6 +105,9 @@ class UserModule extends PageModule {
   /// ブロックユーザーへのパス。
   final String blockPath;
 
+  /// ゲストの名前。
+  final String guestName;
+
   /// ユーザーのフィーチャー画像が編集可能な場合`true`.
   final bool allowImageEditing;
 
@@ -156,7 +160,7 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
   Widget build(BuildContext context, WidgetRef ref, UserModule module) {
     final userId = context.get("user_id", context.model?.userId ?? "");
     final user = ref.watchDocumentModel("${module.queryPath}/$userId");
-    final name = user.get(module.nameKey, "");
+    final name = user.get(module.nameKey, module.guestName.localize());
     final text = user.get(module.textKey, "");
     final image = user.get(module.imageKey, "");
     final icon = user.get(module.iconKey, "");

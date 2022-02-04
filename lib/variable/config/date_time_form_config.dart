@@ -14,7 +14,7 @@ enum DateTimeFormConfigType {
 
 /// FormConfig for using date time field.
 @immutable
-class DateTimeFormConfig extends FormConfig {
+class DateTimeFormConfig extends FormConfig<int> {
   const DateTimeFormConfig({
     this.backgroundColor,
     this.initialDate,
@@ -38,7 +38,8 @@ class DateTimeFormConfig extends FormConfig {
 }
 
 @immutable
-class DateTimeFormConfigBuilder extends FormConfigBuilder<DateTimeFormConfig> {
+class DateTimeFormConfigBuilder
+    extends FormConfigBuilder<int, DateTimeFormConfig> {
   const DateTimeFormConfigBuilder();
   FormItemDateTimeFieldPickerType _type(DateTimeFormConfig form) {
     switch (form.type) {
@@ -66,7 +67,7 @@ class DateTimeFormConfigBuilder extends FormConfigBuilder<DateTimeFormConfig> {
   }
 
   DateTime? __value(
-    VariableConfig config,
+    VariableConfig<int> config,
     DateTimeFormConfig form,
     DynamicMap? data,
   ) {
@@ -108,7 +109,7 @@ class DateTimeFormConfigBuilder extends FormConfigBuilder<DateTimeFormConfig> {
 
   @override
   Iterable<Widget> form(
-    VariableConfig config,
+    VariableConfig<int> config,
     DateTimeFormConfig form,
     BuildContext context,
     WidgetRef ref, {
@@ -153,7 +154,7 @@ class DateTimeFormConfigBuilder extends FormConfigBuilder<DateTimeFormConfig> {
 
   @override
   Iterable<Widget> view(
-    VariableConfig config,
+    VariableConfig<int> config,
     DateTimeFormConfig form,
     BuildContext context,
     WidgetRef ref, {
@@ -178,7 +179,7 @@ class DateTimeFormConfigBuilder extends FormConfigBuilder<DateTimeFormConfig> {
 
   @override
   dynamic value(
-    VariableConfig config,
+    VariableConfig<int> config,
     BuildContext context,
     WidgetRef ref,
     bool updated,

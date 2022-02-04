@@ -2,12 +2,11 @@ part of masamune_module.variable;
 
 /// FormConfig for using Slider.
 @immutable
-class SliderFormConfig extends FormConfig {
+class SliderFormConfig extends FormConfig<num> {
   const SliderFormConfig({
     required this.min,
     required this.max,
     this.divisions,
-    this.initialValue,
     this.backgroundColor,
     this.color,
     this.suffixLabel,
@@ -19,20 +18,18 @@ class SliderFormConfig extends FormConfig {
 
   final String? suffixLabel;
 
-  final double? initialValue;
-
   final Color? backgroundColor;
 
   final Color? color;
 }
 
 @immutable
-class SliderFormConfigBuilder extends FormConfigBuilder<SliderFormConfig> {
+class SliderFormConfigBuilder extends FormConfigBuilder<num, SliderFormConfig> {
   const SliderFormConfigBuilder();
 
   @override
   Iterable<Widget> form(
-    VariableConfig config,
+    VariableConfig<num> config,
     SliderFormConfig form,
     BuildContext context,
     WidgetRef ref, {
@@ -55,7 +52,7 @@ class SliderFormConfigBuilder extends FormConfigBuilder<SliderFormConfig> {
       FormItemSlider(
         controller: ref.useTextEditingController(
           config.id,
-          data.get(config.id, form.initialValue ?? form.min).toString(),
+          data.get(config.id, config.value).toString(),
         ),
         min: form.min,
         max: form.max,
@@ -68,7 +65,7 @@ class SliderFormConfigBuilder extends FormConfigBuilder<SliderFormConfig> {
         activeColor: form.color,
         onSaved: (value) {
           if (value.isEmpty) {
-            context[config.id] = form.initialValue ?? form.min;
+            context[config.id] = config.value;
           } else {
             context[config.id] = value;
           }
@@ -79,7 +76,7 @@ class SliderFormConfigBuilder extends FormConfigBuilder<SliderFormConfig> {
 
   @override
   Iterable<Widget> view(
-    VariableConfig config,
+    VariableConfig<num> config,
     SliderFormConfig form,
     BuildContext context,
     WidgetRef ref, {
@@ -104,11 +101,11 @@ class SliderFormConfigBuilder extends FormConfigBuilder<SliderFormConfig> {
 
   @override
   dynamic value(
-    VariableConfig config,
+    VariableConfig<num> config,
     BuildContext context,
     WidgetRef ref,
     bool updated,
   ) {
-    return context.get(config.id, 0.0);
+    return context.get(config.id, config.value);
   }
 }

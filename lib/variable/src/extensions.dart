@@ -105,8 +105,10 @@ extension VariableConfigListExtensions on Iterable<VariableConfig>? {
     if (this == null) {
       return const [];
     }
-    return this!.expand((e) =>
-        e.buildView(context, ref, data: data, onlyRequired: onlyRequired));
+    return this!.expand((e) {
+      print(e);
+      return e.buildView(context, ref, data: data, onlyRequired: onlyRequired);
+    });
   }
 
   Iterable<Widget> buildForm(
