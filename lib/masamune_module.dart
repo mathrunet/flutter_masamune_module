@@ -9,7 +9,6 @@
 library masamune_module;
 
 import 'package:masamune/masamune.dart';
-import 'variable/variable.dart';
 
 export 'package:masamune/masamune.dart';
 
@@ -17,6 +16,7 @@ export 'component/chat/chat.dart';
 export 'component/common/login_and_register.dart';
 export 'component/common/sns_login.dart';
 export 'component/detail/detail.dart';
+export 'component/home/bottom_tab_home.dart';
 export 'component/home/home.dart';
 export 'component/media/gallery.dart';
 export 'component/media/single_media.dart';

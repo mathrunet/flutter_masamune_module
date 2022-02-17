@@ -7,6 +7,8 @@ extension ListenableMapListExtensions on List<ListenableMap<String, dynamic>> {
     String userKey = "user",
     String keyPrefix = "user",
   }) {
+    final context = ref as BuildContext;
+
     final user = ref.watchCollectionModel(
       ModelQuery(
         userCollectionPath,
@@ -29,6 +31,8 @@ extension ListenableMapListExtensions on List<ListenableMap<String, dynamic>> {
     String idKey = Const.uid,
     String keyPrefix = "",
   }) {
+    final context = ref as BuildContext;
+
     final collection = ref.watchCollectionModel(
       ModelQuery(
         collectionPath,
@@ -47,23 +51,25 @@ extension ListenableMapListExtensions on List<ListenableMap<String, dynamic>> {
 }
 
 extension WidgetRefModelExtensions on WidgetRef {
-  DynamicDocumentModel readDocumentModel(String path) {
+  DynamicDocumentModel readDocumentModel(String path, [bool once = false]) {
     final context = this as BuildContext;
 
     return context.model!.loadDocument(
       read(
         context.model!.documentProvider(applyModuleTag(path)),
       ),
+      once,
     );
   }
 
-  DynamicCollectionModel readCollectionModel(String path) {
+  DynamicCollectionModel readCollectionModel(String path, [bool once = false]) {
     final context = this as BuildContext;
 
     return context.model!.loadCollection(
       read(
         context.model!.collectionProvider(applyModuleTag(path)),
       ),
+      once,
     );
   }
 
@@ -87,7 +93,7 @@ extension WidgetRefModelExtensions on WidgetRef {
     );
   }
 
-  DynamicDocumentModel watchDocumentModel(String path) {
+  DynamicDocumentModel watchDocumentModel(String path, [bool once = false]) {
     final context = this as BuildContext;
 
     return context.model!.loadDocument(
@@ -96,10 +102,12 @@ extension WidgetRefModelExtensions on WidgetRef {
           applyModuleTag(path),
         ),
       ),
+      once,
     );
   }
 
-  DynamicCollectionModel watchCollectionModel(String path) {
+  DynamicCollectionModel watchCollectionModel(String path,
+      [bool once = false]) {
     final context = this as BuildContext;
 
     return context.model!.loadCollection(
@@ -108,6 +116,7 @@ extension WidgetRefModelExtensions on WidgetRef {
           applyModuleTag(path),
         ),
       ),
+      once,
     );
   }
 

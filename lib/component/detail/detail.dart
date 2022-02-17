@@ -450,16 +450,16 @@ class DetailModuleActionWidget extends ModuleWidget<DetailModule> {
               ),
               icon: const Icon(Icons.thumb_up),
               onPressed: () {
-                final counter = context.model?.incrementCounter(
+                final counter = context.model?.transaction(
                   collectionPath:
                       "${module.queryPath}/$detailId/${module.likePath}",
                   linkedCollectionPath:
                       "${module.userPath}/${context.model!.userId}/${module.likePath}",
                 );
                 if (like) {
-                  counter?.remove(context.model!.userId, linkId: detail.uid);
+                  counter?.delete(context.model!.userId, linkId: detail.uid);
                 } else {
-                  counter?.append(context.model!.userId, linkId: detail.uid);
+                  counter?.save(context.model!.userId, linkId: detail.uid);
                 }
               },
               label: Text(
@@ -480,16 +480,16 @@ class DetailModuleActionWidget extends ModuleWidget<DetailModule> {
                   : context.theme.textColor,
               icon: const Icon(Icons.bookmark),
               onPressed: () {
-                final counter = context.model?.incrementCounter(
+                final counter = context.model?.transaction(
                   collectionPath:
                       "${module.queryPath}/$detailId/${module.bookmarkPath}",
                   linkedCollectionPath:
                       "${module.userPath}/${context.model!.userId}/${module.bookmarkPath}",
                 );
                 if (bookmark) {
-                  counter?.remove(context.model!.userId, linkId: detail.uid);
+                  counter?.delete(context.model!.userId, linkId: detail.uid);
                 } else {
-                  counter?.append(context.model!.userId, linkId: detail.uid);
+                  counter?.save(context.model!.userId, linkId: detail.uid);
                 }
               },
             )
@@ -589,16 +589,16 @@ class DetailModuleBookmarkIcon extends ModuleWidget<DetailModule> {
         color: bookmark ? context.theme.primaryColor : context.theme.textColor,
       ),
       onPressed: () {
-        final counter = context.model?.incrementCounter(
+        final counter = context.model?.transaction(
           collectionPath:
               "${module.queryPath}/$detailId/${bookmarkPath ?? module.bookmarkPath}",
           linkedCollectionPath:
               "${module.userPath}/${context.model!.userId}/${bookmarkPath ?? module.bookmarkPath}",
         );
         if (bookmark) {
-          counter?.remove(context.model!.userId, linkId: detailId);
+          counter?.delete(context.model!.userId, linkId: detailId);
         } else {
-          counter?.append(context.model!.userId, linkId: detailId);
+          counter?.save(context.model!.userId, linkId: detailId);
         }
       },
     );

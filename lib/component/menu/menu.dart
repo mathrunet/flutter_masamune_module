@@ -161,3 +161,46 @@ class MenuModuleHome extends PageModuleWidget<MenuModule> {
     );
   }
 }
+
+class MenuModuleAccountComponent extends ScopedWidget {
+  const MenuModuleAccountComponent();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      children: [
+        Headline(
+          "Account".localize(),
+          icon: Icons.person,
+        ),
+        ListItem(
+          title: Text("Logout".localize(),
+              style: const TextStyle(color: Colors.red)),
+          leading: const Icon(Icons.logout),
+          onTap: () async {
+            UIConfirm.show(
+              context,
+              title: "Confirmation".localize(),
+              text: "You're logging out. Are you sure?".localize(),
+              submitText: "Yes".localize(),
+              cacnelText: "No".localize(),
+              onSubmit: () async {
+                await context.model?.signOut();
+                UIDialog.show(
+                  context,
+                  title: "Success".localize(),
+                  text: "Logout is complete.".localize(),
+                  submitText: "Back".localize(),
+                  onSubmit: () {
+                    context.rootNavigator.resetAndPushNamed("/");
+                  },
+                );
+              },
+            );
+          },
+        ),
+        const Divid(),
+      ],
+    );
+  }
+}

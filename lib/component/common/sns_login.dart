@@ -255,10 +255,6 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
                                           await context.model
                                               ?.signInAnonymously()
                                               .showIndicator(context);
-                                          final user =
-                                              ref.readUserDocumentModel(
-                                                  module.userPath);
-                                          await user.loading;
                                           context.navigator
                                               .pushReplacementNamed(
                                                   module.redirectTo);
@@ -308,7 +304,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           icon: FontAwesomeIcons.signInAlt,
           onPressed: () async {
             try {
-              await adapter.signIn();
+              await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
@@ -336,7 +332,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           icon: FontAwesomeIcons.apple,
           onPressed: () async {
             try {
-              await adapter.signIn();
+              await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
@@ -361,7 +357,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           icon: FontAwesomeIcons.google,
           onPressed: () async {
             try {
-              await adapter.signIn();
+              await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
@@ -386,7 +382,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           icon: FontAwesomeIcons.facebook,
           onPressed: () async {
             try {
-              await adapter.signIn();
+              await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
@@ -411,7 +407,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           icon: FontAwesomeIcons.twitter,
           onPressed: () async {
             try {
-              await adapter.signIn();
+              await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());

@@ -1,10 +1,12 @@
+// ignore_for_file: implementation_imports
+
 import 'dart:convert';
 
-import 'package:flutter_quill/models/documents/document.dart';
-import 'package:flutter_quill/widgets/controller.dart';
-import 'package:flutter_quill/widgets/default_styles.dart';
-import 'package:flutter_quill/widgets/editor.dart';
-import 'package:flutter_quill/widgets/toolbar.dart';
+import 'package:flutter_quill/src/models/documents/document.dart';
+import 'package:flutter_quill/src/widgets/controller.dart';
+import 'package:flutter_quill/src/widgets/default_styles.dart';
+import 'package:flutter_quill/src/widgets/editor.dart';
+import 'package:flutter_quill/src/widgets/toolbar.dart';
 import 'package:masamune_module/masamune_module.dart';
 import 'package:tuple/tuple.dart';
 
