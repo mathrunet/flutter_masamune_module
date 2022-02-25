@@ -27,7 +27,6 @@ class SnsLoginModule extends PageModule {
     this.titleTextStyle,
     this.titleTextAlignment = TextAlign.start,
     this.titleAlignment = Alignment.bottomLeft,
-    this.guestLogin,
     this.titlePadding =
         const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
     this.padding = const EdgeInsets.all(36),
@@ -127,9 +126,6 @@ class SnsLoginModule extends PageModule {
   /// コンテンツのパディング。
   final EdgeInsetsGeometry padding;
 
-  /// ゲストログイン用の設定。
-  final LoginConfig? guestLogin;
-
   /// ログイン後のパス。
   final String redirectTo;
 
@@ -158,10 +154,6 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
     );
 
     final color = module.color ?? context.theme.textColor;
-    final buttonColor =
-        module.buttonColor ?? module.color ?? context.theme.textColorOnPrimary;
-    final buttonBackgroundColor =
-        module.buttonBackgroundColor ?? context.theme.primaryColor;
 
     switch (module.layoutType) {
       case LoginLayoutType.fixed:
@@ -237,38 +229,10 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
                                 children: [
                                   if (context.plugin != null)
                                     for (final adapter
-                                        in context.plugin!.snsSignIns)
-                                      _snsButton(context, ref, adapter, module),
-                                  if (module.guestLogin != null)
-                                    FormItemSubmit(
-                                      module.guestLogin!.label?.localize() ??
-                                          "Guest login".localize(),
-                                      borderRadius: 35,
-                                      height: 70,
-                                      width: 1.6,
-                                      color: buttonColor,
-                                      borderColor: buttonColor,
-                                      backgroundColor: buttonBackgroundColor,
-                                      icon: module.guestLogin!.icon,
-                                      onPressed: () async {
-                                        try {
-                                          await context.model
-                                              ?.signInAnonymously()
-                                              .showIndicator(context);
-                                          context.navigator
-                                              .pushReplacementNamed(
-                                                  module.redirectTo);
-                                        } catch (e) {
-                                          UIDialog.show(
-                                            context,
-                                            title: "Error".localize(),
-                                            text:
-                                                "Could not login. Please check your information."
-                                                    .localize(),
-                                          );
-                                        }
-                                      },
-                                    ),
+                                        in context.plugin!.signIns)
+                                      if (adapter.visible)
+                                        _snsButton(
+                                            context, ref, adapter, module),
                                 ],
                               ),
                             ),
@@ -285,8 +249,8 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
     }
   }
 
-  Widget _snsButton(BuildContext context, WidgetRef ref,
-      SNSSignInAdapter adapter, SnsLoginModule module) {
+  Widget _snsButton(BuildContext context, WidgetRef ref, SignInAdapter adapter,
+      SnsLoginModule module) {
     final buttonColor =
         module.buttonColor ?? module.color ?? context.theme.textColorOnPrimary;
     final buttonBackgroundColor =
@@ -405,6 +369,31 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
           icon: FontAwesomeIcons.twitter,
+          onPressed: () async {
+            try {
+              await adapter.signIn().showIndicator(context);
+              context.navigator.pushReplacementNamed(module.redirectTo);
+            } catch (e) {
+              print(e.toString());
+              UIDialog.show(
+                context,
+                title: "Error".localize(),
+                text: "Could not login. Please check your information."
+                    .localize(),
+              );
+            }
+          },
+        );
+      case "anonymous":
+        return FormItemSubmit(
+          "Anonymous SingIn".localize(),
+          borderRadius: 35,
+          height: 70,
+          width: 1.6,
+          color: buttonColor,
+          borderColor: buttonColor,
+          backgroundColor: buttonBackgroundColor,
+          icon: FontAwesomeIcons.user,
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);

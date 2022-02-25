@@ -1,6 +1,6 @@
 part of masamune_module;
 
-extension SNSSignInAdapterListExtensions on List<SNSSignInAdapter>? {
+extension SignInAdapterListExtensions on List<SignInAdapter>? {
   Future<void> signOut(BuildContext context) async {
     if (this == null) {
       return;
