@@ -485,14 +485,14 @@ class SnsLoginModuleRegister extends PageModuleWidget<SnsLoginModule> {
         padding: const EdgeInsets.symmetric(vertical: 16),
         children: [
           ...context.app?.userVariables.buildForm(
-                context,
-                ref,
+                context: context,
+                ref: ref,
                 onlyRequired: module.showOnlyRequiredVariable,
               ) ??
               [],
           ...module.registerVariables.buildForm(
-            context,
-            ref,
+            context: context,
+            ref: ref,
             onlyRequired: module.showOnlyRequiredVariable,
           ),
           const Divid(),
@@ -514,8 +514,12 @@ class SnsLoginModuleRegister extends PageModuleWidget<SnsLoginModule> {
             if (doc == null) {
               throw Exception("User document has not created.");
             }
-            context.app?.userVariables
-                .buildValue(doc, context, ref, updated: false);
+            context.app?.userVariables.setValue(
+              target: doc,
+              context: context,
+              ref: ref,
+              updated: false,
+            );
             await context.model?.saveDocument(doc).showIndicator(context);
             context.navigator.pushReplacementNamed(module.redirectTo);
           } catch (e) {

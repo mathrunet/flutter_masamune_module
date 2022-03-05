@@ -1,4 +1,4 @@
-part of masamune_module.variable;
+part of masamune_module;
 
 const _kQuillToolbarHeight = 80;
 
@@ -30,11 +30,11 @@ class ContentFormConfigBuilder
   const ContentFormConfigBuilder();
 
   @override
-  Iterable<Widget> form(
-    VariableConfig<String> config,
-    ContentFormConfig form,
-    BuildContext context,
-    WidgetRef ref, {
+  Iterable<Widget> form({
+    required VariableConfig<String> config,
+    required ContentFormConfig form,
+    required BuildContext context,
+    required WidgetRef ref,
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
@@ -51,17 +51,25 @@ class ContentFormConfigBuilder
         )
       else
         const Divid(),
-      ..._buildForm(config, form, context, ref, data, onlyRequired),
+      ..._buildForm(
+        config: config,
+        form: form,
+        context: context,
+        ref: ref,
+        data: data,
+        onlyRequired: onlyRequired,
+      ),
     ];
   }
 
-  List<Widget> _buildForm(
-      VariableConfig<String> config,
-      ContentFormConfig form,
-      BuildContext context,
-      WidgetRef ref,
-      DynamicMap? data,
-      bool onlyRequired) {
+  List<Widget> _buildForm({
+    required VariableConfig<String> config,
+    required ContentFormConfig form,
+    required BuildContext context,
+    required WidgetRef ref,
+    DynamicMap? data,
+    bool onlyRequired = false,
+  }) {
     final text = data.get(config.id, config.value);
     switch (form.type) {
       case PostEditingType.wysiwyg:
@@ -156,11 +164,11 @@ class ContentFormConfigBuilder
   }
 
   @override
-  Iterable<Widget> view(
-    VariableConfig<String> config,
-    ContentFormConfig form,
-    BuildContext context,
-    WidgetRef ref, {
+  Iterable<Widget> view({
+    required VariableConfig<String> config,
+    required ContentFormConfig form,
+    required BuildContext context,
+    required WidgetRef ref,
     DynamicMap? data,
     bool onlyRequired = false,
   }) {
@@ -239,12 +247,12 @@ class ContentFormConfigBuilder
   }
 
   @override
-  dynamic value(
-    VariableConfig<String> config,
-    BuildContext context,
-    WidgetRef ref,
-    bool updated,
-  ) {
+  dynamic value({
+    required VariableConfig<String> config,
+    required BuildContext context,
+    required WidgetRef ref,
+    bool updated = true,
+  }) {
     return context.get(config.id, config.value);
   }
 }

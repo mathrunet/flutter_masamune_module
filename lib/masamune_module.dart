@@ -8,7 +8,12 @@
 /// [YouTube]: https://www.youtube.com/c/mathrunetchannel
 library masamune_module;
 
-import 'package:masamune/masamune.dart';
+import 'dart:convert';
+
+import 'package:flutter_quill/flutter_quill.dart';
+import 'package:tuple/tuple.dart';
+
+import 'masamune_module.dart';
 
 export 'package:masamune/masamune.dart';
 
@@ -25,9 +30,10 @@ export 'component/post/post.dart';
 export 'component/questionnaire/questionnaire.dart';
 export 'component/user/user.dart';
 export 'component/user/user_account.dart';
-export 'variable/variable.dart';
 
-part 'src/exntensions.dart';
-part 'src/functions.dart';
 part 'src/group_config.dart';
 part 'src/login_config.dart';
+
+part 'variable/content_form_config.dart';
+part 'variable/default_module_form_config_builders.dart';
+part 'variable/module_variable_config_definition.dart';

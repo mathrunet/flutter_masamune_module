@@ -136,7 +136,7 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
             key: form.key,
             padding: module.padding,
             children: [
-              ...variables.buildForm(context, ref, data: doc),
+              ...variables.buildForm(context: context, ref: ref, data: doc),
               if (variables.isNotEmpty && module.bottomSpace > 0) const Divid(),
               Space.height(module.bottomSpace),
             ],
@@ -153,7 +153,12 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
 
           try {
             if (form.exists) {
-              variables.buildValue(doc, context, ref, updated: form.exists);
+              variables.setValue(
+                target: doc,
+                context: context,
+                ref: ref,
+                updated: form.exists,
+              );
               await context.model?.saveDocument(doc).showIndicator(context);
               UIDialog.show(
                 context,
@@ -173,7 +178,12 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
               }
               final collection = ref.readCollectionModel(module.queryPath);
               final doc = model.createDocument(collection);
-              variables.buildValue(doc, context, ref, updated: form.exists);
+              variables.setValue(
+                target: doc,
+                context: context,
+                ref: ref,
+                updated: form.exists,
+              );
               await context.model?.saveDocument(doc).showIndicator(context);
               UIDialog.show(
                 context,

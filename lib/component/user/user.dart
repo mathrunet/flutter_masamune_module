@@ -369,9 +369,10 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
               ],
             ],
           ),
-          ...context.app?.userVariables.buildView(context, ref, data: user) ??
+          ...context.app?.userVariables
+                  .buildView(context: context, ref: ref, data: user) ??
               [],
-          ...module.variables.buildView(context, ref, data: user),
+          ...module.variables.buildView(context: context, ref: ref, data: user),
           ...module.contents.mapAndRemoveEmpty((item) {
             if (role != null &&
                 role.id.isNotEmpty &&
@@ -563,7 +564,7 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
                 ),
               ),
               const Space.height(24),
-              ...variables.buildForm(context, ref, data: user),
+              ...variables.buildForm(context: context, ref: ref, data: user),
               const Divid(),
               const Space.height(240),
             ],
@@ -579,7 +580,12 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
           }
 
           try {
-            variables.buildValue(user, context, ref, updated: true);
+            variables.setValue(
+              target: user,
+              context: context,
+              ref: ref,
+              updated: true,
+            );
             await context.model?.saveDocument(user).showIndicator(context);
             UIDialog.show(
               context,
