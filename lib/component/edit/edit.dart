@@ -17,6 +17,8 @@ class EditModule extends PageModule {
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.homePage = const EditModuleHome(),
+    this.top = const [],
+    this.bottom = const [],
   }) : super(
           enabled: enabled,
           title: title,
@@ -39,6 +41,12 @@ class EditModule extends PageModule {
 
   /// Form padding.
   final EdgeInsetsGeometry padding;
+
+  /// Top widget.
+  final List<ModuleWidget<EditModule>> top;
+
+  /// Bottom widget.
+  final List<ModuleWidget<EditModule>> bottom;
 
   // Page settings.
   final PageModuleWidget<EditModule> homePage;
@@ -136,7 +144,9 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
             key: form.key,
             padding: module.padding,
             children: [
+              ...module.top,
               ...variables.buildForm(context: context, ref: ref, data: doc),
+              ...module.bottom,
               if (variables.isNotEmpty && module.bottomSpace > 0) const Divid(),
               Space.height(module.bottomSpace),
             ],

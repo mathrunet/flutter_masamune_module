@@ -35,5 +35,5 @@ part 'src/group_config.dart';
 part 'src/login_config.dart';
 
 part 'variable/content_form_config.dart';
-part 'variable/default_module_form_config_builders.dart';
+part 'variable/content_view_config.dart';
 part 'variable/module_variable_config_definition.dart';

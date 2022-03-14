@@ -10,6 +10,7 @@ class MenuModule extends PageModule {
     this.automaticallyImplyLeadingOnHome = true,
     this.sliverLayoutWhenModernDesignOnHome = true,
     required this.menu,
+    this.padding = const EdgeInsets.symmetric(vertical: 8),
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.top = const [],
@@ -52,17 +53,20 @@ class MenuModule extends PageModule {
 
   /// True if you want to automatically display the back button when you are at home.
   final bool automaticallyImplyLeadingOnHome;
+
+  /// Padding.
+  final EdgeInsetsGeometry padding;
 }
 
 @immutable
 class MenuModuleItem {
   const MenuModuleItem({
-    required this.name,
+    this.name,
     this.icon,
     this.menus = const [],
   });
 
-  final String name;
+  final String? name;
   final IconData? icon;
   final List<MenuConfig> menus;
 
@@ -129,27 +133,44 @@ class MenuModuleHome extends PageModuleWidget<MenuModule> {
       ),
       body: UIListBuilder<MenuModuleItem>(
         source: module.menu,
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: module.padding,
         top: module.top,
         bottom: module.bottom,
         builder: (context, item, index) {
           return [
-            Headline(
-              item.name,
-              icon: item.icon,
-            ),
+            if (item.name.isNotEmpty)
+              Headline(
+                item.name!,
+                icon: item.icon,
+              )
+            else ...[
+              Container(
+                height: 40,
+                color: context.theme.dividerColor.withOpacity(0.5),
+              ),
+              const Divid(),
+            ],
             ...item.menus.expandAndRemoveEmpty((menu) {
               return [
                 ListItem(
-                  leading: menu.icon != null ? Icon(menu.icon!) : null,
+                  leading: menu.icon != null
+                      ? Icon(
+                          menu.icon!,
+                          color: menu.color,
+                        )
+                      : null,
                   title: Text(menu.name),
                   onTap: menu.path.isEmpty
                       ? null
                       : () {
-                          context.rootNavigator.pushNamed(
-                            ref.applyModuleTag(menu.path!),
-                            arguments: RouteQuery.fullscreenOrModal,
-                          );
+                          if (menu.path!.startsWith("http")) {
+                            ref.open(menu.path!);
+                          } else {
+                            context.rootNavigator.pushNamed(
+                              ref.applyModuleTag(menu.path!),
+                              arguments: RouteQuery.fullscreenOrModal,
+                            );
+                          }
                         },
                 ),
                 const Divid(),
