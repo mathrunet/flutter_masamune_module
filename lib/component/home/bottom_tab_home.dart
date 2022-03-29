@@ -92,17 +92,19 @@ class BottomTabHomeModuleHome extends PageModuleWidget<BottomTabHomeModule> {
                       arguments: RouteQuery.fullscreenOrModal,
                     );
                   },
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(center.icon),
-                      const Space.height(2.0),
-                      Text(center.name,
-                          style: TextStyle(
-                              color: context.theme.textColorOnPrimary,
-                              fontSize: 10))
-                    ],
-                  ),
+                  child: center.name.isNotEmpty
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(center.icon),
+                            const Space.height(2.0),
+                            Text(center.name,
+                                style: TextStyle(
+                                    color: context.theme.textColorOnPrimary,
+                                    fontSize: 10))
+                          ],
+                        )
+                      : Icon(center.icon),
                 )
               : null,
       bottomNavigationBar: ColoredBox(

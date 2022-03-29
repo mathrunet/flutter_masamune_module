@@ -33,6 +33,7 @@ class SnsLoginModule extends PageModule {
     this.redirectTo = "/",
     this.registerVariables = const [],
     this.showOnlyRequiredVariable = true,
+    this.anonymousSignInConfig,
     Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.landingPage = const SnsLoginModuleLanding(),
@@ -134,6 +135,9 @@ class SnsLoginModule extends PageModule {
 
   /// `true` if you want to show only necessary values at registration.
   final bool showOnlyRequiredVariable;
+
+  /// 匿名ログイン用のテキストやアイコン。
+  final LoginConfig? anonymousSignInConfig;
 }
 
 class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
@@ -386,14 +390,15 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
         );
       case "anonymous":
         return FormItemSubmit(
-          "Anonymous SingIn".localize(),
+          module.anonymousSignInConfig?.label?.localize() ??
+              "Anonymous SingIn".localize(),
           borderRadius: 35,
           height: 70,
           width: 1.6,
           color: buttonColor,
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
-          icon: FontAwesomeIcons.user,
+          icon: module.anonymousSignInConfig?.icon ?? FontAwesomeIcons.user,
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);

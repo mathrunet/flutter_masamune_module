@@ -23,17 +23,18 @@ export 'component/common/sns_login.dart';
 export 'component/detail/detail.dart';
 export 'component/home/bottom_tab_home.dart';
 export 'component/home/home.dart';
+export 'component/home/sliver_home.dart';
 export 'component/media/gallery.dart';
 export 'component/media/single_media.dart';
 export 'component/menu/menu.dart';
 export 'component/post/post.dart';
 export 'component/questionnaire/questionnaire.dart';
+export 'component/tutorial/tutorial.dart';
 export 'component/user/user.dart';
 export 'component/user/user_account.dart';
 
 part 'src/group_config.dart';
 part 'src/login_config.dart';
-
 part 'variable/content_form_config.dart';
 part 'variable/content_view_config.dart';
 part 'variable/module_variable_config_definition.dart';
