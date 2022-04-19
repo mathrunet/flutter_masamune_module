@@ -14,7 +14,6 @@ class UserModule extends PageModule {
     this.textKey = Const.text,
     this.imageKey = Const.image,
     this.iconKey = Const.icon,
-    this.roleKey = Const.role,
     this.guestName = "Guest",
     this.expandedHeight = 160,
     this.additionalInformation = const {},
@@ -25,7 +24,6 @@ class UserModule extends PageModule {
     this.sliverLayoutWhenModernDesignOnHome = true,
     this.automaticallyImplyLeadingOnHome = true,
     this.showHeaderDivider = true,
-    Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.variables = const [],
     this.meta,
@@ -35,7 +33,6 @@ class UserModule extends PageModule {
   }) : super(
           enabled: enabled,
           title: title,
-          permission: permission,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -96,9 +93,6 @@ class UserModule extends PageModule {
   /// テキストのキー。
   final String textKey;
 
-  /// 権限のキー。
-  final String roleKey;
-
   /// 通報ユーザーへのパス。
   final String reportPath;
 
@@ -137,7 +131,6 @@ abstract class UserWidgetModule extends PageModule
     bool enabled = true,
     String? title,
     Map<String, RouteConfig> routeSettings = const {},
-    Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     bool verifyAppReroute = false,
   }) : super(
@@ -145,7 +138,6 @@ abstract class UserWidgetModule extends PageModule
           enabled: enabled,
           title: title,
           routeSettings: routeSettings,
-          permission: permission,
           verifyAppReroute: verifyAppReroute,
           rerouteConfigs: rerouteConfigs,
         );
@@ -164,9 +156,6 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
     final text = user.get(module.textKey, "");
     final image = user.get(module.imageKey, "");
     final icon = user.get(module.iconKey, "");
-    final roles = context.roles;
-    final role = roles
-        .firstWhereOrNull((item) => user.get(module.roleKey, "") == item.id);
     final own = userId == context.model?.userId;
 
     if (userId.isEmpty) {
@@ -219,7 +208,7 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
           if (own)
             TextButton(
               onPressed: () {
-                context.rootNavigator.pushNamed(
+                ref.rootNavigator.pushNamed(
                   "/${module.routePath}/edit",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -263,7 +252,7 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
                           .format(["User".localize()]),
                       submitText: "Back".localize(),
                       onSubmit: () {
-                        context.navigator.pop();
+                        ref.navigator.pop();
                       },
                     );
                     return;
@@ -290,7 +279,7 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
                               .format(["User".localize()]),
                           submitText: "Back".localize(),
                           onSubmit: () {
-                            context.navigator.pop();
+                            ref.navigator.pop();
                           },
                         );
                       } catch (e) {
@@ -353,14 +342,6 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
             children: [
               Text(name, style: context.theme.textTheme.headline5),
-              if (role != null) ...[
-                Text(
-                  role.label.localize(""),
-                  style: context.theme.textTheme.caption
-                      ?.copyWith(color: context.theme.dividerColor),
-                ),
-                const Space.height(4),
-              ],
               const Space.height(8),
               Text(text),
               if (module.meta != null) ...[
@@ -374,12 +355,6 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
               [],
           ...module.variables.buildView(context: context, ref: ref, data: user),
           ...module.contents.mapAndRemoveEmpty((item) {
-            if (role != null &&
-                role.id.isNotEmpty &&
-                item.allowRoles.isNotEmpty &&
-                !item.allowRoles.contains(role.id)) {
-              return null;
-            }
             return item.build(context);
           }),
           if (module.showHeaderDivider) const Divid(),
@@ -594,7 +569,7 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
                   "%s is completed.".localize().format(["Editing".localize()]),
               submitText: "Back".localize(),
               onSubmit: () {
-                context.navigator.pop();
+                ref.navigator.pop();
               },
             );
           } catch (e) {

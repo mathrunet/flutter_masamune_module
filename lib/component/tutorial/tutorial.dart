@@ -13,14 +13,12 @@ class TutorialModule extends PageModule {
     this.redirectTo = "/",
     this.automaticallyImplyLeadingOnHome = true,
     this.sliverLayoutWhenModernDesignOnHome = true,
-    Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     required this.pages,
     this.homePage = const TutorialModuleHome(),
   }) : super(
           enabled: enabled,
           title: title,
-          permission: permission,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -96,7 +94,7 @@ class TutorialModuleHome extends PageModuleWidget<TutorialModule> {
                         IconButton(
                           onPressed: () {
                             Prefs.set(module.displayedKey, true);
-                            context.navigator
+                            ref.navigator
                                 .pushReplacementNamed(module.redirectTo);
                           },
                           color: context.theme.textColorOnPrimary,
@@ -132,7 +130,7 @@ class TutorialModuleHome extends PageModuleWidget<TutorialModule> {
                         IconButton(
                           onPressed: () {
                             Prefs.set(module.displayedKey, true);
-                            context.navigator
+                            ref.navigator
                                 .pushReplacementNamed(module.redirectTo);
                           },
                           color: context.theme.textColorOnPrimary,

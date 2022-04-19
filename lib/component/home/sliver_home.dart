@@ -12,13 +12,11 @@ class SliverHomeModule extends PageModule {
     this.foregroundColor,
     this.headerHeight = 210,
     this.components = const [],
-    Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.homePage = const SliverHomeModuleHome(),
   }) : super(
           enabled: enabled,
           title: title,
-          permission: permission,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -83,7 +81,13 @@ class SliverHomeModuleHome extends PageModuleWidget<SliverHomeModule> {
               ),
       ),
       body: UIListView(
-        children: module.components,
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        children: module.components.expandAndRemoveEmpty(
+          (element) => [
+            element,
+            const Space.height(16),
+          ],
+        ),
       ),
     );
   }
@@ -120,6 +124,7 @@ class SliverHomeModuleListComponent extends ModuleWidget<SliverHomeModule> {
         ...filtered.mapAndRemoveEmpty((item) {
           return ModuleValueProvider(value: item, child: child);
         }),
+        const Space.height(16),
       ],
     );
   }
@@ -190,7 +195,7 @@ class SliverHomeModuleMenuComponent extends ModuleWidget<SliverHomeModule> {
                           if (menu.path!.startsWith("http")) {
                             ref.open(menu.path!);
                           } else {
-                            context.rootNavigator.pushNamed(
+                            ref.rootNavigator.pushNamed(
                               ref.applyModuleTag(menu.path!),
                               arguments: RouteQuery.fullscreenOrModal,
                             );

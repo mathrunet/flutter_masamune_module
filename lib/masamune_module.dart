@@ -17,24 +17,28 @@ import 'masamune_module.dart';
 
 export 'package:masamune/masamune.dart';
 
-export 'component/chat/chat.dart';
-export 'component/common/login_and_register.dart';
-export 'component/common/sns_login.dart';
+export 'component/deprecated/calendar/calendar.dart';
+export 'component/deprecated/chat/chat.dart';
+export 'component/deprecated/media/gallery.dart';
+export 'component/deprecated/member/member.dart';
+export 'component/deprecated/post/post.dart';
+export 'component/deprecated/questionnaire/questionnaire.dart';
+export 'component/deprecated/user/user.dart';
+export 'component/deprecated/user/user_account.dart';
 export 'component/detail/detail.dart';
 export 'component/home/bottom_tab_home.dart';
-export 'component/home/home.dart';
 export 'component/home/sliver_home.dart';
-export 'component/media/gallery.dart';
+export 'component/home/tile_menu_home.dart';
+export 'component/login/email_login_and_register.dart';
+export 'component/login/sns_login.dart';
 export 'component/media/single_media.dart';
+export 'component/media/tile_gallery_media.dart';
 export 'component/menu/menu.dart';
-export 'component/post/post.dart';
-export 'component/questionnaire/questionnaire.dart';
 export 'component/tutorial/tutorial.dart';
-export 'component/user/user.dart';
-export 'component/user/user_account.dart';
 
 part 'src/group_config.dart';
-part 'src/login_config.dart';
+part 'src/login_layout_type.dart';
+part 'src/post_editing_type.dart';
 part 'variable/content_form_config.dart';
 part 'variable/content_view_config.dart';
 part 'variable/module_variable_config_definition.dart';

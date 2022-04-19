@@ -11,7 +11,6 @@ import 'package:masamune_module/masamune_module.dart';
 import 'package:tuple/tuple.dart';
 
 const _kQuillToolbarHeight = 80;
-enum PostEditingType { planeText, wysiwyg }
 
 @immutable
 class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
@@ -23,12 +22,10 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.userPath = "user",
     this.nameKey = Const.name,
     this.textKey = Const.text,
-    this.roleKey = Const.role,
     this.createdTimeKey = Const.createdTime,
     this.sliverLayoutWhenModernDesignOnHome = true,
     this.automaticallyImplyLeadingOnHome = true,
     this.editingType = PostEditingType.planeText,
-    Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.postQuery,
     this.homePage = const PostModuleHome(),
@@ -37,7 +34,6 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
   }) : super(
           enabled: enabled,
           title: title,
-          permission: permission,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -80,9 +76,6 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
 
   /// テキストのキー。
   final String textKey;
-
-  /// 権限のキー。
-  final String roleKey;
 
   /// 作成日のキー。
   final String createdTimeKey;
@@ -141,7 +134,7 @@ class PostModuleHome extends PageModuleWidget<PostModule> {
               ),
               onTap: () {
                 if (context.isMobile) {
-                  context.navigator.pushNamed(
+                  ref.navigator.pushNamed(
                     "/${module.routePath}/${item.get(Const.uid, "")}",
                     arguments: RouteQuery.fullscreen,
                   );
@@ -155,19 +148,16 @@ class PostModuleHome extends PageModuleWidget<PostModule> {
           ];
         },
       ),
-      floatingActionButton:
-          module.permission.canEdit(user.get(module.roleKey, ""))
-              ? FloatingActionButton.extended(
-                  label: Text("Add".localize()),
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    context.navigator.pushNamed(
-                      "/${module.routePath}/edit",
-                      arguments: RouteQuery.fullscreenOrModal,
-                    );
-                  },
-                )
-              : null,
+      floatingActionButton: FloatingActionButton.extended(
+        label: Text("Add".localize()),
+        icon: const Icon(Icons.add),
+        onPressed: () {
+          ref.navigator.pushNamed(
+            "/${module.routePath}/edit",
+            arguments: RouteQuery.fullscreenOrModal,
+          );
+        },
+      ),
     );
   }
 }
@@ -177,7 +167,6 @@ class PostModuleView extends PageModuleWidget<PostModule> {
 
   @override
   Widget build(BuildContext context, WidgetRef ref, PostModule module) {
-    final user = ref.watchUserDocumentModel(module.userPath);
     final item = ref.watchDocumentModel(
         "${module.queryPath}/${context.get("post_id", "")}");
     final now = ref.useNow();
@@ -193,16 +182,15 @@ class PostModuleView extends PageModuleWidget<PostModule> {
     final appBar = UIAppBar(
       title: Text(name),
       actions: [
-        if (module.permission.canEdit(user.get(module.roleKey, "")))
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              context.rootNavigator.pushNamed(
-                "/${module.routePath}/${context.get("post_id", "")}/edit",
-                arguments: RouteQuery.fullscreenOrModal,
-              );
-            },
-          )
+        IconButton(
+          icon: const Icon(Icons.edit),
+          onPressed: () {
+            ref.rootNavigator.pushNamed(
+              "/${module.routePath}/${context.get("post_id", "")}/edit",
+              arguments: RouteQuery.fullscreenOrModal,
+            );
+          },
+        ),
       ],
     );
 
@@ -295,7 +283,6 @@ class PostModuleEdit extends PageModuleWidget<PostModule> {
   Widget build(BuildContext context, WidgetRef ref, PostModule module) {
     final form = ref.useForm("post_id");
     final now = ref.useNow();
-    final user = ref.watchUserDocumentModel(module.userPath);
     final item = ref.watchDocumentModel("${module.queryPath}/${form.uid}");
     final name = item.get(module.nameKey, "");
     final text = item.get(module.textKey, "");
@@ -309,8 +296,7 @@ class PostModuleEdit extends PageModuleWidget<PostModule> {
         "A new entry".localize(),
       )),
       actions: [
-        if (form.exists &&
-            module.permission.canDelete(user.get(module.roleKey, "")))
+        if (form.exists)
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () {
@@ -325,7 +311,7 @@ class PostModuleEdit extends PageModuleWidget<PostModule> {
                   await context.model
                       ?.deleteDocument(item)
                       .showIndicator(context);
-                  context.navigator
+                  ref.navigator
                     ..pop()
                     ..pop();
                 },
@@ -445,7 +431,7 @@ class PostModuleEdit extends PageModuleWidget<PostModule> {
                 item[module.createdTimeKey] = context.get(
                     module.createdTimeKey, now.millisecondsSinceEpoch);
                 await context.model?.saveDocument(item).showIndicator(context);
-                context.navigator.pop();
+                ref.navigator.pop();
               } catch (e) {
                 UIDialog.show(
                   context,
@@ -503,7 +489,7 @@ class PostModuleEdit extends PageModuleWidget<PostModule> {
                 item[module.createdTimeKey] = context.get(
                     module.createdTimeKey, now.millisecondsSinceEpoch);
                 await context.model?.saveDocument(item).showIndicator(context);
-                context.navigator.pop();
+                ref.navigator.pop();
               } catch (e) {
                 UIDialog.show(
                   context,

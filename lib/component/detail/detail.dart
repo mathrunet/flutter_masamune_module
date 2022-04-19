@@ -30,7 +30,6 @@ class DetailModule extends PageModule {
     this.likePath = "like",
     this.automaticallyImplyLeadingOnHome = true,
     this.expandedHeight = 240,
-    Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.homePage = const DetailModuleHome(),
     this.imagePage = const DetailModuleImageView(),
@@ -49,7 +48,6 @@ class DetailModule extends PageModule {
   }) : super(
           enabled: enabled,
           title: title,
-          permission: permission,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -169,8 +167,7 @@ class DetailModuleHome extends PageModuleWidget<DetailModule> {
               title: Text(name),
               actions: module.appBarActions,
               onTapImage: () {
-                context.navigator
-                    .pushNamed("/${module.routePath}/$detailId/view");
+                ref.navigator.pushNamed("/${module.routePath}/$detailId/view");
               },
               designType: DesignType.modern,
               expandedHeight: module.expandedHeight,
@@ -404,7 +401,7 @@ class DetailModuleTagsWidget extends ModuleWidget<DetailModule> {
               ),
             ),
             onPressed: () {
-              context.rootNavigator.pushNamed(
+              ref.rootNavigator.pushNamed(
                 "/${module.searchPath}",
                 arguments: RouteQuery(
                   transition: PageTransition.fullscreen,
@@ -511,7 +508,7 @@ class DetailModuleProfileWidget extends ModuleWidget<DetailModule> {
 
     return InkWell(
       onTap: () {
-        context.rootNavigator.pushNamed(
+        ref.rootNavigator.pushNamed(
           "/user/${context.model?.userId}",
           arguments: RouteQuery.fullscreenOrModal,
         );
@@ -625,7 +622,7 @@ class DetailModuleEditIcon extends ModuleWidget<DetailModule> {
     return IconButton(
       icon: Icon(icon),
       onPressed: () {
-        context.rootNavigator.pushNamed(
+        ref.rootNavigator.pushNamed(
           routePath ?? "/${module.routePath}/$detailId/edit",
           arguments: RouteQuery.fullscreenOrModal,
         );
@@ -669,7 +666,7 @@ class DetailModuleDeleteIcon extends ModuleWidget<DetailModule> {
               text: "You have deleted this %s.".localize().format([name]),
               submitText: "Close".localize(),
               onSubmit: () {
-                context.rootNavigator.pop();
+                ref.rootNavigator.pop();
               },
             );
           },

@@ -15,14 +15,12 @@ class MemberModule extends PageModule {
     this.query,
     this.nameKey = Const.name,
     this.iconKey = Const.icon,
-    this.roleKey = Const.role,
     this.profilePath = Const.user,
     this.formMessage,
     this.groupId,
     this.affiliationKey = "affiliation",
     this.sliverLayoutWhenModernDesignOnHome = true,
     this.automaticallyImplyLeadingOnHome = true,
-    Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.homePage = const MemberModuleHome(),
     this.invitePage = const MemberModuleInvite(),
@@ -31,7 +29,6 @@ class MemberModule extends PageModule {
   }) : super(
           enabled: enabled,
           title: title,
-          permission: permission,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -75,9 +72,6 @@ class MemberModule extends PageModule {
 
   /// アイコンのキー。
   final String iconKey;
-
-  /// 権限のキー。
-  final String roleKey;
 
   /// プロフィールへのパス。
   final String profilePath;
@@ -190,7 +184,7 @@ class MemberModuleHome extends PageModuleWidget<MemberModule> {
                       },
                     ),
               onTap: () {
-                context.navigator.pushNamed(
+                ref.navigator.pushNamed(
                   "/${module.profilePath}/${item.uid}",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -203,7 +197,7 @@ class MemberModuleHome extends PageModuleWidget<MemberModule> {
           ? null
           : FloatingActionButton.extended(
               onPressed: () {
-                context.navigator.pushNamed(
+                ref.navigator.pushNamed(
                   "/${module.routePath}/invite",
                   arguments: RouteQuery.fullscreenOrModal,
                 );

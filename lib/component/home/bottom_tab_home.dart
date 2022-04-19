@@ -16,13 +16,11 @@ class BottomTabHomeModule extends PageModule
     this.floatingButtonOnCenter = false,
     required this.menu,
     this.dividerColor = Colors.transparent,
-    Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.homePage = const BottomTabHomeModuleHome(),
   }) : super(
           enabled: enabled,
           title: title,
-          permission: permission,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -87,7 +85,7 @@ class BottomTabHomeModuleHome extends PageModuleWidget<BottomTabHomeModule> {
                   backgroundColor:
                       module.selectedItemColor ?? context.theme.primaryColor,
                   onPressed: () {
-                    context.rootNavigator.pushNamed(
+                    ref.rootNavigator.pushNamed(
                       center.path!,
                       arguments: RouteQuery.fullscreenOrModal,
                     );

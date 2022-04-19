@@ -2,13 +2,14 @@ import 'dart:ui';
 import 'package:masamune_module/masamune_module.dart';
 
 @immutable
-class LoginModule extends PageModule {
-  const LoginModule({
+class EmailLoginAndRegisterModule extends PageModule {
+  const EmailLoginAndRegisterModule({
     bool enabled = true,
     String title = "",
     this.layoutType = LoginLayoutType.fixed,
     this.color,
     this.userPath = Const.user,
+    this.roleKey = Const.role,
     this.backgroundColor,
     this.backgroundGradient,
     this.appBarColorOnSliverList,
@@ -20,33 +21,33 @@ class LoginModule extends PageModule {
     this.featureImage,
     this.featureImageSize,
     this.featureImageRadius,
-    this.roleKey = Const.role,
     this.formImageSize,
     this.featureImageFit = BoxFit.cover,
     this.titleTextStyle,
     this.titleAlignment = Alignment.bottomLeft,
-    this.loginConfig = const LoginConfig(
-      label: "Login",
-      icon: FontAwesomeIcons.signInAlt,
-    ),
-    this.guestLogin,
+    this.menu = const [
+      MenuConfig(
+        path: "login",
+        name: "Login",
+        icon: FontAwesomeIcons.signInAlt,
+      ),
+    ],
     this.titlePadding =
         const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
     this.padding = const EdgeInsets.all(36),
     this.redirectTo = "/",
-    Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
-    this.registerVariables = const [],
+    this.registerVariables = const {},
     this.showOnlyRequiredVariable = true,
-    this.landingPage = const LoginModuleLanding(),
-    this.loginPage = const LoginModuleLogin(),
-    this.resetPage = const LoginModulePasswordReset(),
-    this.registerPage = const LoginModuleRegister(),
-    this.registerAnonymousPage = const LoginModuleRegisterAnonymous(),
+    this.landingPage = const EmailLoginAndRegisterModuleLanding(),
+    this.loginPage = const EmailLoginAndRegisterModuleLogin(),
+    this.resetPage = const EmailLoginAndRegisterModulePasswordReset(),
+    this.registerPage = const EmailLoginAndRegisterModuleRegister(),
+    this.registerAnonymousPage =
+        const EmailLoginAndRegisterModuleRegisterAnonymous(),
   }) : super(
           enabled: enabled,
           title: title,
-          permission: permission,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -67,20 +68,23 @@ class LoginModule extends PageModule {
   }
 
   // ページ。
-  final PageModuleWidget<LoginModule> landingPage;
-  final PageModuleWidget<LoginModule> loginPage;
-  final PageModuleWidget<LoginModule> resetPage;
-  final PageModuleWidget<LoginModule> registerPage;
-  final PageModuleWidget<LoginModule> registerAnonymousPage;
+  final PageModuleWidget<EmailLoginAndRegisterModule> landingPage;
+  final PageModuleWidget<EmailLoginAndRegisterModule> loginPage;
+  final PageModuleWidget<EmailLoginAndRegisterModule> resetPage;
+  final PageModuleWidget<EmailLoginAndRegisterModule> registerPage;
+  final PageModuleWidget<EmailLoginAndRegisterModule> registerAnonymousPage;
 
   /// レイアウトタイプ。
   final LoginLayoutType layoutType;
 
+  /// 登録するメニュー。
+  final List<MenuConfig> menu;
+
+  /// ロールキー。
+  final String roleKey;
+
   /// 前景色。
   final Color? color;
-
-  /// ロールのキー。
-  final String roleKey;
 
   /// ユーザーコレクションのパス。
   final String userPath;
@@ -136,27 +140,23 @@ class LoginModule extends PageModule {
   /// コンテンツのパディング。
   final EdgeInsetsGeometry padding;
 
-  /// ログイン用の設定。
-  final LoginConfig loginConfig;
-
-  /// ゲストログイン用の設定。
-  final LoginConfig? guestLogin;
-
   /// ログイン後のパス。
   final String redirectTo;
 
   /// 登録時の値データ。
-  final List<VariableConfig> registerVariables;
+  final Map<String, List<VariableConfig>> registerVariables;
 
   /// `true` if you want to show only necessary values at registration.
   final bool showOnlyRequiredVariable;
 }
 
-class LoginModuleLanding extends PageModuleWidget<LoginModule> {
-  const LoginModuleLanding();
+class EmailLoginAndRegisterModuleLanding
+    extends PageModuleWidget<EmailLoginAndRegisterModule> {
+  const EmailLoginAndRegisterModuleLanding();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref, LoginModule module) {
+  Widget build(
+      BuildContext context, WidgetRef ref, EmailLoginAndRegisterModule module) {
     final animation = ref.useAutoPlayAnimationScenario(
       "main",
       [
@@ -180,7 +180,8 @@ class LoginModuleLanding extends PageModuleWidget<LoginModule> {
           body: Stack(
             fit: StackFit.expand,
             children: [
-              _LoginModuleBackgroundImage(module, opacity: 0.75),
+              _EmailLoginAndRegisterModuleBackgroundImage(module,
+                  opacity: 0.75),
               AnimationScope(
                 animation: animation,
                 builder: (context, child, animation) {
@@ -243,89 +244,55 @@ class LoginModuleLanding extends PageModuleWidget<LoginModule> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
-                                  for (final role in context.roles)
+                                  for (final menu in module.menu)
                                     FormItemSubmit(
-                                      role.label.isNotEmpty
-                                          ? ("%s registration"
-                                              .localize()
-                                              .format([role.label!.localize()]))
-                                          : "Registration".localize(),
+                                      menu.name.localize(),
                                       borderRadius: 35,
                                       height: 70,
                                       width: 1.6,
                                       color: buttonColor,
                                       borderColor: buttonColor,
                                       backgroundColor: buttonBackgroundColor,
-                                      icon: role.icon,
-                                      onPressed: () {
-                                        if (role.path.isNotEmpty) {
-                                          context.navigator
-                                              .pushNamed(role.path!);
-                                        } else {
-                                          if (context.roles.length <= 1) {
-                                            context.navigator.pushNamed(
-                                                "/register",
-                                                arguments: RouteQuery.fade);
-                                          } else {
-                                            context.navigator.pushNamed(
-                                                "/register/${role.id}",
-                                                arguments: RouteQuery.fade);
-                                          }
-                                        }
-                                      },
-                                    ),
-                                  if (module.guestLogin != null)
-                                    FormItemSubmit(
-                                      module.guestLogin!.label?.localize() ??
-                                          "Guest login".localize(),
-                                      borderRadius: 35,
-                                      height: 70,
-                                      width: 1.6,
-                                      color: buttonColor,
-                                      borderColor: buttonColor,
-                                      backgroundColor: buttonBackgroundColor,
-                                      icon: module.guestLogin!.icon,
+                                      icon: menu.icon,
                                       onPressed: () async {
-                                        try {
-                                          await context.model
-                                              ?.signInAnonymously()
-                                              .showIndicator(context);
-                                          if (_hasRegistrationData(
-                                              context, module)) {
-                                            context.navigator
-                                                .pushReplacementNamed(
-                                                    "/register/anonymous");
-                                          } else {
-                                            context.navigator
-                                                .pushReplacementNamed(
-                                                    module.redirectTo);
-                                          }
-                                        } catch (e) {
-                                          UIDialog.show(
-                                            context,
-                                            title: "Error".localize(),
-                                            text:
-                                                "Could not login. Please check your information."
-                                                    .localize(),
-                                          );
+                                        switch (menu.path) {
+                                          case "login":
+                                            ref.navigator
+                                                .pushNamed("/${menu.path!}");
+                                            break;
+                                          case "anonymous":
+                                            try {
+                                              await context.model
+                                                  ?.signInAnonymously()
+                                                  .showIndicator(context);
+                                              if (_hasAnonymousRegistrationData(
+                                                  context, module)) {
+                                                ref.navigator
+                                                    .pushReplacementNamed(
+                                                        "/register/anonymous");
+                                              } else {
+                                                ref.navigator
+                                                    .pushReplacementNamed(
+                                                        module.redirectTo);
+                                              }
+                                            } catch (e) {
+                                              UIDialog.show(
+                                                context,
+                                                title: "Error".localize(),
+                                                text:
+                                                    "Could not login. Please check your information."
+                                                        .localize(),
+                                              );
+                                            }
+                                            break;
+                                          default:
+                                            ref.navigator.pushNamed(
+                                                "/register/${menu.path}",
+                                                arguments: RouteQuery.fade);
+                                            break;
                                         }
                                       },
                                     ),
-                                  FormItemSubmit(
-                                    module.loginConfig.label?.localize() ??
-                                        "Login".localize(),
-                                    borderRadius: 35,
-                                    height: 70,
-                                    width: 1.6,
-                                    color: buttonColor,
-                                    borderColor: buttonColor,
-                                    backgroundColor: buttonBackgroundColor,
-                                    icon: module.loginConfig.icon,
-                                    onPressed: () {
-                                      context.navigator.pushNamed("/login",
-                                          arguments: RouteQuery.fade);
-                                    },
-                                  ),
                                 ],
                               ),
                             ),
@@ -342,24 +309,26 @@ class LoginModuleLanding extends PageModuleWidget<LoginModule> {
     }
   }
 
-  bool _hasRegistrationData(BuildContext context, LoginModule module) {
-    return (context.app?.userVariables
-                    .where(
-                        (e) => !module.showOnlyRequiredVariable || e.required)
-                    .length ??
-                0) +
-            module.registerVariables
+  bool _hasAnonymousRegistrationData(
+      BuildContext context, EmailLoginAndRegisterModule module) {
+    if ((context.app?.userVariables
                 .where((e) => !module.showOnlyRequiredVariable || e.required)
-                .length >
-        0;
+                .length ??
+            0) >
+        0) {
+      return false;
+    }
+    return module.registerVariables.containsKey("anonymous");
   }
 }
 
-class LoginModuleLogin extends PageModuleWidget<LoginModule> {
-  const LoginModuleLogin();
+class EmailLoginAndRegisterModuleLogin
+    extends PageModuleWidget<EmailLoginAndRegisterModule> {
+  const EmailLoginAndRegisterModuleLogin();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref, LoginModule module) {
+  Widget build(
+      BuildContext context, WidgetRef ref, EmailLoginAndRegisterModule module) {
     final form = ref.useForm();
     final emailFocus = ref.useFocusNode("email");
     final passFocus = ref.useFocusNode("pass");
@@ -382,7 +351,7 @@ class LoginModuleLogin extends PageModuleWidget<LoginModule> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          _LoginModuleBackgroundImage(module, opacity: 0.75),
+          _EmailLoginAndRegisterModuleBackgroundImage(module, opacity: 0.75),
           FormBuilder(
             type: FormBuilderType.center,
             key: form.key,
@@ -395,7 +364,8 @@ class LoginModuleLogin extends PageModuleWidget<LoginModule> {
                     width: imageSize?.width,
                     height: imageSize?.height,
                     child: ClipRRect(
-                      borderRadius: module.featureImageRadius,
+                      borderRadius:
+                          module.featureImageRadius ?? BorderRadius.zero,
                       child: Image(
                         image: NetworkOrAsset.image(module.featureImage!),
                         fit: module.featureImageFit,
@@ -406,7 +376,7 @@ class LoginModuleLogin extends PageModuleWidget<LoginModule> {
               else
                 Center(
                   child: Text(
-                    module.loginConfig.label?.localize() ?? "Login".localize(),
+                    "Login".localize(),
                     textAlign: TextAlign.center,
                     style: context.theme.textTheme.headline5
                             ?.copyWith(color: module.color) ??
@@ -484,7 +454,7 @@ class LoginModuleLogin extends PageModuleWidget<LoginModule> {
                   Center(
                     child: TextButton(
                       onPressed: () {
-                        context.navigator
+                        ref.navigator
                             .pushNamed("/reset", arguments: RouteQuery.fade);
                       },
                       child: Text(
@@ -498,7 +468,7 @@ class LoginModuleLogin extends PageModuleWidget<LoginModule> {
                   ),
                   const Space.height(16),
                   FormItemSubmit(
-                    module.loginConfig.label?.localize() ?? "Login".localize(),
+                    "Login".localize(),
                     borderRadius: 35,
                     height: 70,
                     width: 1.6,
@@ -518,7 +488,7 @@ class LoginModuleLogin extends PageModuleWidget<LoginModule> {
     );
   }
 
-  Size? _imageSize(LoginModule module) {
+  Size? _imageSize(EmailLoginAndRegisterModule module) {
     if (module.formImageSize != null) {
       return module.formImageSize;
     }
@@ -531,7 +501,7 @@ class LoginModuleLogin extends PageModuleWidget<LoginModule> {
   Future<void> _onSubmitted(
     BuildContext context,
     WidgetRef ref,
-    LoginModule module,
+    EmailLoginAndRegisterModule module,
     FormContext form,
   ) async {
     if (!form.validate()) {
@@ -545,7 +515,7 @@ class LoginModuleLogin extends PageModuleWidget<LoginModule> {
             userPath: module.userPath,
           )
           .showIndicator(context);
-      context.navigator.pushReplacementNamed(module.redirectTo);
+      ref.navigator.pushReplacementNamed(module.redirectTo);
     } catch (e) {
       UIDialog.show(
         context,
@@ -558,21 +528,24 @@ class LoginModuleLogin extends PageModuleWidget<LoginModule> {
   }
 }
 
-class LoginModuleRegister extends PageModuleWidget<LoginModule> {
-  const LoginModuleRegister();
+class EmailLoginAndRegisterModuleRegister
+    extends PageModuleWidget<EmailLoginAndRegisterModule> {
+  const EmailLoginAndRegisterModuleRegister();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref, LoginModule module) {
+  Widget build(
+      BuildContext context, WidgetRef ref, EmailLoginAndRegisterModule module) {
     final form = ref.useForm();
     final emailFocus = ref.useFocusNode("email");
     final passFocus = ref.useFocusNode("pass");
     final passConfirmFocus = ref.useFocusNode("passConfirm");
     final showPassword = ref.state("showPassword", false);
     final showPasswordConfirm = ref.state("showPasswordConfirm", false);
-    final role = context.roles.length <= 1
-        ? context.roles.first
-        : context.roles
-            .firstWhere((element) => element.id == context.get("role_id", ""));
+    final role = module.menu.length <= 1
+        ? module.menu.first
+        : module.menu.firstWhere(
+            (element) => element.path == context.get("role_id", ""),
+          );
 
     final color = module.color ?? Colors.white;
     final buttonColor = module.buttonColor ?? module.color ?? Colors.white;
@@ -591,7 +564,7 @@ class LoginModuleRegister extends PageModuleWidget<LoginModule> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          _LoginModuleBackgroundImage(module, opacity: 0.75),
+          _EmailLoginAndRegisterModuleBackgroundImage(module, opacity: 0.75),
           FormBuilder(
             type: FormBuilderType.center,
             key: form.key,
@@ -604,7 +577,8 @@ class LoginModuleRegister extends PageModuleWidget<LoginModule> {
                     width: imageSize?.width,
                     height: imageSize?.height,
                     child: ClipRRect(
-                      borderRadius: module.featureImageRadius,
+                      borderRadius:
+                          module.featureImageRadius ?? BorderRadius.zero,
                       child: Image(
                         image: NetworkOrAsset.image(module.featureImage!),
                         fit: module.featureImageFit,
@@ -615,10 +589,10 @@ class LoginModuleRegister extends PageModuleWidget<LoginModule> {
               else
                 Center(
                   child: Text(
-                    role.label.isNotEmpty
+                    role.name.isNotEmpty
                         ? "%s registration"
                             .localize()
-                            .format([role.label!.localize()])
+                            .format([role.name.localize()])
                         : "Registration".localize(),
                     textAlign: TextAlign.center,
                     style: context.theme.textTheme.headline5
@@ -734,11 +708,14 @@ class LoginModuleRegister extends PageModuleWidget<LoginModule> {
                     onlyRequired: module.showOnlyRequiredVariable,
                   ) ??
                   [],
-              ...module.registerVariables.buildForm(
-                context: context,
-                ref: ref,
-                onlyRequired: module.showOnlyRequiredVariable,
-              ),
+              ...module.registerVariables.entries
+                  .where((e) => e.key == role.path)
+                  .expand((e) => e.value)
+                  .buildForm(
+                    context: context,
+                    ref: ref,
+                    onlyRequired: module.showOnlyRequiredVariable,
+                  ),
               Divid(color: color.withOpacity(0.75)),
               if (context.app?.termsUrl != null)
                 FormItemCheckbox(
@@ -768,11 +745,7 @@ class LoginModuleRegister extends PageModuleWidget<LoginModule> {
                     horizontal: module.padding.horizontal / 2.0),
                 children: [
                   FormItemSubmit(
-                    role.label.isNotEmpty
-                        ? "%s registration"
-                            .localize()
-                            .format([role.label!.localize()])
-                        : "Registration".localize(),
+                    role.name.localize(),
                     borderRadius: 35,
                     height: 70,
                     width: 1.6,
@@ -793,7 +766,7 @@ class LoginModuleRegister extends PageModuleWidget<LoginModule> {
     );
   }
 
-  Size? _imageSize(LoginModule module) {
+  Size? _imageSize(EmailLoginAndRegisterModule module) {
     if (module.formImageSize != null) {
       return module.formImageSize;
     }
@@ -806,15 +779,15 @@ class LoginModuleRegister extends PageModuleWidget<LoginModule> {
   Future<void> _onSubmitted(
     BuildContext context,
     WidgetRef ref,
-    LoginModule module,
+    EmailLoginAndRegisterModule module,
     FormContext form,
-    RoleConfig role,
+    MenuConfig role,
   ) async {
     if (await context.model?.skipRegistration(data: {
-          module.roleKey: role.id,
+          module.roleKey: role.path,
         }) ??
         false) {
-      context.navigator.pushReplacementNamed(module.redirectTo);
+      ref.navigator.pushReplacementNamed(module.redirectTo);
       return;
     }
     if (!form.validate()) {
@@ -844,18 +817,21 @@ class LoginModuleRegister extends PageModuleWidget<LoginModule> {
         password: context.get("password", ""),
         userPath: module.userPath,
         data: {
-          module.roleKey: role.id,
+          module.roleKey: role.path,
           ...context.app?.userVariables.buildMap(
                 context: context,
                 ref: ref,
                 onlyRequired: module.showOnlyRequiredVariable,
               ) ??
               {},
-          ...module.registerVariables.buildMap(
-            context: context,
-            ref: ref,
-            onlyRequired: module.showOnlyRequiredVariable,
-          ),
+          ...module.registerVariables.entries
+              .where((e) => e.key == role.path)
+              .expand((e) => e.value)
+              .buildMap(
+                context: context,
+                ref: ref,
+                onlyRequired: module.showOnlyRequiredVariable,
+              ),
         },
       ).showIndicator(context);
       UIDialog.show(
@@ -864,7 +840,7 @@ class LoginModuleRegister extends PageModuleWidget<LoginModule> {
         text: "Registration has been completed.".localize(),
         submitText: "Forward".localize(),
         onSubmit: () {
-          context.navigator.pushReplacementNamed(module.redirectTo);
+          ref.navigator.pushReplacementNamed(module.redirectTo);
         },
       );
     } catch (e) {
@@ -880,10 +856,12 @@ class LoginModuleRegister extends PageModuleWidget<LoginModule> {
   }
 }
 
-class LoginModulePasswordReset extends PageModuleWidget<LoginModule> {
-  const LoginModulePasswordReset();
+class EmailLoginAndRegisterModulePasswordReset
+    extends PageModuleWidget<EmailLoginAndRegisterModule> {
+  const EmailLoginAndRegisterModulePasswordReset();
   @override
-  Widget build(BuildContext context, WidgetRef ref, LoginModule module) {
+  Widget build(
+      BuildContext context, WidgetRef ref, EmailLoginAndRegisterModule module) {
     final form = ref.useForm();
     final emailFocus = ref.useFocusNode("main");
 
@@ -904,7 +882,7 @@ class LoginModulePasswordReset extends PageModuleWidget<LoginModule> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          _LoginModuleBackgroundImage(module, opacity: 0.75),
+          _EmailLoginAndRegisterModuleBackgroundImage(module, opacity: 0.75),
           FormBuilder(
             type: FormBuilderType.center,
             key: form.key,
@@ -917,7 +895,8 @@ class LoginModulePasswordReset extends PageModuleWidget<LoginModule> {
                     width: imageSize?.width,
                     height: imageSize?.height,
                     child: ClipRRect(
-                      borderRadius: module.featureImageRadius,
+                      borderRadius:
+                          module.featureImageRadius ?? BorderRadius.zero,
                       child: Image(
                         image: NetworkOrAsset.image(module.featureImage!),
                         fit: module.featureImageFit,
@@ -990,7 +969,7 @@ class LoginModulePasswordReset extends PageModuleWidget<LoginModule> {
     );
   }
 
-  Size? _imageSize(LoginModule module) {
+  Size? _imageSize(EmailLoginAndRegisterModule module) {
     if (module.formImageSize != null) {
       return module.formImageSize;
     }
@@ -1003,7 +982,7 @@ class LoginModulePasswordReset extends PageModuleWidget<LoginModule> {
   Future<void> _onSubmitted(
     BuildContext context,
     WidgetRef ref,
-    LoginModule module,
+    EmailLoginAndRegisterModule module,
     FormContext form,
   ) async {
     if (!form.validate()) {
@@ -1023,7 +1002,7 @@ class LoginModulePasswordReset extends PageModuleWidget<LoginModule> {
                 .localize(),
         submitText: "Back".localize(),
         onSubmit: () {
-          context.navigator.pop();
+          ref.navigator.pop();
         },
       );
     } catch (e) {
@@ -1039,12 +1018,12 @@ class LoginModulePasswordReset extends PageModuleWidget<LoginModule> {
   }
 }
 
-class _LoginModuleBackgroundImage extends StatelessWidget {
-  const _LoginModuleBackgroundImage(
+class _EmailLoginAndRegisterModuleBackgroundImage extends StatelessWidget {
+  const _EmailLoginAndRegisterModuleBackgroundImage(
     this.module, {
     this.opacity = 0.75,
   });
-  final LoginModule module;
+  final EmailLoginAndRegisterModule module;
   final double opacity;
 
   @override
@@ -1092,11 +1071,13 @@ class _LoginModuleBackgroundImage extends StatelessWidget {
   }
 }
 
-class LoginModuleRegisterAnonymous extends PageModuleWidget<LoginModule> {
-  const LoginModuleRegisterAnonymous();
+class EmailLoginAndRegisterModuleRegisterAnonymous
+    extends PageModuleWidget<EmailLoginAndRegisterModule> {
+  const EmailLoginAndRegisterModuleRegisterAnonymous();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref, LoginModule module) {
+  Widget build(
+      BuildContext context, WidgetRef ref, EmailLoginAndRegisterModule module) {
     final form = ref.useForm();
 
     return UIScaffold(
@@ -1115,11 +1096,14 @@ class LoginModuleRegisterAnonymous extends PageModuleWidget<LoginModule> {
                 onlyRequired: module.showOnlyRequiredVariable,
               ) ??
               [],
-          ...module.registerVariables.buildForm(
-            context: context,
-            ref: ref,
-            onlyRequired: module.showOnlyRequiredVariable,
-          ),
+          ...module.registerVariables.entries
+              .where((e) => e.key == "anonymous")
+              .expand((e) => e.value)
+              .buildForm(
+                context: context,
+                ref: ref,
+                onlyRequired: module.showOnlyRequiredVariable,
+              ),
           const Divid(),
           const Space.height(120),
         ],
@@ -1146,7 +1130,7 @@ class LoginModuleRegisterAnonymous extends PageModuleWidget<LoginModule> {
               updated: false,
             );
             await context.model?.saveDocument(doc).showIndicator(context);
-            context.navigator.pushReplacementNamed(module.redirectTo);
+            ref.navigator.pushReplacementNamed(module.redirectTo);
           } catch (e) {
             UIDialog.show(
               context,

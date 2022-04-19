@@ -14,6 +14,7 @@ const _kQuillToolbarHeight = 80;
 enum CalendarEditingType { planeText, wysiwyg }
 
 @immutable
+@deprecated
 class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const CalendarModule({
     bool enabled = true,
@@ -26,7 +27,6 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.nameKey = Const.name,
     this.userKey = Const.user,
     this.textKey = Const.text,
-    this.roleKey = Const.role,
     this.typeKey = Const.type,
     this.imageKey = Const.media,
     this.createdTimeKey = Const.createdTime,
@@ -45,7 +45,6 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.automaticallyImplyLeadingOnHome = true,
     this.showAddingButton = true,
     this.markerIcon,
-    Permission permission = const Permission(),
     this.initialCommentTemplate = const [],
     List<RerouteConfig> rerouteConfigs = const [],
     this.homePage = const CalendarModuleHome(),
@@ -56,7 +55,6 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
   }) : super(
           enabled: enabled,
           title: title,
-          permission: permission,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -121,9 +119,6 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
   /// チャットタイプのキー。
   final String typeKey;
 
-  /// 権限のキー。
-  final String roleKey;
-
   /// 作成日のキー。
   final String createdTimeKey;
 
@@ -177,7 +172,6 @@ class CalendarModuleHome extends PageModuleWidget<CalendarModule> {
   Widget build(BuildContext context, WidgetRef ref, CalendarModule module) {
     final selected = ref.state("selected", DateTime.now());
     final events = ref.watchCollectionModel(module.queryPath);
-    final user = ref.watchUserDocumentModel(module.userPath);
 
     return UIScaffold(
       waitTransition: true,
@@ -193,14 +187,13 @@ class CalendarModuleHome extends PageModuleWidget<CalendarModule> {
         expand: true,
         onDaySelect: (day, events, holidays) {
           selected.value = day;
-          context.rootNavigator.pushNamed(
+          ref.rootNavigator.pushNamed(
             "/${module.routePath}/${day.toDateID()}",
             arguments: RouteQuery.fullscreenOrModal,
           );
         },
       ),
-      floatingActionButton: module.showAddingButton &&
-              module.permission.canEdit(user.get(module.roleKey, ""))
+      floatingActionButton: module.showAddingButton
           ? FloatingActionButton.extended(
               label: Text("Add".localize()),
               icon: const Icon(Icons.add),
@@ -209,7 +202,7 @@ class CalendarModuleHome extends PageModuleWidget<CalendarModule> {
                     .combine(TimeOfDay.now())
                     .round(const Duration(minutes: 15))
                     .toDateTimeID();
-                context.navigator.pushNamed(
+                ref.navigator.pushNamed(
                   "/${module.routePath}/edit/$dateId}",
                   arguments: RouteQuery.fullscreen,
                 );
@@ -226,7 +219,6 @@ class CalendarModuleDayView extends PageModuleWidget<CalendarModule> {
   @override
   Widget build(BuildContext context, WidgetRef ref, CalendarModule module) {
     final now = ref.useNow();
-    final user = ref.watchUserDocumentModel(module.userPath);
     final date = context.get("date_id", now.toDateID()).toDateTime();
     final startTime = date;
     final endTime = date.add(const Duration(days: 1));
@@ -254,7 +246,7 @@ class CalendarModuleDayView extends PageModuleWidget<CalendarModule> {
         builder: (context, item) {
           return InkWell(
             onTap: () {
-              context.navigator.pushNamed(
+              ref.navigator.pushNamed(
                 "/${module.routePath}/${item.uid}/detail",
                 arguments: RouteQuery.fullscreenOrModal,
               );
@@ -273,8 +265,7 @@ class CalendarModuleDayView extends PageModuleWidget<CalendarModule> {
           );
         },
       ),
-      floatingActionButton: module.showAddingButton &&
-              module.permission.canEdit(user.get(module.roleKey, ""))
+      floatingActionButton: module.showAddingButton
           ? FloatingActionButton.extended(
               label: Text("Add".localize()),
               icon: const Icon(Icons.add),
@@ -283,7 +274,7 @@ class CalendarModuleDayView extends PageModuleWidget<CalendarModule> {
                     .combine(TimeOfDay.now())
                     .round(const Duration(minutes: 15))
                     .toDateTimeID();
-                context.navigator.pushNamed(
+                ref.navigator.pushNamed(
                   "/${module.routePath}/edit/$dateId",
                   arguments: RouteQuery.fullscreen,
                 );
@@ -299,7 +290,6 @@ class CalendarModuleDetail extends PageModuleWidget<CalendarModule> {
 
   @override
   Widget build(BuildContext context, WidgetRef ref, CalendarModule module) {
-    final user = ref.watchUserDocumentModel(module.userPath);
     final event = ref.watchDocumentModel(
         "${module.queryPath}/${context.get("event_id", "")}");
     final author = ref.watchDocumentModel(
@@ -345,16 +335,15 @@ class CalendarModuleDetail extends PageModuleWidget<CalendarModule> {
         allDay: allDay,
       )),
       actions: [
-        if (module.permission.canEdit(user.get(module.roleKey, "")))
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              context.rootNavigator.pushNamed(
-                "/${module.routePath}/${context.get("event_id", "")}/edit",
-                arguments: RouteQuery.fullscreenOrModal,
-              );
-            },
-          )
+        IconButton(
+          icon: const Icon(Icons.edit),
+          onPressed: () {
+            ref.rootNavigator.pushNamed(
+              "/${module.routePath}/${context.get("event_id", "")}/edit",
+              arguments: RouteQuery.fullscreenOrModal,
+            );
+          },
+        )
       ],
     );
 
@@ -411,7 +400,7 @@ class CalendarModuleDetail extends PageModuleWidget<CalendarModule> {
           context.model?.saveDocument(doc);
         },
         onTapTemplateIcon: () async {
-          final res = await context.rootNavigator.pushNamed(
+          final res = await ref.rootNavigator.pushNamed(
             "/${module.routePath}/templates",
             arguments: RouteQuery.fullscreenOrModal,
           );
@@ -616,7 +605,7 @@ class CalendarModuleTemplate extends PageModuleWidget<CalendarModule> {
                       },
                     ),
               onTap: () {
-                context.navigator.pop(item);
+                ref.navigator.pop(item);
               },
             ),
           ];
@@ -689,8 +678,7 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
         null,
       ),
       actions: [
-        if (form.exists &&
-            module.permission.canDelete(user.get(module.roleKey, "")))
+        if (form.exists)
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () {
@@ -705,7 +693,7 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
                   await context.model
                       ?.deleteDocument(item)
                       .showIndicator(context);
-                  context.navigator.pop();
+                  ref.navigator.pop();
                 },
               );
             },
@@ -826,7 +814,7 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
               item[module.endTimeKey] =
                   allDay ? null : context.get<int?>(module.endTimeKey, null);
               await context.model?.saveDocument(item).showIndicator(context);
-              context.navigator.pop();
+              ref.navigator.pop();
             } catch (e) {
               UIDialog.show(
                 context,
@@ -928,7 +916,7 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
                 item[module.endTimeKey] =
                     allDay ? null : context.get<int?>(module.endTimeKey, null);
                 await context.model?.saveDocument(item).showIndicator(context);
-                context.navigator.pop();
+                ref.navigator.pop();
               } catch (e) {
                 UIDialog.show(
                   context,
@@ -991,7 +979,7 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
                 item[module.endTimeKey] =
                     allDay ? null : context.get<int?>(module.endTimeKey, null);
                 await context.model?.saveDocument(item).showIndicator(context);
-                context.navigator.pop();
+                ref.navigator.pop();
               } catch (e) {
                 UIDialog.show(
                   context,

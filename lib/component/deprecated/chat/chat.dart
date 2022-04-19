@@ -15,6 +15,7 @@ extension ChatTypeExtensions on ChatType {
 }
 
 @immutable
+@deprecated
 class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const ChatModule({
     bool enabled = true,
@@ -26,7 +27,6 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.mediaType = PlatformMediaType.all,
     this.nameKey = Const.name,
     this.textKey = Const.text,
-    this.roleKey = Const.role,
     this.typeKey = Const.type,
     this.memberKey = Const.member,
     this.mediaKey = Const.media,
@@ -37,7 +37,6 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.automaticallyImplyLeadingOnHome = true,
     this.availableMemberQuery,
     this.allowEditRoomName = true,
-    Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.homePage = const ChatModuleHome(),
     this.timelinePage = const ChatModuleTimeline(),
@@ -46,7 +45,6 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
   }) : super(
           enabled: enabled,
           title: title,
-          permission: permission,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -103,9 +101,6 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
 
   /// チャットタイプのキー。
   final String typeKey;
-
-  /// 権限のキー。
-  final String roleKey;
 
   /// 作成日のキー。
   final String createdTimeKey;
@@ -227,7 +222,7 @@ class ChatModuleHome extends PageModuleWidget<ChatModule> {
                 ),
                 onTap: () {
                   if (context.isMobile) {
-                    context.rootNavigator.pushNamed(
+                    ref.rootNavigator.pushNamed(
                       "/${module.routePath}/${item.get(Const.uid, "")}",
                       arguments: RouteQuery.fullscreen,
                     );
@@ -278,7 +273,7 @@ class ChatModuleHome extends PageModuleWidget<ChatModule> {
                         ?.saveDocument(doc)
                         .showIndicator(context);
                     if (context.isMobile) {
-                      context.rootNavigator.pushNamed(
+                      ref.rootNavigator.pushNamed(
                         "/${module.routePath}/$uid",
                         arguments: RouteQuery.fullscreen,
                       );
@@ -304,7 +299,6 @@ class ChatModuleTimeline extends PageModuleWidget<ChatModule> {
   Widget build(BuildContext context, WidgetRef ref, ChatModule module) {
     final now = ref.useNow();
     final userId = context.model?.userId;
-    final user = ref.watchUserDocumentModel();
     final chat = ref.watchDocumentModel(
         "${module.queryPath}/${context.get("chat_id", "")}");
     final timeline = ref.watchCollectionModel(
@@ -343,27 +337,25 @@ class ChatModuleTimeline extends PageModuleWidget<ChatModule> {
         title: Text(name.isEmpty ? title : name),
         sliverLayoutWhenModernDesign: false,
         actions: [
-          if (module.permission.canEdit(user.get(module.roleKey, ""))) ...[
-            if (chat.get(module.typeKey, "") == ChatType.group.text)
-              IconButton(
-                  onPressed: () {
-                    context.rootNavigator.pushNamed(
-                      "/${module.routePath}/${context.get("chat_id", "")}/member",
-                      arguments: RouteQuery.fullscreenOrModal,
-                    );
-                  },
-                  icon: const Icon(Icons.people_alt)),
-            if (module.allowEditRoomName)
-              IconButton(
+          if (chat.get(module.typeKey, "") == ChatType.group.text)
+            IconButton(
                 onPressed: () {
-                  context.rootNavigator.pushNamed(
-                    "/${module.routePath}/${context.get("chat_id", "")}/edit",
+                  ref.rootNavigator.pushNamed(
+                    "/${module.routePath}/${context.get("chat_id", "")}/member",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
                 },
-                icon: const Icon(Icons.settings),
-              ),
-          ]
+                icon: const Icon(Icons.people_alt)),
+          if (module.allowEditRoomName)
+            IconButton(
+              onPressed: () {
+                ref.rootNavigator.pushNamed(
+                  "/${module.routePath}/${context.get("chat_id", "")}/edit",
+                  arguments: RouteQuery.fullscreenOrModal,
+                );
+              },
+              icon: const Icon(Icons.settings),
+            ),
         ],
       ),
       body: UIListBuilder<DynamicMap>(
@@ -536,7 +528,7 @@ class ChatModuleTimelineItem extends ModuleWidget<ChatModule> {
             constraints: const BoxConstraints(maxWidth: 150),
             child: InkWell(
               onTap: () {
-                context.rootNavigator.pushNamed(
+                ref.rootNavigator.pushNamed(
                   "/${module.routePath}/${context.get("chat_id", "")}/media/${data.get(Const.uid, "")}",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -552,7 +544,7 @@ class ChatModuleTimelineItem extends ModuleWidget<ChatModule> {
             constraints: const BoxConstraints(maxWidth: 150),
             child: InkWell(
               onTap: () {
-                context.rootNavigator.pushNamed(
+                ref.rootNavigator.pushNamed(
                   "/${module.routePath}/${context.get("chat_id", "")}/media/${data.get(Const.uid, "")}",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -669,7 +661,7 @@ class ChatModuleEdit extends PageModuleWidget<ChatModule> {
 
           chat[module.nameKey] = context.get(module.nameKey, "");
           await context.model?.saveDocument(chat).showIndicator(context);
-          context.navigator.pop();
+          ref.navigator.pop();
         },
         label: Text("Submit".localize()),
         icon: const Icon(Icons.check),

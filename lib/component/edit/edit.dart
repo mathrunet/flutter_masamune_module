@@ -14,7 +14,6 @@ class EditModule extends PageModule {
     this.padding = const EdgeInsets.symmetric(vertical: 16),
     this.automaticallyImplyLeadingOnHome = true,
     this.sliverLayoutWhenModernDesignOnHome = false,
-    Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.homePage = const EditModuleHome(),
     this.top = const [],
@@ -22,7 +21,6 @@ class EditModule extends PageModule {
   }) : super(
           enabled: enabled,
           title: title,
-          permission: permission,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -115,7 +113,7 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
                             .format(["Deletion".localize()]),
                         submitText: "Back".localize(),
                         onSubmit: () {
-                          context.navigator.pop();
+                          ref.navigator.pop();
                         },
                       );
                     },
@@ -178,7 +176,7 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
                     .format(["Editing".localize()]),
                 submitText: "Back".localize(),
                 onSubmit: () {
-                  context.navigator.pop();
+                  ref.navigator.pop();
                 },
               );
             } else {
@@ -203,7 +201,7 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
                     .format(["Editing".localize()]),
                 submitText: "Back".localize(),
                 onSubmit: () {
-                  context.navigator.pop();
+                  ref.navigator.pop();
                 },
               );
             }

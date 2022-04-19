@@ -14,7 +14,6 @@ class UserAccountModule extends UserWidgetModule {
     this.allowEditingBlockList = true,
     this.sliverLayoutWhenModernDesignOnHome = true,
     this.automaticallyImplyLeadingOnHome = true,
-    Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.homePage = const UserAccountModuleHome(),
     this.contentWidget = const UserAccountModuleContent(),
@@ -25,7 +24,6 @@ class UserAccountModule extends UserWidgetModule {
   }) : super(
           enabled: enabled,
           title: title,
-          permission: permission,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -129,7 +127,7 @@ class UserAccountModuleContent extends ModuleWidget<UserAccountModule> {
               onPressed: () {
                 if (context.model?.requiredReauthInEmailAndPassword() ??
                     false) {
-                  context.navigator.pushNamed(
+                  ref.navigator.pushNamed(
                     "/${module.routePath}/account/reauth",
                     arguments: RouteQuery(
                       parameters: {
@@ -139,8 +137,7 @@ class UserAccountModuleContent extends ModuleWidget<UserAccountModule> {
                   );
                   return;
                 }
-                context.navigator
-                    .pushNamed("/${module.routePath}/account/email");
+                ref.navigator.pushNamed("/${module.routePath}/account/email");
               },
             ),
           ),
@@ -156,7 +153,7 @@ class UserAccountModuleContent extends ModuleWidget<UserAccountModule> {
               onPressed: () {
                 if (context.model?.requiredReauthInEmailAndPassword() ??
                     false) {
-                  context.navigator.pushNamed(
+                  ref.navigator.pushNamed(
                     "/${module.routePath}/account/reauth",
                     arguments: RouteQuery(
                       parameters: {
@@ -166,7 +163,7 @@ class UserAccountModuleContent extends ModuleWidget<UserAccountModule> {
                   );
                   return;
                 }
-                context.navigator
+                ref.navigator
                     .pushNamed("/${module.routePath}/account/password");
               },
             ),
@@ -176,8 +173,7 @@ class UserAccountModuleContent extends ModuleWidget<UserAccountModule> {
             ListItem(
               title: Text("%s list".localize().format(["Block".localize()])),
               onTap: () {
-                context.navigator
-                    .pushNamed("/${module.routePath}/account/block");
+                ref.navigator.pushNamed("/${module.routePath}/account/block");
               },
             ),
           ListItem(
@@ -198,7 +194,7 @@ class UserAccountModuleContent extends ModuleWidget<UserAccountModule> {
                       title: "Success".localize(),
                       text: "Logout is complete.".localize(),
                       onSubmit: () {
-                        context.navigator.resetAndPushNamed("/");
+                        ref.navigator.resetAndPushNamed("/");
                       },
                       submitText: "Back".localize(),
                     );
@@ -237,7 +233,7 @@ class UserAccountModuleContent extends ModuleWidget<UserAccountModule> {
                         title: "Success".localize(),
                         text: "Account deletion is complete.".localize(),
                         onSubmit: () {
-                          context.navigator.resetAndPushNamed("/");
+                          ref.navigator.resetAndPushNamed("/");
                         },
                         submitText: "Back".localize(),
                       );
@@ -327,7 +323,7 @@ class UserAccountModuleReauth extends PageModuleWidget<UserAccountModule> {
                   await context.model
                       ?.reauthInEmailAndPassword(password: password)
                       .showIndicator(context);
-                  context.navigator
+                  ref.navigator
                       .pushReplacementNamed(context.get("redirect_to", "/"));
                 } catch (e) {
                   UIDialog.show(
@@ -407,7 +403,7 @@ class UserAccountModuleEditEmail extends PageModuleWidget<UserAccountModule> {
                         .localize()
                         .format(["Editing".localize()]),
                     onSubmit: () {
-                      context.navigator.pop();
+                      ref.navigator.pop();
                     },
                     submitText: "Back".localize(),
                   );
@@ -507,7 +503,7 @@ class UserAccountModuleEditPassword
                         .localize()
                         .format(["Editing".localize()]),
                     onSubmit: () {
-                      context.navigator.pop();
+                      ref.navigator.pop();
                     },
                     submitText: "Back".localize(),
                   );

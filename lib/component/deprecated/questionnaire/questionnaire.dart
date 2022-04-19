@@ -48,14 +48,13 @@ class QuestionnaireModule extends PageModule
     this.textKey = Const.text,
     this.requiredKey = Const.required,
     this.typeKey = Const.type,
-    this.roleKey = Const.role,
+    this.questioner = true,
     this.selectionKey = Const.selection,
     this.createdTimeKey = Const.createdTime,
     this.endTimeKey = Const.endTime,
     this.answerKey = Const.answer,
     this.sliverLayoutWhenModernDesignOnHome = true,
     this.automaticallyImplyLeadingOnHome = true,
-    Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.questionnaireQuery,
     this.homePage = const QuestionnaireModuleHome(),
@@ -68,7 +67,6 @@ class QuestionnaireModule extends PageModule
   }) : super(
           enabled: enabled,
           title: title,
-          permission: permission,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -126,9 +124,6 @@ class QuestionnaireModule extends PageModule
   /// ユーザーのデータパス。
   final String userPath;
 
-  /// 権限のキー。
-  final String roleKey;
-
   /// 作成日のキー。
   final String createdTimeKey;
 
@@ -155,6 +150,9 @@ class QuestionnaireModule extends PageModule
 
   /// クエリー。
   final ModelQuery? questionnaireQuery;
+
+  /// 質問者の場合True.
+  final bool questioner;
 }
 
 class QuestionnaireModuleHome extends PageModuleWidget<QuestionnaireModule> {
@@ -215,7 +213,7 @@ class QuestionnaireModuleHome extends PageModuleWidget<QuestionnaireModule> {
               ),
               onTap: () {
                 if (context.isMobile) {
-                  context.navigator.pushNamed(
+                  ref.navigator.pushNamed(
                     "${module.routePath}/${item.get(Const.uid, "")}",
                     arguments: RouteQuery.fullscreen,
                   );
@@ -232,19 +230,16 @@ class QuestionnaireModuleHome extends PageModuleWidget<QuestionnaireModule> {
           ];
         },
       ),
-      floatingActionButton:
-          module.permission.canEdit(user.get(module.roleKey, ""))
-              ? FloatingActionButton.extended(
-                  label: Text("Add".localize()),
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    context.rootNavigator.pushNamed(
-                      "/${module.routePath}/edit",
-                      arguments: RouteQuery.fullscreenOrModal,
-                    );
-                  },
-                )
-              : null,
+      floatingActionButton: FloatingActionButton.extended(
+        label: Text("Add".localize()),
+        icon: const Icon(Icons.add),
+        onPressed: () {
+          ref.rootNavigator.pushNamed(
+            "/${module.routePath}/edit",
+            arguments: RouteQuery.fullscreenOrModal,
+          );
+        },
+      ),
     );
   }
 }
@@ -255,8 +250,7 @@ class QuestionnaireModuleView extends PageModuleWidget<QuestionnaireModule> {
   @override
   Widget build(
       BuildContext context, WidgetRef ref, QuestionnaireModule module) {
-    final user = ref.watchUserDocumentModel();
-    if (module.permission.canEdit(user.get(module.roleKey, ""))) {
+    if (!module.questioner) {
       return module.answerViewPage;
     } else {
       return module.questionViewPage;
@@ -293,7 +287,7 @@ class QuestionnaireAanswerView extends PageModuleWidget<QuestionnaireModule> {
         actions: [
           IconButton(
             onPressed: () {
-              context.rootNavigator.pushNamed(
+              ref.rootNavigator.pushNamed(
                 "${module.routePath}/${context.get("question_id", "")}/edit",
                 arguments: RouteQuery.fullscreenOrModal,
               );
@@ -302,7 +296,7 @@ class QuestionnaireAanswerView extends PageModuleWidget<QuestionnaireModule> {
           ),
           IconButton(
             onPressed: () {
-              context.rootNavigator.pushNamed(
+              ref.rootNavigator.pushNamed(
                 "/${module.routePath}/${context.get("question_id", "")}/question",
                 arguments: RouteQuery.fullscreenOrModal,
               );
@@ -315,7 +309,7 @@ class QuestionnaireAanswerView extends PageModuleWidget<QuestionnaireModule> {
         if (questions.isEmpty) {
           return InkWell(
             onTap: () {
-              context.rootNavigator.pushNamed(
+              ref.rootNavigator.pushNamed(
                 "/${module.routePath}/${context.get("question_id", "")}/question",
                 arguments: RouteQuery.fullscreenOrModal,
               );
@@ -369,7 +363,7 @@ class QuestionnaireAanswerView extends PageModuleWidget<QuestionnaireModule> {
                       .format("yyyy/MM/dd HH:mm"),
                 ),
                 onTap: () {
-                  context.rootNavigator.pushNamed(
+                  ref.rootNavigator.pushNamed(
                     "/${module.routePath}/${context.get("question_id", "")}/answer/${item.get(Const.uid, "")}",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
@@ -440,7 +434,6 @@ class QuestionnaireModuleQuestionView
       BuildContext context, WidgetRef ref, QuestionnaireModule module) {
     int i = 0;
     final form = ref.useForm();
-    final user = ref.watchUserDocumentModel(module.userPath);
     final question = ref.watchDocumentModel(
         "${module.queryPath}/${context.get("question_id", "")}");
     final questions = ref.watchCollectionModel(
@@ -451,17 +444,16 @@ class QuestionnaireModuleQuestionView
     final name = question.get(module.nameKey, "");
     final text = question.get(module.textKey, "");
     final endDate = question.get(module.endTimeKey, 0);
-    final canEdit = module.permission.canEdit(user.get(module.roleKey, ""));
 
     return UIScaffold(
       waitTransition: true,
       appBar: UIAppBar(
         title: Text(name),
         actions: [
-          if (canEdit && !context.isMobileOrModal)
+          if (module.questioner && !context.isMobileOrModal)
             IconButton(
               onPressed: () {
-                context.rootNavigator.pushNamed(
+                ref.rootNavigator.pushNamed(
                   "/${module.routePath}/${context.get("question_id", "")}/question/edit",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -475,7 +467,7 @@ class QuestionnaireModuleQuestionView
               padding: const EdgeInsets.all(16),
               child: Center(
                 child: Text(
-                  canEdit
+                  module.questioner
                       ? "The question is empty. Please set a new question by clicking the 'Add New' button."
                           .localize()
                       : "The question has not been set yet. Please wait for a while until the question is set."
@@ -516,7 +508,7 @@ class QuestionnaireModuleQuestionView
                     index: i,
                     question: item,
                     answer: answer,
-                    canEdit: canEdit,
+                    canEdit: module.questioner,
                     onlyView: false,
                   );
                 }),
@@ -525,7 +517,7 @@ class QuestionnaireModuleQuestionView
               ],
             ),
       floatingActionButton: () {
-        if (!canEdit && questions.isEmpty) {
+        if (!module.questioner && questions.isEmpty) {
           return null;
         }
         if (!context.isMobileOrModal) {
@@ -533,8 +525,8 @@ class QuestionnaireModuleQuestionView
         }
         return FloatingActionButton.extended(
           onPressed: () async {
-            if (canEdit) {
-              context.navigator.pushNamed(
+            if (module.questioner) {
+              ref.navigator.pushNamed(
                 "/${module.routePath}/${context.get("question_id", "")}/question/edit",
                 arguments: RouteQuery.fullscreenOrModal,
               );
@@ -550,14 +542,14 @@ class QuestionnaireModuleQuestionView
                     "%s is completed.".localize().format(["Answer".localize()]),
                 submitText: "Back".localize(),
                 onSubmit: () {
-                  context.navigator.pop();
+                  ref.navigator.pop();
                 },
               );
             }
           },
-          icon: Icon(canEdit ? Icons.add : Icons.check),
+          icon: Icon(module.questioner ? Icons.add : Icons.check),
           label: Text(
-            canEdit ? "Add".localize() : "Submit".localize(),
+            module.questioner ? "Add".localize() : "Submit".localize(),
           ),
         );
       }(),
@@ -594,7 +586,7 @@ class QuestionnaireModuleListTile extends ModuleWidget<QuestionnaireModule> {
         return InkWell(
           onTap: canEdit && !onlyView
               ? () {
-                  context.rootNavigator.pushNamed(
+                  ref.rootNavigator.pushNamed(
                     "/${module.routePath}/${context.get("question_id", "")}/question/$uid",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
@@ -654,7 +646,7 @@ class QuestionnaireModuleListTile extends ModuleWidget<QuestionnaireModule> {
         return InkWell(
           onTap: canEdit && !onlyView
               ? () {
-                  context.rootNavigator.pushNamed(
+                  ref.rootNavigator.pushNamed(
                     "/${module.routePath}/${context.get("question_id", "")}/question/$uid",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
@@ -725,7 +717,6 @@ class QuestionnaireModuleQuestionEdit
     final form = ref.useForm("item_id");
     final item = ref.watchDocumentModel(
         "${module.queryPath}/${context.get("question_id", "")}/${module.questionPath}/${form.uid}");
-    final user = ref.watchUserDocumentModel(module.userPath);
     final name = item.get(module.nameKey, "");
     final type = item.get(module.typeKey, Const.text);
     final required = item.get(module.requiredKey, false);
@@ -743,8 +734,7 @@ class QuestionnaireModuleQuestionEdit
           "A new entry".localize(),
         )),
         actions: [
-          if (form.exists &&
-              module.permission.canDelete(user.get(module.roleKey, "")))
+          if (form.exists)
             IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () {
@@ -759,7 +749,7 @@ class QuestionnaireModuleQuestionEdit
                     await context.model
                         ?.deleteDocument(item)
                         .showIndicator(context);
-                    context.navigator.pop();
+                    ref.navigator.pop();
                   },
                 );
               },
@@ -883,7 +873,7 @@ class QuestionnaireModuleQuestionEdit
             item[module.selectionKey] = context.get(module.selectionKey, {});
           }
           await context.model?.saveDocument(item).showIndicator(context);
-          context.navigator.pop();
+          ref.navigator.pop();
         },
         icon: const Icon(Icons.check),
         label: Text("Submit".localize()),
@@ -900,7 +890,6 @@ class QuestionnaireModuleEdit extends PageModuleWidget<QuestionnaireModule> {
       BuildContext context, WidgetRef ref, QuestionnaireModule module) {
     final form = ref.useForm("question_id");
     final item = ref.watchDocumentModel("${module.queryPath}/${form.uid}");
-    final user = ref.watchUserDocumentModel(module.userPath);
     final name = item.get(module.nameKey, "");
     final text = item.get(module.textKey, "");
     final endTime = item.get(module.endTimeKey, 0);
@@ -914,8 +903,7 @@ class QuestionnaireModuleEdit extends PageModuleWidget<QuestionnaireModule> {
           "A new entry".localize(),
         )),
         actions: [
-          if (form.exists &&
-              module.permission.canDelete(user.get(module.roleKey, "")))
+          if (form.exists)
             IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () {
@@ -930,8 +918,8 @@ class QuestionnaireModuleEdit extends PageModuleWidget<QuestionnaireModule> {
                     await context.model
                         ?.deleteDocument(item)
                         .showIndicator(context);
-                    context.navigator.pop();
-                    context.navigator.pop();
+                    ref.navigator.pop();
+                    ref.navigator.pop();
                   },
                 );
               },
@@ -1000,7 +988,7 @@ class QuestionnaireModuleEdit extends PageModuleWidget<QuestionnaireModule> {
           item[module.textKey] = context.get(module.textKey, "");
           item[module.endTimeKey] = context.get(module.endTimeKey, 0);
           await context.model?.saveDocument(item).showIndicator(context);
-          context.navigator.pop();
+          ref.navigator.pop();
         },
         label: Text("Submit".localize()),
         icon: const Icon(Icons.check),

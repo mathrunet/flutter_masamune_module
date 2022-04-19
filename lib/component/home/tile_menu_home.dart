@@ -1,194 +1,409 @@
-part of 'home.dart';
+import 'package:masamune_module/masamune_module.dart';
 
-class HomeModuleTileMenuHome extends ModuleWidget<HomeModule> {
-  const HomeModuleTileMenuHome();
+@immutable
+class TileMenuHomeModule extends PageModule
+    with VerifyAppReroutePageModuleMixin {
+  const TileMenuHomeModule({
+    bool enabled = true,
+    String? title = "",
+    this.color,
+    this.routePath = "",
+    this.textColor,
+    this.featureIcon,
+    this.featureImage,
+    this.featureImageFit = BoxFit.cover,
+    this.featureImageAlignment = Alignment.center,
+    this.titleTextStyle,
+    this.titleAlignment = Alignment.center,
+    this.titlePadding = const EdgeInsets.all(12),
+    this.contentPadding = const EdgeInsets.all(8),
+    this.headerHeight = 90,
+    this.userPath = "user",
+    this.calendar = const HomeCalendarModule(enabled: false),
+    this.info = const HomeInformationModule(enabled: false),
+    this.nameKey = Const.name,
+    this.menu = const [],
+    this.subMenu = const [],
+    this.profileRoutePath = "user",
+    List<RerouteConfig> rerouteConfigs = const [],
+    this.header,
+    this.footer,
+    this.profile = const TileMenuHomeModuleProfile(),
+    this.homePage = const TileMenuHomeModuleHome(),
+    this.tileMenuHomeInformationWidget = const TileMenuHomeModuleInformation(),
+    this.tileMenuHomeCalendarWidget = const TileMenuHomeModuleCalendar(),
+  }) : super(
+          enabled: enabled,
+          title: title,
+          rerouteConfigs: rerouteConfigs,
+        );
+
   @override
-  Widget build(BuildContext context, WidgetRef ref, HomeModule module) {
-    final user = ref.watchUserDocumentModel(module.userPath);
-    final name = user.get(module.nameKey, "Unknown".localize());
-    final role = context.roles.firstWhereOrNull(
-      (item) => item.id == user.get(module.roleKey, ""),
-    );
+  Map<String, RouteConfig> get routeSettings {
+    if (!enabled) {
+      return const {};
+    }
+    final route = {
+      "/$routePath": RouteConfig((_) => homePage),
+    };
+    route.addAll(info.routeSettings);
+    route.addAll(calendar.routeSettings);
+    return route;
+  }
 
+  // ページの設定。
+  final ModuleWidget<TileMenuHomeModule> homePage;
+  final ModuleWidget<TileMenuHomeModule> tileMenuHomeInformationWidget;
+  final ModuleWidget<TileMenuHomeModule> tileMenuHomeCalendarWidget;
+
+  // ホームのパーツ。
+  final ModuleWidget<TileMenuHomeModule>? header;
+  final ModuleWidget<TileMenuHomeModule>? footer;
+  final ModuleWidget<TileMenuHomeModule>? profile;
+
+  /// ルートパス。
+  final String routePath;
+
+  /// お知らせの設定。
+  final HomeInformationModule info;
+
+  /// カレンダーの設定。
+  final HomeCalendarModule calendar;
+
+  /// デフォルトのメニュー。
+  final List<MenuConfig> menu;
+
+  /// サブメニュー。
+  final List<MenuConfig> subMenu;
+
+  /// テキストカラー。
+  final Color? textColor;
+
+  /// メインカラー。
+  final Color? color;
+
+  /// フィーチャーアイコン。
+  final String? featureIcon;
+
+  /// フィーチャー画像。
+  final String? featureImage;
+
+  /// フィーチャー画像のサイズ。
+  final BoxFit featureImageFit;
+
+  /// フィーチャー画像の配置。
+  final Alignment featureImageAlignment;
+
+  /// タイトルのテキストスタイル。
+  final TextStyle? titleTextStyle;
+
+  /// タイトルの位置。
+  final Alignment titleAlignment;
+
+  /// タイトルのパディング。
+  final EdgeInsetsGeometry titlePadding;
+
+  /// コンテンツのパディング。
+  final EdgeInsetsGeometry contentPadding;
+
+  /// ヘッダーの高さ。
+  final double headerHeight;
+
+  /// ユーザーのデータパス。
+  final String userPath;
+
+  /// プロフィールページへのパス。
+  final String profileRoutePath;
+
+  /// 名前のキー。
+  final String nameKey;
+}
+
+@immutable
+class HomeInformationModule extends PostModule {
+  const HomeInformationModule({
+    bool enabled = true,
+    String? title,
+    String routePath = "info",
+    String queryPath = "info",
+    this.icon = Icons.info_rounded,
+    String nameKey = Const.name,
+    String createdTimeKey = Const.createdTime,
+    PageModuleWidget<PostModule> viewPage = const PostModuleView(),
+    PageModuleWidget<PostModule> editPage = const PostModuleEdit(),
+    this.widget,
+    this.limit = 10,
+  }) : super(
+          enabled: enabled,
+          title: title,
+          queryPath: queryPath,
+          routePath: routePath,
+          editingType: PostEditingType.planeText,
+          viewPage: viewPage,
+          editPage: editPage,
+          nameKey: nameKey,
+          createdTimeKey: createdTimeKey,
+        );
+
+  @override
+  Map<String, RouteConfig> get routeSettings {
+    if (!enabled) {
+      return const {};
+    }
+    final route = {
+      "/$routePath/{post_id}": RouteConfig((_) => viewPage),
+      "/$routePath/{post_id}/edit": RouteConfig((_) => editPage),
+    };
+    return route;
+  }
+
+  /// 表示数。
+  final int limit;
+
+  /// アイコン。
+  final IconData icon;
+
+  /// ウィジェット。
+  final Widget? widget;
+}
+
+@immutable
+class HomeCalendarModule extends CalendarModule {
+  const HomeCalendarModule({
+    bool enabled = true,
+    String? title,
+    String routePath = "calendar",
+    String queryPath = "event",
+    String startTimeKey = Const.startTime,
+    String endTimeKey = Const.endTime,
+    String allDayKey = "allDay",
+    this.icon = Icons.calendar_today,
+    PageModuleWidget<CalendarModule> detailPage = const CalendarModuleDetail(),
+    this.widget,
+  }) : super(
+          enabled: enabled,
+          title: title,
+          routePath: routePath,
+          queryPath: queryPath,
+          detailPage: detailPage,
+          startTimeKey: startTimeKey,
+          endTimeKey: endTimeKey,
+          allDayKey: allDayKey,
+        );
+
+  @override
+  Map<String, RouteConfig> get routeSettings {
+    if (!enabled) {
+      return const {};
+    }
+    final route = {
+      "/$routePath/{event_id}/detail": RouteConfig((_) => detailPage),
+    };
+    return route;
+  }
+
+  /// アイコン。
+  final IconData icon;
+
+  /// ウィジェット。
+  final Widget? widget;
+}
+
+class TileMenuHomeModuleHome extends ModuleWidget<TileMenuHomeModule> {
+  const TileMenuHomeModuleHome();
+  @override
+  Widget build(BuildContext context, WidgetRef ref, TileMenuHomeModule module) {
     return Scaffold(
-      body: PlatformScrollbar(
-        child: ListView(
-          padding: const EdgeInsets.all(8),
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: SizedBox(
-                height: module.headerHeight,
-                width: context.isMobileOrSmall
-                    ? null
-                    : () {
-                        return context.mediaQuery.size.width / 2;
-                      }(),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: DefaultTextStyle(
-                        style: TextStyle(
-                          color: module.textColor ??
-                              context.theme.textColorOnPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        child: Container(
-                          alignment: module.titleAlignment,
-                          padding: module.titlePadding,
-                          decoration: BoxDecoration(
-                            image: module.featureImage.isNotEmpty
-                                ? DecorationImage(
-                                    image: NetworkOrAsset.image(
-                                        module.featureImage!),
-                                    fit: module.featureImageFit,
-                                    alignment: module.featureImageAlignment,
-                                  )
-                                : null,
-                            color: module.color ?? context.theme.primaryColor,
+      body: SafeArea(
+        child: PlatformScrollbar(
+          child: ListView(
+            padding: const EdgeInsets.all(8),
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: SizedBox(
+                  height: module.headerHeight,
+                  width: context.isMobileOrSmall
+                      ? null
+                      : () {
+                          return context.mediaQuery.size.width / 2;
+                        }(),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: DefaultTextStyle(
+                          style: TextStyle(
+                            color: module.textColor ??
+                                context.theme.textColorOnPrimary,
+                            fontWeight: FontWeight.bold,
                           ),
-                          child: Row(
-                            children: [
-                              if (module.featureIcon.isNotEmpty) ...[
-                                Image(
-                                    image: NetworkOrAsset.image(
-                                        module.featureIcon!)),
-                                const Space.width(8),
-                              ],
-                              Expanded(
-                                child: DefaultTextStyle(
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  child: Text(
-                                    module.title ?? "",
-                                    textAlign: TextAlign.center,
-                                    style: module.titleTextStyle,
+                          child: Container(
+                            alignment: module.titleAlignment,
+                            padding: module.titlePadding,
+                            decoration: BoxDecoration(
+                              image: module.featureImage.isNotEmpty
+                                  ? DecorationImage(
+                                      image: NetworkOrAsset.image(
+                                          module.featureImage!),
+                                      fit: module.featureImageFit,
+                                      alignment: module.featureImageAlignment,
+                                    )
+                                  : null,
+                              color: module.color ?? context.theme.primaryColor,
+                            ),
+                            child: Row(
+                              children: [
+                                if (module.featureIcon.isNotEmpty) ...[
+                                  Image(
+                                      image: NetworkOrAsset.image(
+                                          module.featureIcon!)),
+                                  const Space.width(8),
+                                ],
+                                Expanded(
+                                  child: DefaultTextStyle(
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    child: Text(
+                                      module.title ?? "",
+                                      textAlign: TextAlign.center,
+                                      style: module.titleTextStyle,
+                                    ),
                                   ),
                                 ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const Space.width(4),
+                      Expanded(
+                        flex: 1,
+                        child: DefaultTextStyle(
+                          style: TextStyle(
+                            color: module.textColor ??
+                                context.theme.textColorOnPrimary,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  alignment: Alignment.centerLeft,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 0),
+                                  color: module.color ??
+                                      context.theme.primaryColor,
+                                  child: module.profile,
+                                ),
+                              ),
+                              const Space.height(4),
+                              ClickableBox(
+                                color:
+                                    module.color ?? context.theme.primaryColor,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
+                                  child: Text(
+                                    "MyPage".localize(),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                                onTap: () {
+                                  ref.navigator.pushNamed(
+                                      "/${module.profileRoutePath}/${context.model?.userId}");
+                                },
                               ),
                             ],
                           ),
                         ),
-                      ),
-                    ),
-                    const Space.width(4),
-                    Expanded(
-                      flex: 1,
-                      child: DefaultTextStyle(
-                        style: TextStyle(
-                          color: module.textColor ??
-                              context.theme.textColorOnPrimary,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              child: Container(
-                                alignment: Alignment.centerLeft,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 0),
-                                color:
-                                    module.color ?? context.theme.primaryColor,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        if (role?.icon != null) ...[
-                                          Icon(
-                                            role?.icon,
-                                            color: module.textColor ??
-                                                context.theme.colorScheme
-                                                    .onPrimary,
-                                            size: 15,
-                                          ),
-                                          const Space.width(4),
-                                        ],
-                                        Text(
-                                          role?.label ?? "",
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const Space.height(4),
-                                    Text(
-                                      "%s san".localize().format([name]),
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const Space.height(4),
-                            ClickableBox(
-                              color: module.color ?? context.theme.primaryColor,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
-                                child: Text(
-                                  "MyPage".localize(),
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                              onTap: () {
-                                context.navigator.pushNamed(
-                                    "/${module.profileRoutePath}/${context.model?.userId}");
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  ],
+                      )
+                    ],
+                  ),
                 ),
               ),
-            ),
-            if (module.header != null) ...[
+              if (module.header != null) ...[
+                const Space.height(8),
+                module.header!,
+              ],
               const Space.height(8),
-              module.header!,
-            ],
-            const Space.height(8),
-            if (module.info.enabled) ...[
-              module.tileMenuHomeInformationWidget,
+              if (module.info.enabled) ...[
+                module.tileMenuHomeInformationWidget,
+                const Space.height(8),
+              ],
+              if (module.calendar.enabled) ...[
+                module.tileMenuHomeCalendarWidget,
+                const Space.height(8),
+              ],
+              TileMenuHomeModuleHeadline(
+                "Menu".localize(),
+                icon: Icons.menu,
+                color: module.textColor ?? context.theme.textColorOnPrimary,
+                backgroundColor:
+                    module.color ?? context.theme.primaryColor.lighten(0.15),
+              ),
+              const Space.height(4),
+              Grid.extent(
+                padding: const EdgeInsets.all(0),
+                maxCrossAxisExtent: 200,
+                crossAxisSpacing: 4,
+                mainAxisSpacing: 4,
+                children: [
+                  ...module.menu.mapAndRemoveEmpty(
+                    (item) {
+                      return ClickableBox(
+                        color: module.color ?? context.theme.primaryColor,
+                        onTap: item.path.isEmpty
+                            ? null
+                            : () {
+                                ref.open(item.path!);
+                              },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(
+                                item.icon ?? Icons.info,
+                                size: context.isMobileOrSmall ? 64 : 78,
+                                color: module.textColor ??
+                                    context.theme.textColorOnPrimary,
+                              ),
+                              const Space.height(8),
+                              Text(
+                                item.name,
+                                style: TextStyle(
+                                    color: module.textColor ??
+                                        context.theme.textColorOnPrimary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize:
+                                        context.isMobileOrSmall ? null : 15),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
               const Space.height(8),
-            ],
-            if (module.calendar.enabled) ...[
-              module.tileMenuHomeCalendarWidget,
-              const Space.height(8),
-            ],
-            HomeModuleTileMenuHomeHeadline(
-              "Menu".localize(),
-              icon: Icons.menu,
-              color: module.textColor ?? context.theme.textColorOnPrimary,
-              backgroundColor:
-                  module.color ?? context.theme.primaryColor.lighten(0.15),
-            ),
-            const Space.height(4),
-            Grid.extent(
-              maxCrossAxisExtent: 200,
-              crossAxisSpacing: 4,
-              mainAxisSpacing: 4,
-              children: [
-                ...module.menu.mapAndRemoveEmpty(
-                  (item) {
-                    if (role != null &&
-                        role.id.isNotEmpty &&
-                        item.availableRole.isNotEmpty &&
-                        !item.availableRole.contains(role.id)) {
-                      return null;
-                    }
+              Grid.extent(
+                padding: const EdgeInsets.all(0),
+                maxCrossAxisExtent: 400,
+                crossAxisSpacing: 4,
+                mainAxisSpacing: 4,
+                childAspectRatio: 3,
+                children: [
+                  ...module.subMenu.mapAndRemoveEmpty((item) {
                     return ClickableBox(
                       color: module.color ?? context.theme.primaryColor,
                       onTap: item.path.isEmpty
@@ -196,78 +411,28 @@ class HomeModuleTileMenuHome extends ModuleWidget<HomeModule> {
                           : () {
                               ref.open(item.path!);
                             },
-                      child: Padding(
+                      child: Container(
+                        alignment: Alignment.center,
                         padding: const EdgeInsets.all(8),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(
-                              item.icon ?? Icons.info,
-                              size: context.isMobileOrSmall ? 64 : 78,
-                              color: module.textColor ??
-                                  context.theme.textColorOnPrimary,
-                            ),
-                            const Space.height(8),
-                            Text(
-                              item.name,
-                              style: TextStyle(
-                                  color: module.textColor ??
-                                      context.theme.textColorOnPrimary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize:
-                                      context.isMobileOrSmall ? null : 15),
-                            ),
-                          ],
+                        child: Text(
+                          item.name,
+                          style: TextStyle(
+                            color: module.textColor ??
+                                context.theme.textColorOnPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     );
-                  },
-                ),
+                  }),
+                ],
+              ),
+              if (module.footer != null) ...[
+                const Space.height(8),
+                module.footer!,
               ],
-            ),
-            const Space.height(8),
-            Grid.extent(
-              maxCrossAxisExtent: 400,
-              crossAxisSpacing: 4,
-              mainAxisSpacing: 4,
-              childAspectRatio: 3,
-              children: [
-                ...module.subMenu.mapAndRemoveEmpty((item) {
-                  if (role != null &&
-                      role.id.isNotEmpty &&
-                      item.availableRole.isNotEmpty &&
-                      !item.availableRole.contains(role.id)) {
-                    return null;
-                  }
-                  return ClickableBox(
-                    color: module.color ?? context.theme.primaryColor,
-                    onTap: item.path.isEmpty
-                        ? null
-                        : () {
-                            ref.open(item.path!);
-                          },
-                    child: Container(
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.all(8),
-                      child: Text(
-                        item.name,
-                        style: TextStyle(
-                          color: module.textColor ??
-                              context.theme.textColorOnPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ],
-            ),
-            if (module.footer != null) ...[
-              const Space.height(8),
-              module.footer!,
             ],
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: _banner(context),
@@ -282,11 +447,61 @@ class HomeModuleTileMenuHome extends ModuleWidget<HomeModule> {
   }
 }
 
-class HomeModuleTileMenuHomeInformation extends ModuleWidget<HomeModule> {
-  const HomeModuleTileMenuHomeInformation();
+class TileMenuHomeModuleProfile extends ModuleWidget<TileMenuHomeModule> {
+  const TileMenuHomeModuleProfile({
+    this.roleName,
+    this.roleIcon,
+  });
+
+  final IconData? roleIcon;
+  final String? roleName;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref, HomeModule module) {
+  Widget build(BuildContext context, WidgetRef ref, TileMenuHomeModule module) {
+    final user = ref.watchUserDocumentModel(module.userPath);
+    final name = user.get(module.nameKey, "Unknown".localize());
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            if (roleName.isNotEmpty) ...[
+              if (roleIcon != null) ...[
+                Icon(
+                  roleIcon,
+                  color:
+                      module.textColor ?? context.theme.colorScheme.onPrimary,
+                  size: 15,
+                ),
+                const Space.width(4),
+              ],
+              Text(
+                roleName ?? "",
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ]
+          ],
+        ),
+        const Space.height(4),
+        Text(
+          "%s san".localize().format([name]),
+          style: const TextStyle(fontSize: 12),
+        ),
+      ],
+    );
+  }
+}
+
+class TileMenuHomeModuleInformation extends ModuleWidget<TileMenuHomeModule> {
+  const TileMenuHomeModuleInformation();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref, TileMenuHomeModule module) {
     if (module.info.widget != null) {
       return module.info.widget!;
     }
@@ -306,7 +521,7 @@ class HomeModuleTileMenuHomeInformation extends ModuleWidget<HomeModule> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            HomeModuleTileMenuHomeHeadline(
+            TileMenuHomeModuleHeadline(
               module.info.title ?? "Information".localize(),
               icon: module.info.icon,
               color: module.textColor ?? context.theme.textColorOnPrimary,
@@ -315,6 +530,7 @@ class HomeModuleTileMenuHomeInformation extends ModuleWidget<HomeModule> {
             ),
             const Space.height(4),
             Grid.extent(
+              padding: const EdgeInsets.all(0),
               maxCrossAxisExtent: 300,
               mainAxisSpacing: 4,
               crossAxisSpacing: 4,
@@ -333,7 +549,7 @@ class HomeModuleTileMenuHomeInformation extends ModuleWidget<HomeModule> {
                     child: ClickableBox(
                       color: module.color ?? context.theme.primaryColor,
                       onTap: () {
-                        context.navigator.pushNamed(
+                        ref.navigator.pushNamed(
                           "/${module.info.routePath}/${item.get(Const.uid, "")}",
                           arguments: RouteQuery.fullscreenOrModal,
                         );
@@ -381,11 +597,11 @@ class HomeModuleTileMenuHomeInformation extends ModuleWidget<HomeModule> {
   }
 }
 
-class HomeModuleTileMenuHomeCalendar extends ModuleWidget<HomeModule> {
-  const HomeModuleTileMenuHomeCalendar();
+class TileMenuHomeModuleCalendar extends ModuleWidget<TileMenuHomeModule> {
+  const TileMenuHomeModuleCalendar();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref, HomeModule module) {
+  Widget build(BuildContext context, WidgetRef ref, TileMenuHomeModule module) {
     if (module.info.widget != null) {
       return module.info.widget!;
     }
@@ -401,7 +617,7 @@ class HomeModuleTileMenuHomeCalendar extends ModuleWidget<HomeModule> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        HomeModuleTileMenuHomeHeadline(
+        TileMenuHomeModuleHeadline(
           module.calendar.title ?? "Calendar".localize(),
           icon: module.calendar.icon,
           color: module.textColor ?? context.theme.textColorOnPrimary,
@@ -438,7 +654,7 @@ class HomeModuleTileMenuHomeCalendar extends ModuleWidget<HomeModule> {
 
                     return InkWell(
                       onTap: () {
-                        context.navigator.pushNamed(
+                        ref.navigator.pushNamed(
                           "/${module.calendar.routePath}/${item.uid}/detail",
                           arguments: RouteQuery.fullscreenOrModal,
                         );
@@ -496,8 +712,8 @@ String _timeString({
   }
 }
 
-class HomeModuleTileMenuHomeHeadline extends StatelessWidget {
-  const HomeModuleTileMenuHomeHeadline(
+class TileMenuHomeModuleHeadline extends ModuleWidget<TileMenuHomeModule> {
+  const TileMenuHomeModuleHeadline(
     this.label, {
     this.icon,
     this.color,
@@ -509,7 +725,7 @@ class HomeModuleTileMenuHomeHeadline extends StatelessWidget {
   final Color? backgroundColor;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref, TileMenuHomeModule module) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 12,
@@ -543,33 +759,27 @@ class HomeModuleTileMenuHomeHeadline extends StatelessWidget {
   }
 }
 
-class HomeModuleChangeAffiliation extends ScopedWidget {
-  const HomeModuleChangeAffiliation({
+class TileMenuHomeModuleChangeAffiliation
+    extends ModuleWidget<TileMenuHomeModule> {
+  const TileMenuHomeModuleChangeAffiliation({
     required this.title,
-    this.roleKey = Const.role,
     this.affiliationKey = "affiliation",
     this.targetPath = "user",
     this.namekey = Const.name,
     this.imageKey = Const.icon,
-    this.availableRole = const [],
     this.affiliationListKey = "affiliations",
   });
   final String title;
   final String namekey;
-  final String roleKey;
   final String imageKey;
   final String affiliationKey;
   final String affiliationListKey;
-  final List<String> availableRole;
   final String targetPath;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref, TileMenuHomeModule module) {
     final user = ref.watchUserDocumentModel();
     final affiliationId = user.get(affiliationKey, "");
-    final role = context.roles.firstWhereOrNull(
-      (item) => item.id == user.get(roleKey, ""),
-    );
     final affiliation = ref
         .watchCollectionModel(
           ModelQuery(targetPath, key: Const.uid, isEqualTo: affiliationId)
@@ -577,10 +787,6 @@ class HomeModuleChangeAffiliation extends ScopedWidget {
         )
         .firstOrNull;
     final name = affiliation?.get(namekey, "") ?? "";
-    final enabled = role == null ||
-        role.id.isEmpty ||
-        availableRole.isEmpty ||
-        availableRole.contains(role.id);
 
     return DefaultTextStyle(
       style: TextStyle(
@@ -617,21 +823,19 @@ class HomeModuleChangeAffiliation extends ScopedWidget {
                         textAlign: TextAlign.center,
                       ),
                     ),
-                    if (affiliation != null && enabled)
+                    if (affiliation != null)
                       IconButton(
                         color: context.theme.colorScheme.onPrimary,
                         onPressed: () async {
-                          final uid = await context.navigator.push<String>(
+                          final uid = await ref.navigator.push<String>(
                             UIPageRoute<String>(
                               builder: (context) =>
-                                  HomeModuleChangeAffiliationSelection(
+                                  TileMenuHomeModuleChangeAffiliationSelection(
                                 title: title,
-                                roleKey: roleKey,
                                 affiliationKey: affiliationKey,
                                 targetPath: targetPath,
                                 imageKey: imageKey,
                                 namekey: namekey,
-                                availableRole: availableRole,
                                 affiliationListKey: affiliationListKey,
                               ),
                               transition: PageTransition.fullscreen,
@@ -666,29 +870,25 @@ class HomeModuleChangeAffiliation extends ScopedWidget {
   }
 }
 
-class HomeModuleChangeAffiliationSelection
-    extends PageModuleWidget<HomeModule> {
-  const HomeModuleChangeAffiliationSelection({
+class TileMenuHomeModuleChangeAffiliationSelection
+    extends PageModuleWidget<TileMenuHomeModule> {
+  const TileMenuHomeModuleChangeAffiliationSelection({
     required this.title,
-    this.roleKey = Const.role,
     this.affiliationKey = "affiliation",
     this.targetPath = "user",
     this.imageKey = Const.icon,
     this.namekey = Const.name,
-    this.availableRole = const [],
     this.affiliationListKey = "affiliations",
   });
   final String title;
   final String namekey;
   final String imageKey;
-  final String roleKey;
   final String affiliationKey;
   final String affiliationListKey;
-  final List<String> availableRole;
   final String targetPath;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref, HomeModule module) {
+  Widget build(BuildContext context, WidgetRef ref, TileMenuHomeModule module) {
     final user = ref.watchUserDocumentModel();
     final affiliationId = user.get(affiliationKey, "");
     final affiliationList = user.getAsList<String>(affiliationListKey, []);
@@ -714,7 +914,7 @@ class HomeModuleChangeAffiliationSelection
               onTap: affiliationId == item.uid
                   ? null
                   : () {
-                      context.navigator.pop(item.uid);
+                      ref.navigator.pop(item.uid);
                     },
               title: Text(item.get(namekey, "")),
               trailing: affiliationId == item.uid

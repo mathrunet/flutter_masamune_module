@@ -11,7 +11,6 @@ class MenuModule extends PageModule {
     this.sliverLayoutWhenModernDesignOnHome = true,
     required this.menu,
     this.padding = const EdgeInsets.symmetric(vertical: 8),
-    Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.top = const [],
     this.bottom = const [],
@@ -19,7 +18,6 @@ class MenuModule extends PageModule {
   }) : super(
           enabled: enabled,
           title: title,
-          permission: permission,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -166,7 +164,7 @@ class MenuModuleHome extends PageModuleWidget<MenuModule> {
                           if (menu.path!.startsWith("http")) {
                             ref.open(menu.path!);
                           } else {
-                            context.rootNavigator.pushNamed(
+                            ref.rootNavigator.pushNamed(
                               ref.applyModuleTag(menu.path!),
                               arguments: RouteQuery.fullscreenOrModal,
                             );
@@ -213,7 +211,7 @@ class MenuModuleAccountComponent extends ScopedWidget {
                   text: "Logout is complete.".localize(),
                   submitText: "Back".localize(),
                   onSubmit: () {
-                    context.rootNavigator.resetAndPushNamed("/");
+                    ref.rootNavigator.resetAndPushNamed("/");
                   },
                 );
               },

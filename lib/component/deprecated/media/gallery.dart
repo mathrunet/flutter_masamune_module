@@ -9,6 +9,7 @@ enum GalleryType {
 }
 
 @immutable
+@deprecated
 class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const GalleryModule({
     bool enabled = true,
@@ -20,7 +21,6 @@ class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.mediaKey = Const.media,
     this.nameKey = Const.name,
     this.textKey = Const.text,
-    this.roleKey = Const.role,
     this.categoryKey = Const.category,
     this.createdTimeKey = Const.createdTime,
     this.maxCrossAxisExtentForMobile = 200,
@@ -34,7 +34,6 @@ class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.skipDetailPage = false,
     this.sliverLayoutWhenModernDesignOnHome = true,
     this.automaticallyImplyLeadingOnHome = true,
-    Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.contentQuery,
     this.categoryQuery,
@@ -49,7 +48,6 @@ class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
   }) : super(
           enabled: enabled,
           title: title,
-          permission: permission,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -108,9 +106,6 @@ class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
 
   /// カテゴリーのキー。
   final String categoryKey;
-
-  /// 権限のキー。
-  final String roleKey;
 
   /// 作成日のキー。
   final String createdTimeKey;
@@ -179,7 +174,6 @@ class GalleryModuleTileViewWithList extends PageModuleWidget<GalleryModule> {
 
   @override
   Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
-    final user = ref.watchUserDocumentModel(module.userPath);
     final list = _categories(context, ref, module);
     final controller = ref.useNavigatorController(
       "/${module.routePath}/${list.firstOrNull?.id}",
@@ -200,25 +194,22 @@ class GalleryModuleTileViewWithList extends PageModuleWidget<GalleryModule> {
             ListItem(
               title: Text(item.label),
               onTap: () {
-                context.navigator.pushNamed("/${module.routePath}/${item.id}");
+                ref.navigator.pushNamed("/${module.routePath}/${item.id}");
               },
             )
           ];
         },
       ),
-      floatingActionButton:
-          module.permission.canEdit(user.get(module.roleKey, ""))
-              ? FloatingActionButton.extended(
-                  label: Text("Add".localize()),
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    context.navigator.pushNamed(
-                      "/${module.routePath}/edit",
-                      arguments: RouteQuery.fullscreenOrModal,
-                    );
-                  },
-                )
-              : null,
+      floatingActionButton: FloatingActionButton.extended(
+        label: Text("Add".localize()),
+        icon: const Icon(Icons.add),
+        onPressed: () {
+          ref.navigator.pushNamed(
+            "/${module.routePath}/edit",
+            arguments: RouteQuery.fullscreenOrModal,
+          );
+        },
+      ),
     );
   }
 }
@@ -239,7 +230,6 @@ class GalleryModuleTileViewWithTab extends PageModuleWidget<GalleryModule> {
 
   @override
   Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
-    final user = ref.watchUserDocumentModel(module.userPath);
     final list = _categories(context, ref, module);
     final tab = ref.useTab(list);
     final controller = ref.useNavigatorController(
@@ -259,19 +249,16 @@ class GalleryModuleTileViewWithTab extends PageModuleWidget<GalleryModule> {
           return GalleryModuleGrid(category: item);
         },
       ),
-      floatingActionButton:
-          module.permission.canEdit(user.get(module.roleKey, ""))
-              ? FloatingActionButton.extended(
-                  label: Text("Add".localize()),
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    context.navigator.pushNamed(
-                      "/${module.routePath}/edit",
-                      arguments: RouteQuery.fullscreenOrModal,
-                    );
-                  },
-                )
-              : null,
+      floatingActionButton: FloatingActionButton.extended(
+        label: Text("Add".localize()),
+        icon: const Icon(Icons.add),
+        onPressed: () {
+          ref.navigator.pushNamed(
+            "/${module.routePath}/edit",
+            arguments: RouteQuery.fullscreenOrModal,
+          );
+        },
+      ),
     );
   }
 }
@@ -281,7 +268,6 @@ class GalleryModuleTileView extends PageModuleWidget<GalleryModule> {
 
   @override
   Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
-    final user = ref.watchUserDocumentModel(module.userPath);
     final controller = ref.useNavigatorController(
       "/${module.routePath}/${module.categoryConfig.firstOrNull?.id}",
     );
@@ -293,19 +279,16 @@ class GalleryModuleTileView extends PageModuleWidget<GalleryModule> {
         title: Text(module.title ?? "Gallery".localize()),
       ),
       body: const GalleryModuleGrid(),
-      floatingActionButton:
-          module.permission.canEdit(user.get(module.roleKey, ""))
-              ? FloatingActionButton.extended(
-                  label: Text("Add".localize()),
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    context.navigator.pushNamed(
-                      "/${module.routePath}/edit",
-                      arguments: RouteQuery.fullscreen,
-                    );
-                  },
-                )
-              : null,
+      floatingActionButton: FloatingActionButton.extended(
+        label: Text("Add".localize()),
+        icon: const Icon(Icons.add),
+        onPressed: () {
+          ref.navigator.pushNamed(
+            "/${module.routePath}/edit",
+            arguments: RouteQuery.fullscreen,
+          );
+        },
+      ),
     );
   }
 }
@@ -411,7 +394,7 @@ class GalleryModuleGrid extends ModuleWidget<GalleryModule> {
                       video: NetworkOrAsset.video(path),
                       fit: BoxFit.cover,
                       onTap: () {
-                        context.rootNavigator.pushNamed(
+                        ref.rootNavigator.pushNamed(
                           module.skipDetailPage
                               ? "/${module.routePath}/media/${item.get(Const.uid, "")}/view"
                               : "/${module.routePath}/media/${item.get(Const.uid, "")}",
@@ -426,7 +409,7 @@ class GalleryModuleGrid extends ModuleWidget<GalleryModule> {
                   image: NetworkOrAsset.image(path),
                   fit: BoxFit.cover,
                   onTap: () {
-                    context.rootNavigator.pushNamed(
+                    ref.rootNavigator.pushNamed(
                       module.skipDetailPage
                           ? "/${module.routePath}/media/${item.get(Const.uid, "")}/view"
                           : "/${module.routePath}/media/${item.get(Const.uid, "")}",
@@ -447,7 +430,6 @@ class GalleryModuleMediaDetail extends PageModuleWidget<GalleryModule> {
 
   @override
   Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
-    final user = ref.watchUserDocumentModel(module.userPath);
     final item = ref.watchDocumentModel(
         "${module.queryPath}/${context.get("media_id", "")}");
 
@@ -464,22 +446,22 @@ class GalleryModuleMediaDetail extends PageModuleWidget<GalleryModule> {
       appBar: UIAppBar(
         title: Text(name),
         actions: [
-          if (module.permission.canEdit(user.get(module.roleKey, "")))
-            IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () {
-                  context.navigator.pushNamed(
-                    "/${module.routePath}/media/${context.get("media_id", "")}/edit",
-                    arguments: RouteQuery.fullscreenOrModal,
-                  );
-                })
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              ref.navigator.pushNamed(
+                "/${module.routePath}/media/${context.get("media_id", "")}/edit",
+                arguments: RouteQuery.fullscreenOrModal,
+              );
+            },
+          ),
         ],
       ),
       body: UIListView(
         children: [
           InkWell(
             onTap: () {
-              context.navigator.pushNamed(
+              ref.navigator.pushNamed(
                 "/${module.routePath}/media/${context.get("media_id", "")}/view",
                 arguments: RouteQuery.fullscreenOrModal,
               );
@@ -556,7 +538,6 @@ class GalleryModuleMediaView extends PageModuleWidget<GalleryModule> {
 
   @override
   Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
-    final user = ref.watchUserDocumentModel(module.userPath);
     final item = ref.watchDocumentModel(
         "${module.queryPath}/${context.get("media_id", "")}");
     final name = item.get(module.nameKey, "");
@@ -568,16 +549,16 @@ class GalleryModuleMediaView extends PageModuleWidget<GalleryModule> {
       appBar: UIAppBar(
         title: Text(name),
         actions: [
-          if (module.skipDetailPage &&
-              module.permission.canEdit(user.get(module.roleKey, "")))
+          if (module.skipDetailPage)
             IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () {
-                  context.navigator.pushNamed(
-                    "/${module.routePath}/media/${context.get("media_id", "")}/edit",
-                    arguments: RouteQuery.fullscreenOrModal,
-                  );
-                })
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                ref.navigator.pushNamed(
+                  "/${module.routePath}/media/${context.get("media_id", "")}/edit",
+                  arguments: RouteQuery.fullscreenOrModal,
+                );
+              },
+            ),
         ],
       ),
       backgroundColor: Colors.black,
@@ -626,7 +607,6 @@ class GalleryModuleEdit extends PageModuleWidget<GalleryModule> {
   @override
   Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
     final form = ref.useForm("media_id");
-    final user = ref.watchUserDocumentModel(module.userPath);
     final item = ref.watchDocumentModel("${module.queryPath}/${form.uid}");
     final name = item.get(module.nameKey, "");
     final text = item.get(module.textKey, "");
@@ -642,8 +622,7 @@ class GalleryModuleEdit extends PageModuleWidget<GalleryModule> {
           "A new entry".localize(),
         )),
         actions: [
-          if (form.exists &&
-              module.permission.canDelete(user.get(module.roleKey, "")))
+          if (form.exists)
             IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () {
@@ -658,7 +637,7 @@ class GalleryModuleEdit extends PageModuleWidget<GalleryModule> {
                     await context.model
                         ?.deleteDocument(item)
                         .showIndicator(context);
-                    context.navigator.popUntilNamed("/${module.routePath}");
+                    ref.navigator.popUntilNamed("/${module.routePath}");
                   },
                 );
               },
@@ -759,7 +738,7 @@ class GalleryModuleEdit extends PageModuleWidget<GalleryModule> {
               ?.uploadMedia(context.get(module.mediaKey, ""))
               .showIndicator(context);
           await context.model?.saveDocument(item).showIndicator(context);
-          context.navigator.pop();
+          ref.navigator.pop();
         },
         label: Text("Submit".localize()),
         icon: const Icon(Icons.check),

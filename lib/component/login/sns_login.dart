@@ -21,7 +21,6 @@ class SnsLoginModule extends PageModule {
     this.featureImage,
     this.featureImageRadius = BorderRadius.zero,
     this.featureImageSize = const Size(256, 256),
-    this.roleKey = Const.role,
     this.formImageSize,
     this.featureImageFit = BoxFit.cover,
     this.titleTextStyle,
@@ -34,14 +33,12 @@ class SnsLoginModule extends PageModule {
     this.registerVariables = const [],
     this.showOnlyRequiredVariable = true,
     this.anonymousSignInConfig,
-    Permission permission = const Permission(),
     List<RerouteConfig> rerouteConfigs = const [],
     this.landingPage = const SnsLoginModuleLanding(),
     this.registerPage = const SnsLoginModuleRegister(),
   }) : super(
           enabled: enabled,
           title: title,
-          permission: permission,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -69,9 +66,6 @@ class SnsLoginModule extends PageModule {
 
   /// ユーザーコレクションのパス。
   final String userPath;
-
-  /// ロールのキー。
-  final String roleKey;
 
   /// 背景色。
   final Color? backgroundColor;
@@ -137,7 +131,7 @@ class SnsLoginModule extends PageModule {
   final bool showOnlyRequiredVariable;
 
   /// 匿名ログイン用のテキストやアイコン。
-  final LoginConfig? anonymousSignInConfig;
+  final MenuConfig? anonymousSignInConfig;
 }
 
 class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
@@ -273,7 +267,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              context.navigator.pushReplacementNamed(module.redirectTo);
+              ref.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -301,7 +295,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              context.navigator.pushReplacementNamed(module.redirectTo);
+              ref.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -326,7 +320,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              context.navigator.pushReplacementNamed(module.redirectTo);
+              ref.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -351,7 +345,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              context.navigator.pushReplacementNamed(module.redirectTo);
+              ref.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -376,7 +370,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              context.navigator.pushReplacementNamed(module.redirectTo);
+              ref.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -390,7 +384,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
         );
       case "anonymous":
         return FormItemSubmit(
-          module.anonymousSignInConfig?.label?.localize() ??
+          module.anonymousSignInConfig?.name.localize() ??
               "Anonymous SingIn".localize(),
           borderRadius: 35,
           height: 70,
@@ -402,7 +396,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              context.navigator.pushReplacementNamed(module.redirectTo);
+              ref.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -526,7 +520,7 @@ class SnsLoginModuleRegister extends PageModuleWidget<SnsLoginModule> {
               updated: false,
             );
             await context.model?.saveDocument(doc).showIndicator(context);
-            context.navigator.pushReplacementNamed(module.redirectTo);
+            ref.navigator.pushReplacementNamed(module.redirectTo);
           } catch (e) {
             UIDialog.show(
               context,
