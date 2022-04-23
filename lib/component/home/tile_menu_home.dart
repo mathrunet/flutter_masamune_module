@@ -317,7 +317,7 @@ class TileMenuHomeModuleHome extends ModuleWidget<TileMenuHomeModule> {
                                   ),
                                 ),
                                 onTap: () {
-                                  ref.navigator.pushNamed(
+                                  context.navigator.pushNamed(
                                       "/${module.profileRoutePath}/${context.model?.userId}");
                                 },
                               ),
@@ -549,7 +549,7 @@ class TileMenuHomeModuleInformation extends ModuleWidget<TileMenuHomeModule> {
                     child: ClickableBox(
                       color: module.color ?? context.theme.primaryColor,
                       onTap: () {
-                        ref.navigator.pushNamed(
+                        context.navigator.pushNamed(
                           "/${module.info.routePath}/${item.get(Const.uid, "")}",
                           arguments: RouteQuery.fullscreenOrModal,
                         );
@@ -654,7 +654,7 @@ class TileMenuHomeModuleCalendar extends ModuleWidget<TileMenuHomeModule> {
 
                     return InkWell(
                       onTap: () {
-                        ref.navigator.pushNamed(
+                        context.navigator.pushNamed(
                           "/${module.calendar.routePath}/${item.uid}/detail",
                           arguments: RouteQuery.fullscreenOrModal,
                         );
@@ -827,7 +827,7 @@ class TileMenuHomeModuleChangeAffiliation
                       IconButton(
                         color: context.theme.colorScheme.onPrimary,
                         onPressed: () async {
-                          final uid = await ref.navigator.push<String>(
+                          final uid = await context.navigator.push<String>(
                             UIPageRoute<String>(
                               builder: (context) =>
                                   TileMenuHomeModuleChangeAffiliationSelection(
@@ -914,7 +914,7 @@ class TileMenuHomeModuleChangeAffiliationSelection
               onTap: affiliationId == item.uid
                   ? null
                   : () {
-                      ref.navigator.pop(item.uid);
+                      context.navigator.pop(item.uid);
                     },
               title: Text(item.get(namekey, "")),
               trailing: affiliationId == item.uid

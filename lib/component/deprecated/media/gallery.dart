@@ -194,7 +194,7 @@ class GalleryModuleTileViewWithList extends PageModuleWidget<GalleryModule> {
             ListItem(
               title: Text(item.label),
               onTap: () {
-                ref.navigator.pushNamed("/${module.routePath}/${item.id}");
+                context.navigator.pushNamed("/${module.routePath}/${item.id}");
               },
             )
           ];
@@ -204,7 +204,7 @@ class GalleryModuleTileViewWithList extends PageModuleWidget<GalleryModule> {
         label: Text("Add".localize()),
         icon: const Icon(Icons.add),
         onPressed: () {
-          ref.navigator.pushNamed(
+          context.navigator.pushNamed(
             "/${module.routePath}/edit",
             arguments: RouteQuery.fullscreenOrModal,
           );
@@ -253,7 +253,7 @@ class GalleryModuleTileViewWithTab extends PageModuleWidget<GalleryModule> {
         label: Text("Add".localize()),
         icon: const Icon(Icons.add),
         onPressed: () {
-          ref.navigator.pushNamed(
+          context.navigator.pushNamed(
             "/${module.routePath}/edit",
             arguments: RouteQuery.fullscreenOrModal,
           );
@@ -283,7 +283,7 @@ class GalleryModuleTileView extends PageModuleWidget<GalleryModule> {
         label: Text("Add".localize()),
         icon: const Icon(Icons.add),
         onPressed: () {
-          ref.navigator.pushNamed(
+          context.navigator.pushNamed(
             "/${module.routePath}/edit",
             arguments: RouteQuery.fullscreen,
           );
@@ -394,7 +394,7 @@ class GalleryModuleGrid extends ModuleWidget<GalleryModule> {
                       video: NetworkOrAsset.video(path),
                       fit: BoxFit.cover,
                       onTap: () {
-                        ref.rootNavigator.pushNamed(
+                        context.rootNavigator.pushNamed(
                           module.skipDetailPage
                               ? "/${module.routePath}/media/${item.get(Const.uid, "")}/view"
                               : "/${module.routePath}/media/${item.get(Const.uid, "")}",
@@ -409,7 +409,7 @@ class GalleryModuleGrid extends ModuleWidget<GalleryModule> {
                   image: NetworkOrAsset.image(path),
                   fit: BoxFit.cover,
                   onTap: () {
-                    ref.rootNavigator.pushNamed(
+                    context.rootNavigator.pushNamed(
                       module.skipDetailPage
                           ? "/${module.routePath}/media/${item.get(Const.uid, "")}/view"
                           : "/${module.routePath}/media/${item.get(Const.uid, "")}",
@@ -449,7 +449,7 @@ class GalleryModuleMediaDetail extends PageModuleWidget<GalleryModule> {
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
-              ref.navigator.pushNamed(
+              context.navigator.pushNamed(
                 "/${module.routePath}/media/${context.get("media_id", "")}/edit",
                 arguments: RouteQuery.fullscreenOrModal,
               );
@@ -461,7 +461,7 @@ class GalleryModuleMediaDetail extends PageModuleWidget<GalleryModule> {
         children: [
           InkWell(
             onTap: () {
-              ref.navigator.pushNamed(
+              context.navigator.pushNamed(
                 "/${module.routePath}/media/${context.get("media_id", "")}/view",
                 arguments: RouteQuery.fullscreenOrModal,
               );
@@ -553,7 +553,7 @@ class GalleryModuleMediaView extends PageModuleWidget<GalleryModule> {
             IconButton(
               icon: const Icon(Icons.edit),
               onPressed: () {
-                ref.navigator.pushNamed(
+                context.navigator.pushNamed(
                   "/${module.routePath}/media/${context.get("media_id", "")}/edit",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -637,7 +637,7 @@ class GalleryModuleEdit extends PageModuleWidget<GalleryModule> {
                     await context.model
                         ?.deleteDocument(item)
                         .showIndicator(context);
-                    ref.navigator.popUntilNamed("/${module.routePath}");
+                    context.navigator.popUntilNamed("/${module.routePath}");
                   },
                 );
               },
@@ -738,7 +738,7 @@ class GalleryModuleEdit extends PageModuleWidget<GalleryModule> {
               ?.uploadMedia(context.get(module.mediaKey, ""))
               .showIndicator(context);
           await context.model?.saveDocument(item).showIndicator(context);
-          ref.navigator.pop();
+          context.navigator.pop();
         },
         label: Text("Submit".localize()),
         icon: const Icon(Icons.check),

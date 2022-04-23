@@ -164,7 +164,7 @@ class MenuModuleHome extends PageModuleWidget<MenuModule> {
                           if (menu.path!.startsWith("http")) {
                             ref.open(menu.path!);
                           } else {
-                            ref.rootNavigator.pushNamed(
+                            context.rootNavigator.pushNamed(
                               ref.applyModuleTag(menu.path!),
                               arguments: RouteQuery.fullscreenOrModal,
                             );
@@ -211,7 +211,7 @@ class MenuModuleAccountComponent extends ScopedWidget {
                   text: "Logout is complete.".localize(),
                   submitText: "Back".localize(),
                   onSubmit: () {
-                    ref.rootNavigator.resetAndPushNamed("/");
+                    context.rootNavigator.resetAndPushNamed("/");
                   },
                 );
               },

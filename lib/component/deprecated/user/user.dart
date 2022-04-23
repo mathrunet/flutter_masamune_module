@@ -208,7 +208,7 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
           if (own)
             TextButton(
               onPressed: () {
-                ref.rootNavigator.pushNamed(
+                context.rootNavigator.pushNamed(
                   "/${module.routePath}/edit",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -252,7 +252,7 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
                           .format(["User".localize()]),
                       submitText: "Back".localize(),
                       onSubmit: () {
-                        ref.navigator.pop();
+                        context.navigator.pop();
                       },
                     );
                     return;
@@ -279,7 +279,7 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
                               .format(["User".localize()]),
                           submitText: "Back".localize(),
                           onSubmit: () {
-                            ref.navigator.pop();
+                            context.navigator.pop();
                           },
                         );
                       } catch (e) {
@@ -569,7 +569,7 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
                   "%s is completed.".localize().format(["Editing".localize()]),
               submitText: "Back".localize(),
               onSubmit: () {
-                ref.navigator.pop();
+                context.navigator.pop();
               },
             );
           } catch (e) {

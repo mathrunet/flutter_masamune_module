@@ -85,7 +85,7 @@ class BottomTabHomeModuleHome extends PageModuleWidget<BottomTabHomeModule> {
                   backgroundColor:
                       module.selectedItemColor ?? context.theme.primaryColor,
                   onPressed: () {
-                    ref.rootNavigator.pushNamed(
+                    context.rootNavigator.pushNamed(
                       center.path!,
                       arguments: RouteQuery.fullscreenOrModal,
                     );

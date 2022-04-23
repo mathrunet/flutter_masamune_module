@@ -113,7 +113,7 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
                             .format(["Deletion".localize()]),
                         submitText: "Back".localize(),
                         onSubmit: () {
-                          ref.navigator.pop();
+                          context.navigator.pop();
                         },
                       );
                     },
@@ -176,7 +176,7 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
                     .format(["Editing".localize()]),
                 submitText: "Back".localize(),
                 onSubmit: () {
-                  ref.navigator.pop();
+                  context.navigator.pop();
                 },
               );
             } else {
@@ -201,7 +201,7 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
                     .format(["Editing".localize()]),
                 submitText: "Back".localize(),
                 onSubmit: () {
-                  ref.navigator.pop();
+                  context.navigator.pop();
                 },
               );
             }

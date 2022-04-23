@@ -222,7 +222,7 @@ class ChatModuleHome extends PageModuleWidget<ChatModule> {
                 ),
                 onTap: () {
                   if (context.isMobile) {
-                    ref.rootNavigator.pushNamed(
+                    context.rootNavigator.pushNamed(
                       "/${module.routePath}/${item.get(Const.uid, "")}",
                       arguments: RouteQuery.fullscreen,
                     );
@@ -273,7 +273,7 @@ class ChatModuleHome extends PageModuleWidget<ChatModule> {
                         ?.saveDocument(doc)
                         .showIndicator(context);
                     if (context.isMobile) {
-                      ref.rootNavigator.pushNamed(
+                      context.rootNavigator.pushNamed(
                         "/${module.routePath}/$uid",
                         arguments: RouteQuery.fullscreen,
                       );
@@ -340,7 +340,7 @@ class ChatModuleTimeline extends PageModuleWidget<ChatModule> {
           if (chat.get(module.typeKey, "") == ChatType.group.text)
             IconButton(
                 onPressed: () {
-                  ref.rootNavigator.pushNamed(
+                  context.rootNavigator.pushNamed(
                     "/${module.routePath}/${context.get("chat_id", "")}/member",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
@@ -349,7 +349,7 @@ class ChatModuleTimeline extends PageModuleWidget<ChatModule> {
           if (module.allowEditRoomName)
             IconButton(
               onPressed: () {
-                ref.rootNavigator.pushNamed(
+                context.rootNavigator.pushNamed(
                   "/${module.routePath}/${context.get("chat_id", "")}/edit",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -528,7 +528,7 @@ class ChatModuleTimelineItem extends ModuleWidget<ChatModule> {
             constraints: const BoxConstraints(maxWidth: 150),
             child: InkWell(
               onTap: () {
-                ref.rootNavigator.pushNamed(
+                context.rootNavigator.pushNamed(
                   "/${module.routePath}/${context.get("chat_id", "")}/media/${data.get(Const.uid, "")}",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -544,7 +544,7 @@ class ChatModuleTimelineItem extends ModuleWidget<ChatModule> {
             constraints: const BoxConstraints(maxWidth: 150),
             child: InkWell(
               onTap: () {
-                ref.rootNavigator.pushNamed(
+                context.rootNavigator.pushNamed(
                   "/${module.routePath}/${context.get("chat_id", "")}/media/${data.get(Const.uid, "")}",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -661,7 +661,7 @@ class ChatModuleEdit extends PageModuleWidget<ChatModule> {
 
           chat[module.nameKey] = context.get(module.nameKey, "");
           await context.model?.saveDocument(chat).showIndicator(context);
-          ref.navigator.pop();
+          context.navigator.pop();
         },
         label: Text("Submit".localize()),
         icon: const Icon(Icons.check),

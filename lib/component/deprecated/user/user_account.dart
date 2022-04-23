@@ -127,7 +127,7 @@ class UserAccountModuleContent extends ModuleWidget<UserAccountModule> {
               onPressed: () {
                 if (context.model?.requiredReauthInEmailAndPassword() ??
                     false) {
-                  ref.navigator.pushNamed(
+                  context.navigator.pushNamed(
                     "/${module.routePath}/account/reauth",
                     arguments: RouteQuery(
                       parameters: {
@@ -137,7 +137,8 @@ class UserAccountModuleContent extends ModuleWidget<UserAccountModule> {
                   );
                   return;
                 }
-                ref.navigator.pushNamed("/${module.routePath}/account/email");
+                context.navigator
+                    .pushNamed("/${module.routePath}/account/email");
               },
             ),
           ),
@@ -153,7 +154,7 @@ class UserAccountModuleContent extends ModuleWidget<UserAccountModule> {
               onPressed: () {
                 if (context.model?.requiredReauthInEmailAndPassword() ??
                     false) {
-                  ref.navigator.pushNamed(
+                  context.navigator.pushNamed(
                     "/${module.routePath}/account/reauth",
                     arguments: RouteQuery(
                       parameters: {
@@ -163,7 +164,7 @@ class UserAccountModuleContent extends ModuleWidget<UserAccountModule> {
                   );
                   return;
                 }
-                ref.navigator
+                context.navigator
                     .pushNamed("/${module.routePath}/account/password");
               },
             ),
@@ -173,7 +174,8 @@ class UserAccountModuleContent extends ModuleWidget<UserAccountModule> {
             ListItem(
               title: Text("%s list".localize().format(["Block".localize()])),
               onTap: () {
-                ref.navigator.pushNamed("/${module.routePath}/account/block");
+                context.navigator
+                    .pushNamed("/${module.routePath}/account/block");
               },
             ),
           ListItem(
@@ -194,7 +196,7 @@ class UserAccountModuleContent extends ModuleWidget<UserAccountModule> {
                       title: "Success".localize(),
                       text: "Logout is complete.".localize(),
                       onSubmit: () {
-                        ref.navigator.resetAndPushNamed("/");
+                        context.navigator.resetAndPushNamed("/");
                       },
                       submitText: "Back".localize(),
                     );
@@ -233,7 +235,7 @@ class UserAccountModuleContent extends ModuleWidget<UserAccountModule> {
                         title: "Success".localize(),
                         text: "Account deletion is complete.".localize(),
                         onSubmit: () {
-                          ref.navigator.resetAndPushNamed("/");
+                          context.navigator.resetAndPushNamed("/");
                         },
                         submitText: "Back".localize(),
                       );
@@ -323,7 +325,7 @@ class UserAccountModuleReauth extends PageModuleWidget<UserAccountModule> {
                   await context.model
                       ?.reauthInEmailAndPassword(password: password)
                       .showIndicator(context);
-                  ref.navigator
+                  context.navigator
                       .pushReplacementNamed(context.get("redirect_to", "/"));
                 } catch (e) {
                   UIDialog.show(
@@ -403,7 +405,7 @@ class UserAccountModuleEditEmail extends PageModuleWidget<UserAccountModule> {
                         .localize()
                         .format(["Editing".localize()]),
                     onSubmit: () {
-                      ref.navigator.pop();
+                      context.navigator.pop();
                     },
                     submitText: "Back".localize(),
                   );
@@ -503,7 +505,7 @@ class UserAccountModuleEditPassword
                         .localize()
                         .format(["Editing".localize()]),
                     onSubmit: () {
-                      ref.navigator.pop();
+                      context.navigator.pop();
                     },
                     submitText: "Back".localize(),
                   );

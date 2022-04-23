@@ -94,7 +94,7 @@ class TutorialModuleHome extends PageModuleWidget<TutorialModule> {
                         IconButton(
                           onPressed: () {
                             Prefs.set(module.displayedKey, true);
-                            ref.navigator
+                            context.navigator
                                 .pushReplacementNamed(module.redirectTo);
                           },
                           color: context.theme.textColorOnPrimary,
@@ -130,7 +130,7 @@ class TutorialModuleHome extends PageModuleWidget<TutorialModule> {
                         IconButton(
                           onPressed: () {
                             Prefs.set(module.displayedKey, true);
-                            ref.navigator
+                            context.navigator
                                 .pushReplacementNamed(module.redirectTo);
                           },
                           color: context.theme.textColorOnPrimary,

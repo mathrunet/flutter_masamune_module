@@ -267,7 +267,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              ref.navigator.pushReplacementNamed(module.redirectTo);
+              context.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -295,7 +295,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              ref.navigator.pushReplacementNamed(module.redirectTo);
+              context.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -320,7 +320,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              ref.navigator.pushReplacementNamed(module.redirectTo);
+              context.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -345,7 +345,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              ref.navigator.pushReplacementNamed(module.redirectTo);
+              context.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -370,7 +370,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              ref.navigator.pushReplacementNamed(module.redirectTo);
+              context.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -396,7 +396,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              ref.navigator.pushReplacementNamed(module.redirectTo);
+              context.navigator.pushReplacementNamed(module.redirectTo);
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -520,7 +520,7 @@ class SnsLoginModuleRegister extends PageModuleWidget<SnsLoginModule> {
               updated: false,
             );
             await context.model?.saveDocument(doc).showIndicator(context);
-            ref.navigator.pushReplacementNamed(module.redirectTo);
+            context.navigator.pushReplacementNamed(module.redirectTo);
           } catch (e) {
             UIDialog.show(
               context,

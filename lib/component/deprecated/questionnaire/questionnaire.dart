@@ -213,7 +213,7 @@ class QuestionnaireModuleHome extends PageModuleWidget<QuestionnaireModule> {
               ),
               onTap: () {
                 if (context.isMobile) {
-                  ref.navigator.pushNamed(
+                  context.navigator.pushNamed(
                     "${module.routePath}/${item.get(Const.uid, "")}",
                     arguments: RouteQuery.fullscreen,
                   );
@@ -234,7 +234,7 @@ class QuestionnaireModuleHome extends PageModuleWidget<QuestionnaireModule> {
         label: Text("Add".localize()),
         icon: const Icon(Icons.add),
         onPressed: () {
-          ref.rootNavigator.pushNamed(
+          context.rootNavigator.pushNamed(
             "/${module.routePath}/edit",
             arguments: RouteQuery.fullscreenOrModal,
           );
@@ -287,7 +287,7 @@ class QuestionnaireAanswerView extends PageModuleWidget<QuestionnaireModule> {
         actions: [
           IconButton(
             onPressed: () {
-              ref.rootNavigator.pushNamed(
+              context.rootNavigator.pushNamed(
                 "${module.routePath}/${context.get("question_id", "")}/edit",
                 arguments: RouteQuery.fullscreenOrModal,
               );
@@ -296,7 +296,7 @@ class QuestionnaireAanswerView extends PageModuleWidget<QuestionnaireModule> {
           ),
           IconButton(
             onPressed: () {
-              ref.rootNavigator.pushNamed(
+              context.rootNavigator.pushNamed(
                 "/${module.routePath}/${context.get("question_id", "")}/question",
                 arguments: RouteQuery.fullscreenOrModal,
               );
@@ -309,7 +309,7 @@ class QuestionnaireAanswerView extends PageModuleWidget<QuestionnaireModule> {
         if (questions.isEmpty) {
           return InkWell(
             onTap: () {
-              ref.rootNavigator.pushNamed(
+              context.rootNavigator.pushNamed(
                 "/${module.routePath}/${context.get("question_id", "")}/question",
                 arguments: RouteQuery.fullscreenOrModal,
               );
@@ -363,7 +363,7 @@ class QuestionnaireAanswerView extends PageModuleWidget<QuestionnaireModule> {
                       .format("yyyy/MM/dd HH:mm"),
                 ),
                 onTap: () {
-                  ref.rootNavigator.pushNamed(
+                  context.rootNavigator.pushNamed(
                     "/${module.routePath}/${context.get("question_id", "")}/answer/${item.get(Const.uid, "")}",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
@@ -453,7 +453,7 @@ class QuestionnaireModuleQuestionView
           if (module.questioner && !context.isMobileOrModal)
             IconButton(
               onPressed: () {
-                ref.rootNavigator.pushNamed(
+                context.rootNavigator.pushNamed(
                   "/${module.routePath}/${context.get("question_id", "")}/question/edit",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -526,7 +526,7 @@ class QuestionnaireModuleQuestionView
         return FloatingActionButton.extended(
           onPressed: () async {
             if (module.questioner) {
-              ref.navigator.pushNamed(
+              context.navigator.pushNamed(
                 "/${module.routePath}/${context.get("question_id", "")}/question/edit",
                 arguments: RouteQuery.fullscreenOrModal,
               );
@@ -542,7 +542,7 @@ class QuestionnaireModuleQuestionView
                     "%s is completed.".localize().format(["Answer".localize()]),
                 submitText: "Back".localize(),
                 onSubmit: () {
-                  ref.navigator.pop();
+                  context.navigator.pop();
                 },
               );
             }
@@ -586,7 +586,7 @@ class QuestionnaireModuleListTile extends ModuleWidget<QuestionnaireModule> {
         return InkWell(
           onTap: canEdit && !onlyView
               ? () {
-                  ref.rootNavigator.pushNamed(
+                  context.rootNavigator.pushNamed(
                     "/${module.routePath}/${context.get("question_id", "")}/question/$uid",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
@@ -646,7 +646,7 @@ class QuestionnaireModuleListTile extends ModuleWidget<QuestionnaireModule> {
         return InkWell(
           onTap: canEdit && !onlyView
               ? () {
-                  ref.rootNavigator.pushNamed(
+                  context.rootNavigator.pushNamed(
                     "/${module.routePath}/${context.get("question_id", "")}/question/$uid",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
@@ -749,7 +749,7 @@ class QuestionnaireModuleQuestionEdit
                     await context.model
                         ?.deleteDocument(item)
                         .showIndicator(context);
-                    ref.navigator.pop();
+                    context.navigator.pop();
                   },
                 );
               },
@@ -873,7 +873,7 @@ class QuestionnaireModuleQuestionEdit
             item[module.selectionKey] = context.get(module.selectionKey, {});
           }
           await context.model?.saveDocument(item).showIndicator(context);
-          ref.navigator.pop();
+          context.navigator.pop();
         },
         icon: const Icon(Icons.check),
         label: Text("Submit".localize()),
@@ -918,8 +918,8 @@ class QuestionnaireModuleEdit extends PageModuleWidget<QuestionnaireModule> {
                     await context.model
                         ?.deleteDocument(item)
                         .showIndicator(context);
-                    ref.navigator.pop();
-                    ref.navigator.pop();
+                    context.navigator.pop();
+                    context.navigator.pop();
                   },
                 );
               },
@@ -988,7 +988,7 @@ class QuestionnaireModuleEdit extends PageModuleWidget<QuestionnaireModule> {
           item[module.textKey] = context.get(module.textKey, "");
           item[module.endTimeKey] = context.get(module.endTimeKey, 0);
           await context.model?.saveDocument(item).showIndicator(context);
-          ref.navigator.pop();
+          context.navigator.pop();
         },
         label: Text("Submit".localize()),
         icon: const Icon(Icons.check),

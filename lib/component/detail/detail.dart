@@ -167,7 +167,8 @@ class DetailModuleHome extends PageModuleWidget<DetailModule> {
               title: Text(name),
               actions: module.appBarActions,
               onTapImage: () {
-                ref.navigator.pushNamed("/${module.routePath}/$detailId/view");
+                context.navigator
+                    .pushNamed("/${module.routePath}/$detailId/view");
               },
               designType: DesignType.modern,
               expandedHeight: module.expandedHeight,
@@ -401,7 +402,7 @@ class DetailModuleTagsWidget extends ModuleWidget<DetailModule> {
               ),
             ),
             onPressed: () {
-              ref.rootNavigator.pushNamed(
+              context.rootNavigator.pushNamed(
                 "/${module.searchPath}",
                 arguments: RouteQuery(
                   transition: PageTransition.fullscreen,
@@ -508,7 +509,7 @@ class DetailModuleProfileWidget extends ModuleWidget<DetailModule> {
 
     return InkWell(
       onTap: () {
-        ref.rootNavigator.pushNamed(
+        context.rootNavigator.pushNamed(
           "/user/${context.model?.userId}",
           arguments: RouteQuery.fullscreenOrModal,
         );
@@ -622,7 +623,7 @@ class DetailModuleEditIcon extends ModuleWidget<DetailModule> {
     return IconButton(
       icon: Icon(icon),
       onPressed: () {
-        ref.rootNavigator.pushNamed(
+        context.rootNavigator.pushNamed(
           routePath ?? "/${module.routePath}/$detailId/edit",
           arguments: RouteQuery.fullscreenOrModal,
         );
@@ -666,7 +667,7 @@ class DetailModuleDeleteIcon extends ModuleWidget<DetailModule> {
               text: "You have deleted this %s.".localize().format([name]),
               submitText: "Close".localize(),
               onSubmit: () {
-                ref.rootNavigator.pop();
+                context.rootNavigator.pop();
               },
             );
           },

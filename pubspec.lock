@@ -334,7 +334,7 @@ packages:
       name: flutter_inappwebview
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "5.4.0+1"
+    version: "5.4.0+2"
   flutter_keyboard_visibility:
     dependency: transitive
     description:
@@ -545,14 +545,14 @@ packages:
       name: katana_module
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.9.0+87"
+    version: "0.9.0+88"
   katana_routing:
     dependency: transitive
     description:
       name: katana_routing
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.9.0+7"
+    version: "0.9.0+8"
   loading_animations:
     dependency: "direct main"
     description:
@@ -580,7 +580,7 @@ packages:
       name: masamune
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.9.0+56"
+    version: "0.9.0+57"
   matcher:
     dependency: transitive
     description:

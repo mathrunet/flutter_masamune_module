@@ -152,7 +152,7 @@ class TileGalleryMediaModuleHome
                         video: NetworkOrAsset.video(path),
                         fit: BoxFit.cover,
                         onTap: () {
-                          ref.rootNavigator.pushNamed(
+                          context.rootNavigator.pushNamed(
                             !module.enableDetail
                                 ? "/${module.routePath}/media/${item.get(Const.uid, "")}/view"
                                 : "/${module.routePath}/media/${item.get(Const.uid, "")}",
@@ -167,7 +167,7 @@ class TileGalleryMediaModuleHome
                     image: NetworkOrAsset.image(path),
                     fit: BoxFit.cover,
                     onTap: () {
-                      ref.rootNavigator.pushNamed(
+                      context.rootNavigator.pushNamed(
                         !module.enableDetail
                             ? "/${module.routePath}/media/${item.get(Const.uid, "")}/view"
                             : "/${module.routePath}/media/${item.get(Const.uid, "")}",
@@ -183,7 +183,7 @@ class TileGalleryMediaModuleHome
       floatingActionButton: module.enableEdit
           ? FloatingActionButton.extended(
               onPressed: () {
-                ref.navigator.pushNamed(
+                context.navigator.pushNamed(
                   "/${module.routePath}/edit",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -223,7 +223,7 @@ class TileGalleryMediaModuleMediaDetail
             IconButton(
               icon: const Icon(Icons.edit),
               onPressed: () {
-                ref.navigator.pushNamed(
+                context.navigator.pushNamed(
                   "/${module.routePath}/media/${context.get("media_id", "")}/edit",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -235,7 +235,7 @@ class TileGalleryMediaModuleMediaDetail
         children: [
           InkWell(
             onTap: () {
-              ref.navigator.pushNamed(
+              context.navigator.pushNamed(
                 "/${module.routePath}/media/${context.get("media_id", "")}/view",
                 arguments: RouteQuery.fullscreenOrModal,
               );
@@ -329,7 +329,7 @@ class TileGalleryMediaModuleMediaView
             IconButton(
               icon: const Icon(Icons.edit),
               onPressed: () {
-                ref.navigator.pushNamed(
+                context.navigator.pushNamed(
                   "/${module.routePath}/media/${context.get("media_id", "")}/edit",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -405,12 +405,12 @@ class TileGalleryMediaModuleEdit
                         ?.deleteDocument(item)
                         .showIndicator(context);
                     if (module.enableDetail) {
-                      ref.navigator.pop();
-                      ref.navigator.pop();
-                      ref.navigator.pop();
+                      context.navigator.pop();
+                      context.navigator.pop();
+                      context.navigator.pop();
                     } else {
-                      ref.navigator.pop();
-                      ref.navigator.pop();
+                      context.navigator.pop();
+                      context.navigator.pop();
                     }
                   },
                 );
@@ -490,7 +490,7 @@ class TileGalleryMediaModuleEdit
               ?.uploadMedia(context.get(module.mediaKey, ""))
               .showIndicator(context);
           await context.model?.saveDocument(item).showIndicator(context);
-          ref.navigator.pop();
+          context.navigator.pop();
         },
         label: Text("Submit".localize()),
         icon: const Icon(Icons.check),

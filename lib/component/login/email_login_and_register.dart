@@ -257,7 +257,7 @@ class EmailLoginAndRegisterModuleLanding
                                       onPressed: () async {
                                         switch (menu.path) {
                                           case "login":
-                                            ref.navigator
+                                            context.navigator
                                                 .pushNamed("/${menu.path!}");
                                             break;
                                           case "anonymous":
@@ -267,11 +267,11 @@ class EmailLoginAndRegisterModuleLanding
                                                   .showIndicator(context);
                                               if (_hasAnonymousRegistrationData(
                                                   context, module)) {
-                                                ref.navigator
+                                                context.navigator
                                                     .pushReplacementNamed(
                                                         "/register/anonymous");
                                               } else {
-                                                ref.navigator
+                                                context.navigator
                                                     .pushReplacementNamed(
                                                         module.redirectTo);
                                               }
@@ -286,7 +286,7 @@ class EmailLoginAndRegisterModuleLanding
                                             }
                                             break;
                                           default:
-                                            ref.navigator.pushNamed(
+                                            context.navigator.pushNamed(
                                                 "/register/${menu.path}",
                                                 arguments: RouteQuery.fade);
                                             break;
@@ -454,7 +454,7 @@ class EmailLoginAndRegisterModuleLogin
                   Center(
                     child: TextButton(
                       onPressed: () {
-                        ref.navigator
+                        context.navigator
                             .pushNamed("/reset", arguments: RouteQuery.fade);
                       },
                       child: Text(
@@ -515,7 +515,7 @@ class EmailLoginAndRegisterModuleLogin
             userPath: module.userPath,
           )
           .showIndicator(context);
-      ref.navigator.pushReplacementNamed(module.redirectTo);
+      context.navigator.pushReplacementNamed(module.redirectTo);
     } catch (e) {
       UIDialog.show(
         context,
@@ -787,7 +787,7 @@ class EmailLoginAndRegisterModuleRegister
           module.roleKey: role.path,
         }) ??
         false) {
-      ref.navigator.pushReplacementNamed(module.redirectTo);
+      context.navigator.pushReplacementNamed(module.redirectTo);
       return;
     }
     if (!form.validate()) {
@@ -840,7 +840,7 @@ class EmailLoginAndRegisterModuleRegister
         text: "Registration has been completed.".localize(),
         submitText: "Forward".localize(),
         onSubmit: () {
-          ref.navigator.pushReplacementNamed(module.redirectTo);
+          context.navigator.pushReplacementNamed(module.redirectTo);
         },
       );
     } catch (e) {
@@ -1002,7 +1002,7 @@ class EmailLoginAndRegisterModulePasswordReset
                 .localize(),
         submitText: "Back".localize(),
         onSubmit: () {
-          ref.navigator.pop();
+          context.navigator.pop();
         },
       );
     } catch (e) {
@@ -1130,7 +1130,7 @@ class EmailLoginAndRegisterModuleRegisterAnonymous
               updated: false,
             );
             await context.model?.saveDocument(doc).showIndicator(context);
-            ref.navigator.pushReplacementNamed(module.redirectTo);
+            context.navigator.pushReplacementNamed(module.redirectTo);
           } catch (e) {
             UIDialog.show(
               context,

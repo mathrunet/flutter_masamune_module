@@ -195,7 +195,7 @@ class SliverHomeModuleMenuComponent extends ModuleWidget<SliverHomeModule> {
                           if (menu.path!.startsWith("http")) {
                             ref.open(menu.path!);
                           } else {
-                            ref.rootNavigator.pushNamed(
+                            context.rootNavigator.pushNamed(
                               ref.applyModuleTag(menu.path!),
                               arguments: RouteQuery.fullscreenOrModal,
                             );

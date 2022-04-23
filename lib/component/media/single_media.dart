@@ -103,7 +103,7 @@ class SingleMediaModuleHome extends PageModuleWidget<SingleMediaModule> {
             IconButton(
               icon: const Icon(Icons.edit),
               onPressed: () {
-                ref.navigator.pushNamed(
+                context.navigator.pushNamed(
                   "/${module.routePath}/edit",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -124,7 +124,7 @@ class SingleMediaModuleHome extends PageModuleWidget<SingleMediaModule> {
                 label: Text("Add".localize()),
                 icon: const Icon(Icons.add),
                 onPressed: () {
-                  ref.navigator.pushNamed(
+                  context.navigator.pushNamed(
                     "/${module.routePath}/edit",
                     arguments: RouteQuery.fullscreenOrModal,
                   );
@@ -225,7 +225,7 @@ class SingleMediaModuleEdit extends PageModuleWidget<SingleMediaModule> {
               ?.uploadMedia(context.get(module.mediaKey, ""))
               .showIndicator(context);
           await context.model?.saveDocument(item).showIndicator(context);
-          ref.navigator.pop();
+          context.navigator.pop();
         },
         label: Text("Submit".localize()),
         icon: const Icon(Icons.check),

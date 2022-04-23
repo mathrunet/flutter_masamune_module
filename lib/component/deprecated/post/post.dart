@@ -134,7 +134,7 @@ class PostModuleHome extends PageModuleWidget<PostModule> {
               ),
               onTap: () {
                 if (context.isMobile) {
-                  ref.navigator.pushNamed(
+                  context.navigator.pushNamed(
                     "/${module.routePath}/${item.get(Const.uid, "")}",
                     arguments: RouteQuery.fullscreen,
                   );
@@ -152,7 +152,7 @@ class PostModuleHome extends PageModuleWidget<PostModule> {
         label: Text("Add".localize()),
         icon: const Icon(Icons.add),
         onPressed: () {
-          ref.navigator.pushNamed(
+          context.navigator.pushNamed(
             "/${module.routePath}/edit",
             arguments: RouteQuery.fullscreenOrModal,
           );
@@ -185,7 +185,7 @@ class PostModuleView extends PageModuleWidget<PostModule> {
         IconButton(
           icon: const Icon(Icons.edit),
           onPressed: () {
-            ref.rootNavigator.pushNamed(
+            context.rootNavigator.pushNamed(
               "/${module.routePath}/${context.get("post_id", "")}/edit",
               arguments: RouteQuery.fullscreenOrModal,
             );
@@ -311,7 +311,7 @@ class PostModuleEdit extends PageModuleWidget<PostModule> {
                   await context.model
                       ?.deleteDocument(item)
                       .showIndicator(context);
-                  ref.navigator
+                  context.navigator
                     ..pop()
                     ..pop();
                 },
@@ -431,7 +431,7 @@ class PostModuleEdit extends PageModuleWidget<PostModule> {
                 item[module.createdTimeKey] = context.get(
                     module.createdTimeKey, now.millisecondsSinceEpoch);
                 await context.model?.saveDocument(item).showIndicator(context);
-                ref.navigator.pop();
+                context.navigator.pop();
               } catch (e) {
                 UIDialog.show(
                   context,
@@ -489,7 +489,7 @@ class PostModuleEdit extends PageModuleWidget<PostModule> {
                 item[module.createdTimeKey] = context.get(
                     module.createdTimeKey, now.millisecondsSinceEpoch);
                 await context.model?.saveDocument(item).showIndicator(context);
-                ref.navigator.pop();
+                context.navigator.pop();
               } catch (e) {
                 UIDialog.show(
                   context,

@@ -184,7 +184,7 @@ class MemberModuleHome extends PageModuleWidget<MemberModule> {
                       },
                     ),
               onTap: () {
-                ref.navigator.pushNamed(
+                context.navigator.pushNamed(
                   "/${module.profilePath}/${item.uid}",
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -197,7 +197,7 @@ class MemberModuleHome extends PageModuleWidget<MemberModule> {
           ? null
           : FloatingActionButton.extended(
               onPressed: () {
-                ref.navigator.pushNamed(
+                context.navigator.pushNamed(
                   "/${module.routePath}/invite",
                   arguments: RouteQuery.fullscreenOrModal,
                 );

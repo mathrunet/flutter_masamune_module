@@ -187,7 +187,7 @@ class CalendarModuleHome extends PageModuleWidget<CalendarModule> {
         expand: true,
         onDaySelect: (day, events, holidays) {
           selected.value = day;
-          ref.rootNavigator.pushNamed(
+          context.rootNavigator.pushNamed(
             "/${module.routePath}/${day.toDateID()}",
             arguments: RouteQuery.fullscreenOrModal,
           );
@@ -202,7 +202,7 @@ class CalendarModuleHome extends PageModuleWidget<CalendarModule> {
                     .combine(TimeOfDay.now())
                     .round(const Duration(minutes: 15))
                     .toDateTimeID();
-                ref.navigator.pushNamed(
+                context.navigator.pushNamed(
                   "/${module.routePath}/edit/$dateId}",
                   arguments: RouteQuery.fullscreen,
                 );
@@ -246,7 +246,7 @@ class CalendarModuleDayView extends PageModuleWidget<CalendarModule> {
         builder: (context, item) {
           return InkWell(
             onTap: () {
-              ref.navigator.pushNamed(
+              context.navigator.pushNamed(
                 "/${module.routePath}/${item.uid}/detail",
                 arguments: RouteQuery.fullscreenOrModal,
               );
@@ -274,7 +274,7 @@ class CalendarModuleDayView extends PageModuleWidget<CalendarModule> {
                     .combine(TimeOfDay.now())
                     .round(const Duration(minutes: 15))
                     .toDateTimeID();
-                ref.navigator.pushNamed(
+                context.navigator.pushNamed(
                   "/${module.routePath}/edit/$dateId",
                   arguments: RouteQuery.fullscreen,
                 );
@@ -338,7 +338,7 @@ class CalendarModuleDetail extends PageModuleWidget<CalendarModule> {
         IconButton(
           icon: const Icon(Icons.edit),
           onPressed: () {
-            ref.rootNavigator.pushNamed(
+            context.rootNavigator.pushNamed(
               "/${module.routePath}/${context.get("event_id", "")}/edit",
               arguments: RouteQuery.fullscreenOrModal,
             );
@@ -400,7 +400,7 @@ class CalendarModuleDetail extends PageModuleWidget<CalendarModule> {
           context.model?.saveDocument(doc);
         },
         onTapTemplateIcon: () async {
-          final res = await ref.rootNavigator.pushNamed(
+          final res = await context.rootNavigator.pushNamed(
             "/${module.routePath}/templates",
             arguments: RouteQuery.fullscreenOrModal,
           );
@@ -605,7 +605,7 @@ class CalendarModuleTemplate extends PageModuleWidget<CalendarModule> {
                       },
                     ),
               onTap: () {
-                ref.navigator.pop(item);
+                context.navigator.pop(item);
               },
             ),
           ];
@@ -693,7 +693,7 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
                   await context.model
                       ?.deleteDocument(item)
                       .showIndicator(context);
-                  ref.navigator.pop();
+                  context.navigator.pop();
                 },
               );
             },
@@ -814,7 +814,7 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
               item[module.endTimeKey] =
                   allDay ? null : context.get<int?>(module.endTimeKey, null);
               await context.model?.saveDocument(item).showIndicator(context);
-              ref.navigator.pop();
+              context.navigator.pop();
             } catch (e) {
               UIDialog.show(
                 context,
@@ -916,7 +916,7 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
                 item[module.endTimeKey] =
                     allDay ? null : context.get<int?>(module.endTimeKey, null);
                 await context.model?.saveDocument(item).showIndicator(context);
-                ref.navigator.pop();
+                context.navigator.pop();
               } catch (e) {
                 UIDialog.show(
                   context,
@@ -979,7 +979,7 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
                 item[module.endTimeKey] =
                     allDay ? null : context.get<int?>(module.endTimeKey, null);
                 await context.model?.saveDocument(item).showIndicator(context);
-                ref.navigator.pop();
+                context.navigator.pop();
               } catch (e) {
                 UIDialog.show(
                   context,
