@@ -17,11 +17,13 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const PostModule({
     bool enabled = true,
     String? title = "",
-    this.routePath = "post",
-    this.queryPath = "post",
+    String routePath = "post",
+    String queryPath = "post",
+    ModelQuery? query,
     this.userPath = "user",
     this.nameKey = Const.name,
     this.textKey = Const.text,
+    this.enableEdit = true,
     this.createdTimeKey = Const.createdTime,
     this.sliverLayoutWhenModernDesignOnHome = true,
     this.automaticallyImplyLeadingOnHome = true,
@@ -34,6 +36,9 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
   }) : super(
           enabled: enabled,
           title: title,
+          routePath: routePath,
+          query: query,
+          queryPath: queryPath,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -62,12 +67,6 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
   /// ホームのときのバックボタンを削除するかどうか。
   final bool automaticallyImplyLeadingOnHome;
 
-  /// ルートのパス。
-  final String routePath;
-
-  /// 投稿データのパス。
-  final String queryPath;
-
   /// ユーザーのデータパス。
   final String userPath;
 
@@ -85,6 +84,9 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
 
   /// クエリー。
   final ModelQuery? postQuery;
+
+  /// True if editing is allowed.
+  final bool enableEdit;
 }
 
 class PostModuleHome extends PageModuleWidget<PostModule> {
@@ -148,16 +150,18 @@ class PostModuleHome extends PageModuleWidget<PostModule> {
           ];
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        label: Text("Add".localize()),
-        icon: const Icon(Icons.add),
-        onPressed: () {
-          context.navigator.pushNamed(
-            "/${module.routePath}/edit",
-            arguments: RouteQuery.fullscreenOrModal,
-          );
-        },
-      ),
+      floatingActionButton: module.enableEdit
+          ? FloatingActionButton.extended(
+              label: Text("Add".localize()),
+              icon: const Icon(Icons.add),
+              onPressed: () {
+                context.navigator.pushNamed(
+                  "/${module.routePath}/edit",
+                  arguments: RouteQuery.fullscreenOrModal,
+                );
+              },
+            )
+          : null,
     );
   }
 }
@@ -182,15 +186,16 @@ class PostModuleView extends PageModuleWidget<PostModule> {
     final appBar = UIAppBar(
       title: Text(name),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.edit),
-          onPressed: () {
-            context.rootNavigator.pushNamed(
-              "/${module.routePath}/${context.get("post_id", "")}/edit",
-              arguments: RouteQuery.fullscreenOrModal,
-            );
-          },
-        ),
+        if (module.enableEdit)
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              context.rootNavigator.pushNamed(
+                "/${module.routePath}/${context.get("post_id", "")}/edit",
+                arguments: RouteQuery.fullscreenOrModal,
+              );
+            },
+          ),
       ],
     );
 

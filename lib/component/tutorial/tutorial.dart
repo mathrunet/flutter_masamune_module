@@ -8,7 +8,7 @@ class TutorialModule extends PageModule {
   const TutorialModule({
     bool enabled = true,
     String? title,
-    this.routePath = "tutorial",
+    String routePath = "tutorial",
     this.displayedKey = "@tutorialDisplayed",
     this.redirectTo = "/",
     this.automaticallyImplyLeadingOnHome = true,
@@ -19,6 +19,7 @@ class TutorialModule extends PageModule {
   }) : super(
           enabled: enabled,
           title: title,
+          routePath: routePath,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -37,9 +38,6 @@ class TutorialModule extends PageModule {
   // Widget.
   final PageModuleWidget<TutorialModule> homePage;
   final List<ModuleWidget<TutorialModule>> pages;
-
-  /// Route path.
-  final String routePath;
 
   /// チュートリアルを表示したフラグを保存するキー。
   final String displayedKey;

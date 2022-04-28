@@ -6,7 +6,7 @@ class MenuModule extends PageModule {
   const MenuModule({
     bool enabled = true,
     String? title,
-    this.routePath = "menu",
+    String routePath = "menu",
     this.automaticallyImplyLeadingOnHome = true,
     this.sliverLayoutWhenModernDesignOnHome = true,
     required this.menu,
@@ -18,6 +18,7 @@ class MenuModule extends PageModule {
   }) : super(
           enabled: enabled,
           title: title,
+          routePath: routePath,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -39,9 +40,6 @@ class MenuModule extends PageModule {
   /// Widget parts.
   final List<Widget> top;
   final List<Widget> bottom;
-
-  /// Route path.
-  final String routePath;
 
   /// メニューの一覧。
   final List<MenuModuleItem> menu;

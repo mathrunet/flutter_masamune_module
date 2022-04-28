@@ -10,9 +10,9 @@ class MemberModule extends PageModule {
   const MemberModule({
     bool enabled = true,
     String? title,
-    this.routePath = "member",
-    this.queryPath = "user",
-    this.query,
+    String routePath = "member",
+    String queryPath = "user",
+    ModelQuery? query,
     this.nameKey = Const.name,
     this.iconKey = Const.icon,
     this.profilePath = Const.user,
@@ -29,6 +29,9 @@ class MemberModule extends PageModule {
   }) : super(
           enabled: enabled,
           title: title,
+          routePath: routePath,
+          query: query,
+          queryPath: queryPath,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -57,15 +60,6 @@ class MemberModule extends PageModule {
 
   /// Design type.
   final DesignType designType;
-
-  /// Route path.
-  final String routePath;
-
-  /// Query path.
-  final String queryPath;
-
-  /// Query.
-  final ModelQuery? query;
 
   /// タイトルのキー。
   final String nameKey;

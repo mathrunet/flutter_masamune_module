@@ -5,7 +5,7 @@ class SliverHomeModule extends PageModule {
   const SliverHomeModule({
     bool enabled = true,
     String? title,
-    this.routePath = "home",
+    String routePath = "home",
     this.backgroundImage,
     this.automaticallyImplyLeadingOnHome = true,
     this.backgroundColor,
@@ -16,6 +16,7 @@ class SliverHomeModule extends PageModule {
     this.homePage = const SliverHomeModuleHome(),
   }) : super(
           enabled: enabled,
+          routePath: routePath,
           title: title,
           rerouteConfigs: rerouteConfigs,
         );
@@ -46,9 +47,6 @@ class SliverHomeModule extends PageModule {
 
   /// ヘッダーの高さ。
   final double headerHeight;
-
-  /// Route path.
-  final String routePath;
 
   /// True if you want to automatically display the back button when you are at home.
   final bool automaticallyImplyLeadingOnHome;

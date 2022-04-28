@@ -7,8 +7,9 @@ class DetailModule extends PageModule {
   const DetailModule({
     bool enabled = true,
     String? title,
-    this.routePath = "detail",
-    required this.queryPath,
+    String routePath = "detail",
+    required String queryPath,
+    ModelQuery? query,
     this.commentQueryPath = "comment",
     this.nameKey = Const.name,
     this.textKey = Const.text,
@@ -48,6 +49,9 @@ class DetailModule extends PageModule {
   }) : super(
           enabled: enabled,
           title: title,
+          query: query,
+          queryPath: queryPath,
+          routePath: routePath,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -84,11 +88,6 @@ class DetailModule extends PageModule {
   /// ツールバーの高さ
   final double expandedHeight;
 
-  /// Route path.
-  final String routePath;
-
-  /// Query path.
-  final String queryPath;
   final String searchPath;
   final String userPath;
   final String likePath;

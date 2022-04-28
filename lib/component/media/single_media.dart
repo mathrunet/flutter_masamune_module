@@ -6,9 +6,9 @@ class SingleMediaModule extends PageModule {
   const SingleMediaModule({
     bool enabled = true,
     String? title,
-    this.routePath = "media",
-    this.queryPath = "media",
-    this.query,
+    String routePath = "media",
+    String queryPath = "media",
+    ModelQuery? query,
     this.mediaKey = Const.media,
     this.nameKey = Const.name,
     this.textKey = Const.text,
@@ -23,6 +23,9 @@ class SingleMediaModule extends PageModule {
   }) : super(
           enabled: enabled,
           title: title,
+          routePath: routePath,
+          query: query,
+          queryPath: queryPath,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -42,15 +45,6 @@ class SingleMediaModule extends PageModule {
   // Widget.
   final PageModuleWidget<SingleMediaModule> homePage;
   final PageModuleWidget<SingleMediaModule> editPage;
-
-  /// Route path.
-  final String routePath;
-
-  /// Query path.
-  final String queryPath;
-
-  /// Query.
-  final ModelQuery? query;
 
   /// 画像・映像のキー。
   final String mediaKey;
@@ -83,12 +77,10 @@ class SingleMediaModuleHome extends PageModuleWidget<SingleMediaModule> {
   @override
   Widget build(BuildContext context, WidgetRef ref, SingleMediaModule module) {
     // Please describe reference.
-    final now = ref.useNow();
     final item =
         ref.watchDocumentModel(module.query?.value ?? module.queryPath);
     final name = item.get(module.nameKey, "");
     final media = item.get(module.mediaKey, "");
-    final date = item.get(module.createdTimeKey, now.millisecondsSinceEpoch);
     final type = getPlatformMediaType(media);
 
     // Please describe the Widget.
@@ -96,7 +88,7 @@ class SingleMediaModuleHome extends PageModuleWidget<SingleMediaModule> {
       waitTransition: true,
       appBar: UIAppBar(
         title: Text(
-          name.isNotEmpty ? name : "Media".localize(),
+          name.isNotEmpty ? name : module.title ?? "Media".localize(),
         ),
         actions: [
           if (module.enableEdit && media.isNotEmpty)

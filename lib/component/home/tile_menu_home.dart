@@ -7,7 +7,7 @@ class TileMenuHomeModule extends PageModule
     bool enabled = true,
     String? title = "",
     this.color,
-    this.routePath = "",
+    String routePath = "",
     this.textColor,
     this.featureIcon,
     this.featureImage,
@@ -19,8 +19,6 @@ class TileMenuHomeModule extends PageModule
     this.contentPadding = const EdgeInsets.all(8),
     this.headerHeight = 90,
     this.userPath = "user",
-    this.calendar = const HomeCalendarModule(enabled: false),
-    this.info = const HomeInformationModule(enabled: false),
     this.nameKey = Const.name,
     this.menu = const [],
     this.subMenu = const [],
@@ -35,6 +33,7 @@ class TileMenuHomeModule extends PageModule
   }) : super(
           enabled: enabled,
           title: title,
+          routePath: routePath,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -46,29 +45,18 @@ class TileMenuHomeModule extends PageModule
     final route = {
       "/$routePath": RouteConfig((_) => homePage),
     };
-    route.addAll(info.routeSettings);
-    route.addAll(calendar.routeSettings);
     return route;
   }
 
   // ページの設定。
   final ModuleWidget<TileMenuHomeModule> homePage;
-  final ModuleWidget<TileMenuHomeModule> tileMenuHomeInformationWidget;
-  final ModuleWidget<TileMenuHomeModule> tileMenuHomeCalendarWidget;
+  final ModuleWidget<TileMenuHomeModule>? tileMenuHomeInformationWidget;
+  final ModuleWidget<TileMenuHomeModule>? tileMenuHomeCalendarWidget;
 
   // ホームのパーツ。
   final ModuleWidget<TileMenuHomeModule>? header;
   final ModuleWidget<TileMenuHomeModule>? footer;
   final ModuleWidget<TileMenuHomeModule>? profile;
-
-  /// ルートパス。
-  final String routePath;
-
-  /// お知らせの設定。
-  final HomeInformationModule info;
-
-  /// カレンダーの設定。
-  final HomeCalendarModule calendar;
 
   /// デフォルトのメニュー。
   final List<MenuConfig> menu;
@@ -117,54 +105,6 @@ class TileMenuHomeModule extends PageModule
 
   /// 名前のキー。
   final String nameKey;
-}
-
-@immutable
-class HomeInformationModule extends PostModule {
-  const HomeInformationModule({
-    bool enabled = true,
-    String? title,
-    String routePath = "info",
-    String queryPath = "info",
-    this.icon = Icons.info_rounded,
-    String nameKey = Const.name,
-    String createdTimeKey = Const.createdTime,
-    PageModuleWidget<PostModule> viewPage = const PostModuleView(),
-    PageModuleWidget<PostModule> editPage = const PostModuleEdit(),
-    this.widget,
-    this.limit = 10,
-  }) : super(
-          enabled: enabled,
-          title: title,
-          queryPath: queryPath,
-          routePath: routePath,
-          editingType: PostEditingType.planeText,
-          viewPage: viewPage,
-          editPage: editPage,
-          nameKey: nameKey,
-          createdTimeKey: createdTimeKey,
-        );
-
-  @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
-    final route = {
-      "/$routePath/{post_id}": RouteConfig((_) => viewPage),
-      "/$routePath/{post_id}/edit": RouteConfig((_) => editPage),
-    };
-    return route;
-  }
-
-  /// 表示数。
-  final int limit;
-
-  /// アイコン。
-  final IconData icon;
-
-  /// ウィジェット。
-  final Widget? widget;
 }
 
 @immutable
@@ -334,12 +274,12 @@ class TileMenuHomeModuleHome extends ModuleWidget<TileMenuHomeModule> {
                 module.header!,
               ],
               const Space.height(8),
-              if (module.info.enabled) ...[
-                module.tileMenuHomeInformationWidget,
+              if (module.tileMenuHomeInformationWidget != null) ...[
+                module.tileMenuHomeInformationWidget!,
                 const Space.height(8),
               ],
-              if (module.calendar.enabled) ...[
-                module.tileMenuHomeCalendarWidget,
+              if (module.tileMenuHomeCalendarWidget != null) ...[
+                module.tileMenuHomeCalendarWidget!,
                 const Space.height(8),
               ],
               TileMenuHomeModuleHeadline(
@@ -498,19 +438,31 @@ class TileMenuHomeModuleProfile extends ModuleWidget<TileMenuHomeModule> {
 }
 
 class TileMenuHomeModuleInformation extends ModuleWidget<TileMenuHomeModule> {
-  const TileMenuHomeModuleInformation();
+  const TileMenuHomeModuleInformation({
+    this.title,
+    this.routePath = "info",
+    this.queryPath = "info",
+    this.icon = Icons.info_rounded,
+    this.nameKey = Const.name,
+    this.createdTimeKey = Const.createdTime,
+    this.limit = 10,
+  });
+
+  final String? title;
+  final String routePath;
+  final String queryPath;
+  final IconData icon;
+  final String nameKey;
+  final String createdTimeKey;
+  final int limit;
 
   @override
   Widget build(BuildContext context, WidgetRef ref, TileMenuHomeModule module) {
-    if (module.info.widget != null) {
-      return module.info.widget!;
-    }
-
     final now = ref.useNow();
-    final info = ref.watchCollectionModel(module.info.queryPath);
+    final info = ref.watchCollectionModel(queryPath);
     info.sort((a, b) {
-      return b.get(module.info.createdTimeKey, now.millisecondsSinceEpoch) -
-          a.get(module.info.createdTimeKey, now.millisecondsSinceEpoch);
+      return b.get(createdTimeKey, now.millisecondsSinceEpoch) -
+          a.get(createdTimeKey, now.millisecondsSinceEpoch);
     });
 
     return LoadingBuilder(
@@ -522,8 +474,8 @@ class TileMenuHomeModuleInformation extends ModuleWidget<TileMenuHomeModule> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TileMenuHomeModuleHeadline(
-              module.info.title ?? "Information".localize(),
-              icon: module.info.icon,
+              title ?? "Information".localize(),
+              icon: icon,
               color: module.textColor ?? context.theme.textColorOnPrimary,
               backgroundColor:
                   module.color ?? context.theme.primaryColor.lighten(0.15),
@@ -536,10 +488,9 @@ class TileMenuHomeModuleInformation extends ModuleWidget<TileMenuHomeModule> {
               crossAxisSpacing: 4,
               childAspectRatio: 2,
               children: [
-                ...info.limitEnd(module.info.limit).mapListenable((item) {
+                ...info.limitEnd(limit).mapListenable((item) {
                   final dateTime = DateTime.fromMillisecondsSinceEpoch(
-                    item.get(
-                        module.info.createdTimeKey, now.millisecondsSinceEpoch),
+                    item.get(createdTimeKey, now.millisecondsSinceEpoch),
                   );
                   return DefaultTextStyle(
                     style: TextStyle(
@@ -550,7 +501,7 @@ class TileMenuHomeModuleInformation extends ModuleWidget<TileMenuHomeModule> {
                       color: module.color ?? context.theme.primaryColor,
                       onTap: () {
                         context.navigator.pushNamed(
-                          "/${module.info.routePath}/${item.get(Const.uid, "")}",
+                          "/$routePath/${item.get(Const.uid, "")}",
                           arguments: RouteQuery.fullscreenOrModal,
                         );
                       },
@@ -581,7 +532,7 @@ class TileMenuHomeModuleInformation extends ModuleWidget<TileMenuHomeModule> {
                               ],
                             ),
                             const Space.height(8),
-                            Text(item.get(module.info.nameKey, "--")),
+                            Text(item.get(nameKey, "--")),
                           ],
                         ),
                       ),
@@ -598,19 +549,32 @@ class TileMenuHomeModuleInformation extends ModuleWidget<TileMenuHomeModule> {
 }
 
 class TileMenuHomeModuleCalendar extends ModuleWidget<TileMenuHomeModule> {
-  const TileMenuHomeModuleCalendar();
+  const TileMenuHomeModuleCalendar({
+    this.title,
+    this.routePath = "calendar",
+    this.queryPath = "event",
+    this.startTimeKey = Const.startTime,
+    this.endTimeKey = Const.endTime,
+    this.allDayKey = "allDay",
+    this.icon = Icons.calendar_today,
+    this.alwaysShown = false,
+  });
+
+  final String? title;
+  final String routePath;
+  final String queryPath;
+  final String startTimeKey;
+  final String endTimeKey;
+  final String allDayKey;
+  final IconData icon;
+  final bool alwaysShown;
 
   @override
   Widget build(BuildContext context, WidgetRef ref, TileMenuHomeModule module) {
-    if (module.info.widget != null) {
-      return module.info.widget!;
-    }
-
     final now = ref.useNow();
     final start = now.toDate();
-    final event =
-        ref.watchCollectionModel(module.calendar.queryPath).where((element) {
-      final time = element.getAsDateTime(module.calendar.startTimeKey);
+    final event = ref.watchCollectionModel(queryPath).where((element) {
+      final time = element.getAsDateTime(startTimeKey);
       return time.millisecondsSinceEpoch >= start.millisecondsSinceEpoch;
     }).toList();
 
@@ -618,8 +582,8 @@ class TileMenuHomeModuleCalendar extends ModuleWidget<TileMenuHomeModule> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         TileMenuHomeModuleHeadline(
-          module.calendar.title ?? "Calendar".localize(),
-          icon: module.calendar.icon,
+          title ?? "Calendar".localize(),
+          icon: icon,
           color: module.textColor ?? context.theme.textColorOnPrimary,
           backgroundColor:
               module.color ?? context.theme.primaryColor.lighten(0.15),
@@ -627,7 +591,7 @@ class TileMenuHomeModuleCalendar extends ModuleWidget<TileMenuHomeModule> {
         const Space.height(4),
         ColoredBox(
           color: context.theme.primaryColor,
-          child: event.isEmpty
+          child: event.isEmpty && !alwaysShown
               ? Container(
                   alignment: Alignment.center,
                   height: 100,
@@ -642,12 +606,27 @@ class TileMenuHomeModuleCalendar extends ModuleWidget<TileMenuHomeModule> {
                   source: event,
                   padding: const EdgeInsets.all(8),
                   shrinkWrap: true,
+                  alwaysShown: alwaysShown,
+                  startDate: now.toDate(),
+                  endDate: now.toDate().add(const Duration(days: 7)),
                   physics: const NeverScrollableScrollPhysics(),
                   dayTextStyle:
                       TextStyle(color: context.theme.textColorOnPrimary),
+                  emptyWidget: Container(
+                    color: context.theme.scaffoldBackgroundColor,
+                    height: 60,
+                    margin: const EdgeInsets.only(bottom: 4),
+                    alignment: Alignment.center,
+                    child: Text(
+                      "No data.".localize(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: context.theme.primaryColor,
+                      ),
+                    ),
+                  ),
                   builder: (context, item) {
-                    final endTimeValue =
-                        item.get<int?>(module.calendar.endTimeKey, null);
+                    final endTimeValue = item.get<int?>(endTimeKey, null);
                     final endTime = endTimeValue != null
                         ? DateTime.fromMillisecondsSinceEpoch(endTimeValue)
                         : null;
@@ -655,7 +634,7 @@ class TileMenuHomeModuleCalendar extends ModuleWidget<TileMenuHomeModule> {
                     return InkWell(
                       onTap: () {
                         context.navigator.pushNamed(
-                          "/${module.calendar.routePath}/${item.uid}/detail",
+                          "/$routePath/${item.uid}/detail",
                           arguments: RouteQuery.fullscreenOrModal,
                         );
                       },
@@ -675,14 +654,13 @@ class TileMenuHomeModuleCalendar extends ModuleWidget<TileMenuHomeModule> {
                             ),
                             Text(
                               _timeString(
-                                startTime: item.getAsDateTime(
-                                    module.calendar.startTimeKey),
+                                startTime: item.getAsDateTime(startTimeKey),
                                 endTime: endTime,
-                                allDay:
-                                    item.get(module.calendar.allDayKey, false),
+                                allDay: item.get(allDayKey, false),
                               ),
                               style: TextStyle(
                                 color: context.theme.primaryColor,
+                                fontSize: 13,
                               ),
                             ),
                           ],
@@ -829,14 +807,17 @@ class TileMenuHomeModuleChangeAffiliation
                         onPressed: () async {
                           final uid = await context.navigator.push<String>(
                             UIPageRoute<String>(
-                              builder: (context) =>
-                                  TileMenuHomeModuleChangeAffiliationSelection(
-                                title: title,
-                                affiliationKey: affiliationKey,
-                                targetPath: targetPath,
-                                imageKey: imageKey,
-                                namekey: namekey,
-                                affiliationListKey: affiliationListKey,
+                              builder: (context) => PageModuleScope(
+                                module: module,
+                                child:
+                                    TileMenuHomeModuleChangeAffiliationSelection(
+                                  title: title,
+                                  affiliationKey: affiliationKey,
+                                  targetPath: targetPath,
+                                  imageKey: imageKey,
+                                  namekey: namekey,
+                                  affiliationListKey: affiliationListKey,
+                                ),
                               ),
                               transition: PageTransition.fullscreen,
                             ),

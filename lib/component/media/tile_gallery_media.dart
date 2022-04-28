@@ -6,9 +6,9 @@ class TileGalleryMediaModule extends PageModule {
   const TileGalleryMediaModule({
     bool enabled = true,
     String? title,
-    this.routePath = "gallery",
-    this.queryPath = "gallery",
-    this.query,
+    String routePath = "gallery",
+    String queryPath = "gallery",
+    ModelQuery? query,
     this.mediaKey = Const.media,
     this.nameKey = Const.name,
     this.textKey = Const.text,
@@ -32,6 +32,9 @@ class TileGalleryMediaModule extends PageModule {
   }) : super(
           enabled: enabled,
           title: title,
+          routePath: routePath,
+          query: query,
+          queryPath: queryPath,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -56,15 +59,6 @@ class TileGalleryMediaModule extends PageModule {
   final PageModuleWidget<TileGalleryMediaModule> editPage;
   final PageModuleWidget<TileGalleryMediaModule> mediaDetailPage;
   final PageModuleWidget<TileGalleryMediaModule> mediaViewPage;
-
-  /// Route path.
-  final String routePath;
-
-  /// Query path.
-  final String queryPath;
-
-  /// Query.
-  final ModelQuery? query;
 
   /// 画像・映像のキー。
   final String mediaKey;

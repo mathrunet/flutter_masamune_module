@@ -6,10 +6,12 @@ class EditModule extends PageModule {
     bool enabled = true,
     required this.variables,
     String? title,
-    this.routePath = "edit",
-    this.queryPath = "edit",
+    String routePath = "edit",
+    String queryPath = "edit",
+    ModelQuery? query,
     this.queryKey = "edit_id",
     this.enableDelete = true,
+    this.fixed = false,
     this.bottomSpace = 120,
     this.padding = const EdgeInsets.symmetric(vertical: 16),
     this.automaticallyImplyLeadingOnHome = true,
@@ -21,6 +23,9 @@ class EditModule extends PageModule {
   }) : super(
           enabled: enabled,
           title: title,
+          query: query,
+          routePath: routePath,
+          queryPath: queryPath,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -49,14 +54,8 @@ class EditModule extends PageModule {
   // Page settings.
   final PageModuleWidget<EditModule> homePage;
 
-  /// Route path.
-  final String routePath;
-
   /// True if you want to enable deletion.
   final bool enableDelete;
-
-  /// Query path.
-  final String queryPath;
 
   /// Query key.
   final String queryKey;
@@ -72,6 +71,9 @@ class EditModule extends PageModule {
 
   /// Space under the form.
   final double bottomSpace;
+
+  /// True if the form is fixed rather than scrollable.
+  final bool fixed;
 }
 
 class EditModuleHome extends PageModuleWidget<EditModule> {
@@ -141,6 +143,8 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
           return FormBuilder(
             key: form.key,
             padding: module.padding,
+            type:
+                module.fixed ? FormBuilderType.fixed : FormBuilderType.listView,
             children: [
               ...module.top,
               ...variables.buildForm(context: context, ref: ref, data: doc),
