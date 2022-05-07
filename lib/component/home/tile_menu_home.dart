@@ -22,6 +22,13 @@ class TileMenuHomeModule extends PageModule
     this.nameKey = Const.name,
     this.menu = const [],
     this.subMenu = const [],
+    this.menuIconSize,
+    this.menuMaxCrossAxisExtent = 200,
+    this.submenuMaxCrossAxisExtent = 400,
+    this.menuChildAspectRatio = 1.0,
+    this.submenuChildAspectRatio = 3.0,
+    this.menuContentPadding = const EdgeInsets.all(8),
+    this.submenuContentPadding = const EdgeInsets.all(8),
     this.profileRoutePath = "user",
     List<RerouteConfig> rerouteConfigs = const [],
     this.header,
@@ -105,6 +112,21 @@ class TileMenuHomeModule extends PageModule
 
   /// 名前のキー。
   final String nameKey;
+
+  /// メニューアイコンサイズ。
+  final double? menuIconSize;
+
+  /// メニューの横幅。
+  final double menuMaxCrossAxisExtent;
+  final double submenuMaxCrossAxisExtent;
+
+  /// メニューの比率。
+  final double menuChildAspectRatio;
+  final double submenuChildAspectRatio;
+
+  /// メニューのパディング。
+  final EdgeInsetsGeometry menuContentPadding;
+  final EdgeInsetsGeometry submenuContentPadding;
 }
 
 @immutable
@@ -292,9 +314,10 @@ class TileMenuHomeModuleHome extends ModuleWidget<TileMenuHomeModule> {
               const Space.height(4),
               Grid.extent(
                 padding: const EdgeInsets.all(0),
-                maxCrossAxisExtent: 200,
+                maxCrossAxisExtent: module.menuMaxCrossAxisExtent,
                 crossAxisSpacing: 4,
                 mainAxisSpacing: 4,
+                childAspectRatio: module.menuChildAspectRatio,
                 children: [
                   ...module.menu.mapAndRemoveEmpty(
                     (item) {
@@ -306,20 +329,22 @@ class TileMenuHomeModuleHome extends ModuleWidget<TileMenuHomeModule> {
                                 ref.open(item.path!);
                               },
                         child: Padding(
-                          padding: const EdgeInsets.all(8),
+                          padding: module.menuContentPadding,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Icon(
                                 item.icon ?? Icons.info,
-                                size: context.isMobileOrSmall ? 64 : 78,
+                                size: module.menuIconSize ??
+                                    (context.isMobileOrSmall ? 64 : 78),
                                 color: module.textColor ??
                                     context.theme.textColorOnPrimary,
                               ),
                               const Space.height(8),
                               Text(
                                 item.name,
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: module.textColor ??
                                         context.theme.textColorOnPrimary,
@@ -338,10 +363,10 @@ class TileMenuHomeModuleHome extends ModuleWidget<TileMenuHomeModule> {
               const Space.height(8),
               Grid.extent(
                 padding: const EdgeInsets.all(0),
-                maxCrossAxisExtent: 400,
+                maxCrossAxisExtent: module.submenuMaxCrossAxisExtent,
                 crossAxisSpacing: 4,
                 mainAxisSpacing: 4,
-                childAspectRatio: 3,
+                childAspectRatio: module.submenuChildAspectRatio,
                 children: [
                   ...module.subMenu.mapAndRemoveEmpty((item) {
                     return ClickableBox(
@@ -353,9 +378,10 @@ class TileMenuHomeModuleHome extends ModuleWidget<TileMenuHomeModule> {
                             },
                       child: Container(
                         alignment: Alignment.center,
-                        padding: const EdgeInsets.all(8),
+                        padding: module.submenuContentPadding,
                         child: Text(
                           item.name,
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             color: module.textColor ??
                                 context.theme.textColorOnPrimary,
