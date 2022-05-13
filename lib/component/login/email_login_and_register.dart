@@ -39,6 +39,7 @@ class EmailLoginAndRegisterModule extends PageModule {
     List<RerouteConfig> rerouteConfigs = const [],
     this.registerVariables = const {},
     this.showOnlyRequiredVariable = true,
+    this.runAfterFinishBootHooksOnRidirect = true,
     this.landingPage = const EmailLoginAndRegisterModuleLanding(),
     this.loginPage = const EmailLoginAndRegisterModuleLogin(),
     this.resetPage = const EmailLoginAndRegisterModulePasswordReset(),
@@ -142,6 +143,9 @@ class EmailLoginAndRegisterModule extends PageModule {
 
   /// ログイン後のパス。
   final String redirectTo;
+
+  /// True if [AfterFinishBoot] hook is executed on redirect.
+  final bool runAfterFinishBootHooksOnRidirect;
 
   /// 登録時の値データ。
   final Map<String, List<VariableConfig>> registerVariables;
@@ -274,6 +278,17 @@ class EmailLoginAndRegisterModuleLanding
                                                 context.navigator
                                                     .pushReplacementNamed(
                                                         module.redirectTo);
+                                                if (module
+                                                    .runAfterFinishBootHooksOnRidirect) {
+                                                  Future.wait(
+                                                    Module.registeredHooks.map(
+                                                        (e) =>
+                                                            e.onAfterFinishBoot(
+                                                                context
+                                                                    .navigator
+                                                                    .context)),
+                                                  );
+                                                }
                                               }
                                             } catch (e) {
                                               UIDialog.show(
@@ -516,6 +531,12 @@ class EmailLoginAndRegisterModuleLogin
           )
           .showIndicator(context);
       context.navigator.pushReplacementNamed(module.redirectTo);
+      if (module.runAfterFinishBootHooksOnRidirect) {
+        Future.wait(
+          Module.registeredHooks
+              .map((e) => e.onAfterFinishBoot(context.navigator.context)),
+        );
+      }
     } catch (e) {
       UIDialog.show(
         context,
@@ -788,6 +809,12 @@ class EmailLoginAndRegisterModuleRegister
         }) ??
         false) {
       context.navigator.pushReplacementNamed(module.redirectTo);
+      if (module.runAfterFinishBootHooksOnRidirect) {
+        Future.wait(
+          Module.registeredHooks
+              .map((e) => e.onAfterFinishBoot(context.navigator.context)),
+        );
+      }
       return;
     }
     if (!form.validate()) {
@@ -841,6 +868,12 @@ class EmailLoginAndRegisterModuleRegister
         submitText: "Forward".localize(),
         onSubmit: () {
           context.navigator.pushReplacementNamed(module.redirectTo);
+          if (module.runAfterFinishBootHooksOnRidirect) {
+            Future.wait(
+              Module.registeredHooks
+                  .map((e) => e.onAfterFinishBoot(context.navigator.context)),
+            );
+          }
         },
       );
     } catch (e) {
@@ -1131,6 +1164,12 @@ class EmailLoginAndRegisterModuleRegisterAnonymous
             );
             await context.model?.saveDocument(doc).showIndicator(context);
             context.navigator.pushReplacementNamed(module.redirectTo);
+            if (module.runAfterFinishBootHooksOnRidirect) {
+              Future.wait(
+                Module.registeredHooks
+                    .map((e) => e.onAfterFinishBoot(context.navigator.context)),
+              );
+            }
           } catch (e) {
             UIDialog.show(
               context,

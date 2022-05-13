@@ -33,6 +33,7 @@ class SnsLoginModule extends PageModule {
     this.registerVariables = const [],
     this.showOnlyRequiredVariable = true,
     this.anonymousSignInConfig,
+    this.runAfterFinishBootHooksOnRidirect = true,
     List<RerouteConfig> rerouteConfigs = const [],
     this.landingPage = const SnsLoginModuleLanding(),
     this.registerPage = const SnsLoginModuleRegister(),
@@ -132,6 +133,9 @@ class SnsLoginModule extends PageModule {
 
   /// 匿名ログイン用のテキストやアイコン。
   final MenuConfig? anonymousSignInConfig;
+
+  /// True if [AfterFinishBoot] hook is executed on redirect.
+  final bool runAfterFinishBootHooksOnRidirect;
 }
 
 class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
@@ -268,6 +272,12 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(module.redirectTo);
+              if (module.runAfterFinishBootHooksOnRidirect) {
+                Future.wait(
+                  Module.registeredHooks.map(
+                      (e) => e.onAfterFinishBoot(context.navigator.context)),
+                );
+              }
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -296,6 +306,12 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(module.redirectTo);
+              if (module.runAfterFinishBootHooksOnRidirect) {
+                Future.wait(
+                  Module.registeredHooks.map(
+                      (e) => e.onAfterFinishBoot(context.navigator.context)),
+                );
+              }
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -321,6 +337,12 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(module.redirectTo);
+              if (module.runAfterFinishBootHooksOnRidirect) {
+                Future.wait(
+                  Module.registeredHooks.map(
+                      (e) => e.onAfterFinishBoot(context.navigator.context)),
+                );
+              }
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -346,6 +368,12 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(module.redirectTo);
+              if (module.runAfterFinishBootHooksOnRidirect) {
+                Future.wait(
+                  Module.registeredHooks.map(
+                      (e) => e.onAfterFinishBoot(context.navigator.context)),
+                );
+              }
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -371,6 +399,12 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(module.redirectTo);
+              if (module.runAfterFinishBootHooksOnRidirect) {
+                Future.wait(
+                  Module.registeredHooks.map(
+                      (e) => e.onAfterFinishBoot(context.navigator.context)),
+                );
+              }
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -397,6 +431,12 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(module.redirectTo);
+              if (module.runAfterFinishBootHooksOnRidirect) {
+                Future.wait(
+                  Module.registeredHooks.map(
+                      (e) => e.onAfterFinishBoot(context.navigator.context)),
+                );
+              }
             } catch (e) {
               print(e.toString());
               UIDialog.show(
@@ -521,6 +561,12 @@ class SnsLoginModuleRegister extends PageModuleWidget<SnsLoginModule> {
             );
             await context.model?.saveDocument(doc).showIndicator(context);
             context.navigator.pushReplacementNamed(module.redirectTo);
+            if (module.runAfterFinishBootHooksOnRidirect) {
+              Future.wait(
+                Module.registeredHooks
+                    .map((e) => e.onAfterFinishBoot(context.navigator.context)),
+              );
+            }
           } catch (e) {
             UIDialog.show(
               context,
