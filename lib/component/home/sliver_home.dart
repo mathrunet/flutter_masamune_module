@@ -155,7 +155,7 @@ class SliverHomeModuleListTileComponent
 class SliverHomeModuleMenuComponent extends ModuleWidget<SliverHomeModule> {
   const SliverHomeModuleMenuComponent(this.menu);
 
-  final List<MenuModuleItem> menu;
+  final List<MenuModuleComponent> menu;
 
   @override
   Widget build(BuildContext context, WidgetRef ref, SliverHomeModule module) {
@@ -165,44 +165,7 @@ class SliverHomeModuleMenuComponent extends ModuleWidget<SliverHomeModule> {
       children: menu.expandAndRemoveEmpty(
         (item) {
           return [
-            if (item.name.isNotEmpty)
-              Headline(
-                item.name!,
-                icon: item.icon,
-              )
-            else ...[
-              Container(
-                height: 40,
-                color: context.theme.dividerColor.withOpacity(0.5),
-              ),
-              const Divid(),
-            ],
-            ...item.menus.expandAndRemoveEmpty((menu) {
-              return [
-                ListItem(
-                  leading: menu.icon != null
-                      ? Icon(
-                          menu.icon!,
-                          color: menu.color,
-                        )
-                      : null,
-                  title: Text(menu.name),
-                  onTap: menu.path.isEmpty
-                      ? null
-                      : () {
-                          if (menu.path!.startsWith("http")) {
-                            ref.open(menu.path!);
-                          } else {
-                            context.rootNavigator.pushNamed(
-                              ref.applyModuleTag(menu.path!),
-                              arguments: RouteQuery.fullscreenOrModal,
-                            );
-                          }
-                        },
-                ),
-                const Divid(),
-              ];
-            })
+            item,
           ];
         },
       ),
