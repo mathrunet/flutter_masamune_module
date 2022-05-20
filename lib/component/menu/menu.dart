@@ -64,11 +64,13 @@ class MenuModuleGroupComponent extends MenuModuleComponent {
     this.name,
     this.icon,
     this.menus = const [],
+    this.dividerColor,
   });
 
   final String? name;
   final IconData? icon;
   final List<MenuModuleComponent> menus;
+  final Color? dividerColor;
 
   @override
   Widget build(BuildContext context, WidgetRef ref, MenuModule module) {
@@ -84,7 +86,7 @@ class MenuModuleGroupComponent extends MenuModuleComponent {
         else ...[
           Container(
             height: 40,
-            color: context.theme.dividerColor.withOpacity(0.5),
+            color: dividerColor ?? context.theme.dividerColor.withOpacity(0.5),
           ),
           const Divid(),
         ],
@@ -105,6 +107,7 @@ class MenuModuleItemComponent extends MenuModuleComponent {
     this.path,
     this.icon,
     this.color,
+    this.backgroundColor,
   });
 
   /// Menu icon.
@@ -119,9 +122,13 @@ class MenuModuleItemComponent extends MenuModuleComponent {
   /// Menu color.
   final Color? color;
 
+  /// Background color.
+  final Color? backgroundColor;
+
   @override
   Widget build(BuildContext context, WidgetRef ref, MenuModule module) {
     return ListItem(
+      tileColor: backgroundColor,
       leading: icon != null
           ? Icon(
               icon!,
