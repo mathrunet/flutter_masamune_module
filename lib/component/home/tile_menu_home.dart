@@ -470,6 +470,7 @@ class TileMenuHomeModuleInformation extends ModuleWidget<TileMenuHomeModule> {
     this.queryPath = "info",
     this.icon = Icons.info_rounded,
     this.nameKey = Const.name,
+    this.dataLabel,
     this.createdTimeKey = Const.createdTime,
     this.limit = 10,
   });
@@ -477,6 +478,7 @@ class TileMenuHomeModuleInformation extends ModuleWidget<TileMenuHomeModule> {
   final String? title;
   final String routePath;
   final String queryPath;
+  final String? dataLabel;
   final IconData icon;
   final String nameKey;
   final String createdTimeKey;
@@ -507,66 +509,74 @@ class TileMenuHomeModuleInformation extends ModuleWidget<TileMenuHomeModule> {
                   module.color ?? context.theme.primaryColor.lighten(0.15),
             ),
             const Space.height(4),
-            Grid.extent(
-              padding: const EdgeInsets.all(0),
-              maxCrossAxisExtent: 300,
-              mainAxisSpacing: 4,
-              crossAxisSpacing: 4,
-              childAspectRatio: 2,
-              children: [
-                ...info.limitEnd(limit).mapListenable((item) {
-                  final dateTime = DateTime.fromMillisecondsSinceEpoch(
-                    item.get(createdTimeKey, now.millisecondsSinceEpoch),
-                  );
-                  return DefaultTextStyle(
-                    style: TextStyle(
-                      color:
-                          module.textColor ?? context.theme.textColorOnPrimary,
-                    ),
-                    child: ClickableBox(
-                      color: module.color ?? context.theme.primaryColor,
-                      onTap: () {
-                        context.navigator.pushNamed(
-                          "/$routePath/${item.get(Const.uid, "")}",
-                          arguments: RouteQuery.fullscreenOrModal,
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(dateTime.format("yyyy/MM/dd HH:mm")),
-                                if (dateTime.isToday()) ...[
-                                  const Space.width(4),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 4, vertical: 2),
-                                    color: context.theme.colorScheme.error,
-                                    child: Text(
-                                      "NEW".localize(),
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color:
-                                            context.theme.colorScheme.onError,
+            if (info.isEmpty)
+              Container(
+                  alignment: Alignment.center,
+                  height: 60,
+                  child: Text(dataLabel.isEmpty
+                      ? "No data.".localize()
+                      : "No %s.".localize().format([dataLabel!.localize()])))
+            else
+              Grid.extent(
+                padding: const EdgeInsets.all(0),
+                maxCrossAxisExtent: 300,
+                mainAxisSpacing: 4,
+                crossAxisSpacing: 4,
+                childAspectRatio: 2,
+                children: [
+                  ...info.limitEnd(limit).mapListenable((item) {
+                    final dateTime = DateTime.fromMillisecondsSinceEpoch(
+                      item.get(createdTimeKey, now.millisecondsSinceEpoch),
+                    );
+                    return DefaultTextStyle(
+                      style: TextStyle(
+                        color: module.textColor ??
+                            context.theme.textColorOnPrimary,
+                      ),
+                      child: ClickableBox(
+                        color: module.color ?? context.theme.primaryColor,
+                        onTap: () {
+                          context.navigator.pushNamed(
+                            "/$routePath/${item.get(Const.uid, "")}",
+                            arguments: RouteQuery.fullscreenOrModal,
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(dateTime.format("yyyy/MM/dd HH:mm")),
+                                  if (dateTime.isToday()) ...[
+                                    const Space.width(4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 4, vertical: 2),
+                                      color: context.theme.colorScheme.error,
+                                      child: Text(
+                                        "NEW".localize(),
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color:
+                                              context.theme.colorScheme.onError,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ]
-                              ],
-                            ),
-                            const Space.height(8),
-                            Text(item.get(nameKey, "--")),
-                          ],
+                                  ]
+                                ],
+                              ),
+                              const Space.height(8),
+                              Text(item.get(nameKey, "--")),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                })
-              ],
-            ),
+                    );
+                  })
+                ],
+              ),
           ],
         );
       },

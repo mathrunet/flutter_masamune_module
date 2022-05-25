@@ -19,14 +19,15 @@ class UserModule extends PageModule {
     this.guestName = "Guest",
     this.expandedHeight = 160,
     this.additionalInformation = const {},
-    this.allowImageEditing = false,
-    this.allowFollow = false,
-    this.allowBlock = true,
-    this.allowReport = true,
-    this.allowUserDeleting = false,
+    this.enableImageEditing = false,
+    this.enableFollow = false,
+    this.enableBlock = true,
+    this.enableReport = true,
+    this.enableUserDeleting = false,
     this.sliverLayoutWhenModernDesignOnHome = true,
     this.automaticallyImplyLeadingOnHome = true,
     this.showHeaderDivider = true,
+    this.enableText = true,
     List<RerouteConfig> rerouteConfigs = const [],
     this.variables = const [],
     this.meta,
@@ -103,6 +104,9 @@ class UserModule extends PageModule {
   /// アイコンのキー。
   final String iconKey;
 
+  /// ユーザーの紹介文などを有効化する場合True.
+  final bool enableText;
+
   /// テキストのキー。
   final String textKey;
 
@@ -116,19 +120,19 @@ class UserModule extends PageModule {
   final String guestName;
 
   /// ユーザーのフィーチャー画像が編集可能な場合`true`.
-  final bool allowImageEditing;
+  final bool enableImageEditing;
 
   /// フォロー機能を利用する場合`true`。
-  final bool allowFollow;
+  final bool enableFollow;
 
   /// ブロック機能を有効にする場合`true`。
-  final bool allowBlock;
+  final bool enableBlock;
 
   /// 通報機能を有効にする場合`true`。
-  final bool allowReport;
+  final bool enableReport;
 
   /// ユーザーの削除を有効にする場合`true`。
-  final bool allowUserDeleting;
+  final bool enableUserDeleting;
 
   /// 表示する追加情報。
   final Map<String, String> additionalInformation;
@@ -163,7 +167,7 @@ abstract class UserWidgetModule extends PageModule
           verifyAppReroute: verifyAppReroute,
           rerouteConfigs: rerouteConfigs,
         );
-  List<String> get allowRoles;
+  List<String> get enableRoles;
   Widget build(BuildContext context);
 }
 
@@ -245,7 +249,7 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
                 backgroundColor: context.theme.scaffoldBackgroundColor,
               ),
             )
-          else if (module.allowFollow)
+          else if (module.enableFollow)
             TextButton(
               onPressed: () {},
               child: Text("Follow".localize()),
@@ -261,7 +265,7 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
         title: Text(name),
         actions: [
           if (!own) ...[
-            if (module.allowBlock)
+            if (module.enableBlock)
               IconButton(
                 icon: const Icon(FontAwesomeIcons.ban),
                 onPressed: () {
@@ -316,7 +320,7 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
                   );
                 },
               ),
-            if (module.allowReport)
+            if (module.enableReport)
               IconButton(
                 icon: const Icon(FontAwesomeIcons.flag),
                 onPressed: () {
@@ -364,8 +368,10 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
             children: [
               Text(name, style: context.theme.textTheme.headline5),
-              const Space.height(8),
-              Text(text),
+              if (module.enableText) ...[
+                const Space.height(8),
+                Text(text),
+              ],
               if (module.meta != null) ...[
                 const Space.height(16),
                 module.meta!,
@@ -415,7 +421,7 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
                   Container(
                     constraints: BoxConstraints.expand(
                         height: module.expandedHeight - 56),
-                    color: module.allowImageEditing
+                    color: module.enableImageEditing
                         ? context.theme.disabledColor
                         : (context.theme.appBarTheme.backgroundColor ??
                             (context.theme.colorScheme.brightness ==
@@ -453,14 +459,14 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
                       constraints: BoxConstraints.expand(
                           height: module.expandedHeight - 56),
                       decoration: BoxDecoration(
-                        color: module.allowImageEditing
+                        color: module.enableImageEditing
                             ? context.theme.disabledColor
                             : (context.theme.appBarTheme.backgroundColor ??
                                 (context.theme.colorScheme.brightness ==
                                         Brightness.dark
                                     ? context.theme.colorScheme.surface
                                     : context.theme.colorScheme.primary)),
-                        image: module.allowImageEditing
+                        image: module.enableImageEditing
                             ? DecorationImage(
                                 image: NetworkOrAsset.image(
                                     image, ImageSize.large),
@@ -472,7 +478,7 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
                               )
                             : null,
                       ),
-                      child: module.allowImageEditing
+                      child: module.enableImageEditing
                           ? InkWell(
                               onTap: () async {
                                 final media =
@@ -616,7 +622,8 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
     if (variables.isEmpty) {
       return [
         VariableConfigDefinition.name.copyWith(show: false),
-        VariableConfigDefinition.text.copyWith(show: false),
+        if (module.enableText)
+          VariableConfigDefinition.text.copyWith(show: false),
       ];
     } else {
       return variables;
@@ -712,7 +719,7 @@ class UserModuleAccountContent extends ModuleWidget<UserModule> {
             ),
           ),
           Headline("Menu".localize()),
-          if (module.allowBlock)
+          if (module.enableBlock)
             ListItem(
               title: Text("%s list".localize().format(["Block".localize()])),
               onTap: () {
@@ -756,7 +763,7 @@ class UserModuleAccountContent extends ModuleWidget<UserModule> {
               );
             },
           ),
-          if (module.allowUserDeleting)
+          if (module.enableUserDeleting)
             ListItem(
               title: Text(
                 "Account deletion".localize(),
