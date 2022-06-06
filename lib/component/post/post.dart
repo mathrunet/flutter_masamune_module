@@ -172,7 +172,8 @@ class PostModuleView extends PageModuleWidget<PostModule> {
   @override
   Widget build(BuildContext context, WidgetRef ref, PostModule module) {
     final item = ref.watchDocumentModel(
-        "${module.queryPath}/${context.get("post_id", "")}");
+      "${module.queryPath}/${context.get("post_id", "")}",
+    );
     final now = ref.useNow();
     final name = item.get(module.nameKey, "");
     final text = item.get(module.textKey, "");
@@ -240,11 +241,14 @@ class PostModuleView extends PageModuleWidget<PostModule> {
                 padding: EdgeInsets.zero,
                 customStyles: DefaultStyles(
                   placeHolder: DefaultTextBlockStyle(
-                      TextStyle(
-                          color: context.theme.disabledColor, fontSize: 16),
-                      const Tuple2(16, 0),
-                      const Tuple2(0, 0),
-                      null),
+                    TextStyle(
+                      color: context.theme.disabledColor,
+                      fontSize: 16,
+                    ),
+                    const Tuple2(16, 0),
+                    const Tuple2(0, 0),
+                    null,
+                  ),
                 ),
               ),
             ],
@@ -296,10 +300,12 @@ class PostModuleEdit extends PageModuleWidget<PostModule> {
 
     final appBar = UIAppBar(
       sliverLayoutWhenModernDesign: false,
-      title: Text(form.select(
-        "Editing %s".localize().format([name]),
-        "A new entry".localize(),
-      )),
+      title: Text(
+        form.select(
+          "Editing %s".localize().format([name]),
+          "A new entry".localize(),
+        ),
+      ),
       actions: [
         if (form.exists)
           IconButton(
@@ -382,7 +388,8 @@ class PostModuleEdit extends PageModuleWidget<PostModule> {
               ...header,
               Theme(
                 data: context.theme.copyWith(
-                    canvasColor: context.theme.scaffoldBackgroundColor),
+                  canvasColor: context.theme.scaffoldBackgroundColor,
+                ),
                 child: QuillToolbar.basic(
                   controller: controller,
                   toolbarIconSize: 24,
@@ -414,11 +421,14 @@ class PostModuleEdit extends PageModuleWidget<PostModule> {
                   padding: const EdgeInsets.all(12),
                   customStyles: DefaultStyles(
                     placeHolder: DefaultTextBlockStyle(
-                        TextStyle(
-                            color: context.theme.disabledColor, fontSize: 16),
-                        const Tuple2(16, 0),
-                        const Tuple2(0, 0),
-                        null),
+                      TextStyle(
+                        color: context.theme.disabledColor,
+                        fontSize: 16,
+                      ),
+                      const Tuple2(16, 0),
+                      const Tuple2(0, 0),
+                      null,
+                    ),
                   ),
                 ),
               ),
@@ -434,7 +444,9 @@ class PostModuleEdit extends PageModuleWidget<PostModule> {
                 item[module.textKey] =
                     jsonEncode(controller.document.toDelta().toJson());
                 item[module.createdTimeKey] = context.get(
-                    module.createdTimeKey, now.millisecondsSinceEpoch);
+                  module.createdTimeKey,
+                  now.millisecondsSinceEpoch,
+                );
                 await context.model?.saveDocument(item).showIndicator(context);
                 context.navigator.pop();
               } catch (e) {
@@ -492,7 +504,9 @@ class PostModuleEdit extends PageModuleWidget<PostModule> {
                 item[module.nameKey] = context.get(module.nameKey, "");
                 item[module.textKey] = context.get(module.textKey, "");
                 item[module.createdTimeKey] = context.get(
-                    module.createdTimeKey, now.millisecondsSinceEpoch);
+                  module.createdTimeKey,
+                  now.millisecondsSinceEpoch,
+                );
                 await context.model?.saveDocument(item).showIndicator(context);
                 context.navigator.pop();
               } catch (e) {

@@ -234,7 +234,11 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
                                         in context.plugin!.signIns)
                                       if (adapter.visible)
                                         _snsButton(
-                                            context, ref, adapter, module),
+                                          context,
+                                          ref,
+                                          adapter,
+                                          module,
+                                        ),
                                 ],
                               ),
                             ),
@@ -251,8 +255,12 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
     }
   }
 
-  Widget _snsButton(BuildContext context, WidgetRef ref, SignInAdapter adapter,
-      SnsLoginModule module) {
+  Widget _snsButton(
+    BuildContext context,
+    WidgetRef ref,
+    SignInAdapter adapter,
+    SnsLoginModule module,
+  ) {
     final buttonColor =
         module.buttonColor ?? module.color ?? context.theme.textColorOnPrimary;
     final buttonBackgroundColor =
@@ -267,7 +275,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           color: buttonColor,
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
-          icon: FontAwesomeIcons.signInAlt,
+          icon: FontAwesomeIcons.rightToBracket,
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
@@ -275,7 +283,8 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
                   Module.registeredHooks.map(
-                      (e) => e.onAfterFinishBoot(context.navigator.context)),
+                    (e) => e.onAfterFinishBoot(context.navigator.context),
+                  ),
                 );
               }
             } catch (e) {
@@ -309,7 +318,8 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
                   Module.registeredHooks.map(
-                      (e) => e.onAfterFinishBoot(context.navigator.context)),
+                    (e) => e.onAfterFinishBoot(context.navigator.context),
+                  ),
                 );
               }
             } catch (e) {
@@ -340,7 +350,8 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
                   Module.registeredHooks.map(
-                      (e) => e.onAfterFinishBoot(context.navigator.context)),
+                    (e) => e.onAfterFinishBoot(context.navigator.context),
+                  ),
                 );
               }
             } catch (e) {
@@ -371,7 +382,8 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
                   Module.registeredHooks.map(
-                      (e) => e.onAfterFinishBoot(context.navigator.context)),
+                    (e) => e.onAfterFinishBoot(context.navigator.context),
+                  ),
                 );
               }
             } catch (e) {
@@ -402,7 +414,8 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
                   Module.registeredHooks.map(
-                      (e) => e.onAfterFinishBoot(context.navigator.context)),
+                    (e) => e.onAfterFinishBoot(context.navigator.context),
+                  ),
                 );
               }
             } catch (e) {
@@ -434,7 +447,8 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
                   Module.registeredHooks.map(
-                      (e) => e.onAfterFinishBoot(context.navigator.context)),
+                    (e) => e.onAfterFinishBoot(context.navigator.context),
+                  ),
                 );
               }
             } catch (e) {
@@ -474,8 +488,9 @@ class _LoginModuleBackgroundImage extends StatelessWidget {
           if (module.backgroundImageBlur != null)
             BackdropFilter(
               filter: ImageFilter.blur(
-                  sigmaX: module.backgroundImageBlur!,
-                  sigmaY: module.backgroundImageBlur!),
+                sigmaX: module.backgroundImageBlur!,
+                sigmaY: module.backgroundImageBlur!,
+              ),
               child: _backgroundColor(context, opacity),
             )
           else
@@ -501,7 +516,8 @@ class _LoginModuleBackgroundImage extends StatelessWidget {
       );
     } else {
       return ColoredBox(
-          color: module.backgroundColor ?? context.theme.backgroundColor);
+        color: module.backgroundColor ?? context.theme.backgroundColor,
+      );
     }
   }
 }

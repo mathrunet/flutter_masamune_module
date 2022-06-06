@@ -84,12 +84,16 @@ class GalleryModule extends PageModule with VerifyAppReroutePageModuleMixin {
   final bool automaticallyImplyLeadingOnHome;
 
   /// ルートのパス。
+  @override
+  // ignore: overridden_fields
   final String routePath;
 
   /// ギャラリーのタイプ。
   final GalleryType galleryType;
 
   /// ギャラリーデータのパス。
+  @override
+  // ignore: overridden_fields
   final String queryPath;
 
   /// ユーザーのデータパス。
@@ -162,12 +166,16 @@ class GalleryModuleTileViewWithList extends PageModuleWidget<GalleryModule> {
   const GalleryModuleTileViewWithList();
 
   List<GroupConfig> _categories(
-      BuildContext context, WidgetRef ref, GalleryModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    GalleryModule module,
+  ) {
     if (module.categoryQuery != null) {
       final categories = ref.watchCollectionModel(module.categoryQuery!.value);
-      return categories.mapAndRemoveEmpty((item) =>
-          GroupConfig(id: item.uid, label: item.get(module.nameKey, "")))
-        ..addAll(module.categoryConfig);
+      return categories.mapAndRemoveEmpty(
+        (item) =>
+            GroupConfig(id: item.uid, label: item.get(module.nameKey, "")),
+      )..addAll(module.categoryConfig);
     }
     return module.categoryConfig;
   }
@@ -218,12 +226,16 @@ class GalleryModuleTileViewWithTab extends PageModuleWidget<GalleryModule> {
   const GalleryModuleTileViewWithTab();
 
   List<GroupConfig> _categories(
-      BuildContext context, WidgetRef ref, GalleryModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    GalleryModule module,
+  ) {
     if (module.categoryQuery != null) {
       final categories = ref.watchCollectionModel(module.categoryQuery!.value);
-      return categories.mapAndRemoveEmpty((item) =>
-          GroupConfig(id: item.uid, label: item.get(module.nameKey, "")))
-        ..addAll(module.categoryConfig);
+      return categories.mapAndRemoveEmpty(
+        (item) =>
+            GroupConfig(id: item.uid, label: item.get(module.nameKey, "")),
+      )..addAll(module.categoryConfig);
     }
     return module.categoryConfig;
   }
@@ -297,12 +309,16 @@ class GalleryModuleGridView extends PageModuleWidget<GalleryModule> {
   const GalleryModuleGridView();
 
   List<GroupConfig> _categories(
-      BuildContext context, WidgetRef ref, GalleryModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    GalleryModule module,
+  ) {
     if (module.categoryQuery != null) {
       final categories = ref.watchCollectionModel(module.categoryQuery!.value);
-      return categories.mapAndRemoveEmpty((item) =>
-          GroupConfig(id: item.uid, label: item.get(module.nameKey, "")))
-        ..addAll(module.categoryConfig);
+      return categories.mapAndRemoveEmpty(
+        (item) =>
+            GroupConfig(id: item.uid, label: item.get(module.nameKey, "")),
+      )..addAll(module.categoryConfig);
     }
     return module.categoryConfig;
   }
@@ -339,7 +355,10 @@ class GalleryModuleGrid extends ModuleWidget<GalleryModule> {
   final GroupConfig? category;
 
   DynamicCollectionModel _gallery(
-      BuildContext context, WidgetRef ref, GalleryModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    GalleryModule module,
+  ) {
     if (category == null) {
       return ref
           .watchCollectionModel(module.contentQuery?.value ?? module.queryPath);
@@ -431,7 +450,8 @@ class GalleryModuleMediaDetail extends PageModuleWidget<GalleryModule> {
   @override
   Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
     final item = ref.watchDocumentModel(
-        "${module.queryPath}/${context.get("media_id", "")}");
+      "${module.queryPath}/${context.get("media_id", "")}",
+    );
 
     final now = ref.useNow();
     final name = item.get(module.nameKey, "");
@@ -539,7 +559,8 @@ class GalleryModuleMediaView extends PageModuleWidget<GalleryModule> {
   @override
   Widget build(BuildContext context, WidgetRef ref, GalleryModule module) {
     final item = ref.watchDocumentModel(
-        "${module.queryPath}/${context.get("media_id", "")}");
+      "${module.queryPath}/${context.get("media_id", "")}",
+    );
     final name = item.get(module.nameKey, "");
     final media = item.get(module.mediaKey, "");
     final type = getPlatformMediaType(media);
@@ -594,12 +615,16 @@ class GalleryModuleEdit extends PageModuleWidget<GalleryModule> {
   const GalleryModuleEdit();
 
   List<GroupConfig> _categories(
-      BuildContext context, WidgetRef ref, GalleryModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    GalleryModule module,
+  ) {
     if (module.categoryQuery != null) {
       final categories = ref.watchCollectionModel(module.categoryQuery!.value);
-      return categories.mapAndRemoveEmpty((item) =>
-          GroupConfig(id: item.uid, label: item.get(module.nameKey, "")))
-        ..addAll(module.categoryConfig);
+      return categories.mapAndRemoveEmpty(
+        (item) =>
+            GroupConfig(id: item.uid, label: item.get(module.nameKey, "")),
+      )..addAll(module.categoryConfig);
     }
     return module.categoryConfig;
   }
@@ -617,10 +642,12 @@ class GalleryModuleEdit extends PageModuleWidget<GalleryModule> {
       waitTransition: true,
       appBar: UIAppBar(
         sliverLayoutWhenModernDesign: false,
-        title: Text(form.select(
-          "Editing %s".localize().format([name]),
-          "A new entry".localize(),
-        )),
+        title: Text(
+          form.select(
+            "Editing %s".localize().format([name]),
+            "A new entry".localize(),
+          ),
+        ),
         actions: [
           if (form.exists)
             IconButton(

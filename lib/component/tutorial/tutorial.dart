@@ -224,7 +224,9 @@ class TutorialModuleView extends ModuleWidget<TutorialModule> {
       data: IconThemeData(color: color ?? context.theme.textColorOnPrimary),
       child: DefaultTextStyle(
         style: TextStyle(
-            fontSize: 20, color: color ?? context.theme.textColorOnPrimary),
+          fontSize: 20,
+          color: color ?? context.theme.textColorOnPrimary,
+        ),
         child: Container(
           padding: EdgeInsets.symmetric(vertical: height, horizontal: width),
           color: backgroundColor ?? context.theme.primaryColor,

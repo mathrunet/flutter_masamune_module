@@ -74,10 +74,11 @@ class ContentViewConfig extends VariableViewConfig<String> {
               customStyles: DefaultStyles(
                 color: color,
                 placeHolder: DefaultTextBlockStyle(
-                    TextStyle(color: context.theme.disabledColor, fontSize: 16),
-                    const Tuple2(16, 0),
-                    const Tuple2(0, 0),
-                    null),
+                  TextStyle(color: context.theme.disabledColor, fontSize: 16),
+                  const Tuple2(16, 0),
+                  const Tuple2(0, 0),
+                  null,
+                ),
               ),
             ),
           ),

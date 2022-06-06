@@ -111,7 +111,8 @@ class MemberModuleHome extends PageModuleWidget<MemberModule> {
       ],
       appBar: UIAppBar(
         title: Text(
-            module.title ?? "%s list".localize().format(["Member".localize()])),
+          module.title ?? "%s list".localize().format(["Member".localize()]),
+        ),
         sliverLayoutWhenModernDesign: module.sliverLayoutWhenModernDesignOnHome,
         automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
       ),

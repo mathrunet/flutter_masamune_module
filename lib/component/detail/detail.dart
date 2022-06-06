@@ -183,8 +183,9 @@ class DetailModuleHome extends PageModuleWidget<DetailModule> {
                           Expanded(
                             flex: 2,
                             child: Image(
-                                image: NetworkOrAsset.image(images.first),
-                                fit: BoxFit.cover),
+                              image: NetworkOrAsset.image(images.first),
+                              fit: BoxFit.cover,
+                            ),
                           ),
                           const Space.height(1),
                           Expanded(
@@ -196,9 +197,9 @@ class DetailModuleHome extends PageModuleWidget<DetailModule> {
                                   if (i < images.length) ...[
                                     Expanded(
                                       child: Image(
-                                          image:
-                                              NetworkOrAsset.image(images[i]),
-                                          fit: BoxFit.cover),
+                                        image: NetworkOrAsset.image(images[i]),
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
                                     const Space.width(1),
                                   ] else ...[
@@ -426,11 +427,13 @@ class DetailModuleActionWidget extends ModuleWidget<DetailModule> {
     final count = detail.get(module.likeCountKey, 0);
     final like = ref
         .watchDocumentModel(
-            "${module.userPath}/${context.model?.userId}/${module.likePath}/$detailId")
+          "${module.userPath}/${context.model?.userId}/${module.likePath}/$detailId",
+        )
         .isNotEmpty;
     final bookmark = ref
         .watchDocumentModel(
-            "${module.userPath}/${context.model?.userId}/${module.bookmarkPath}/$detailId")
+          "${module.userPath}/${context.model?.userId}/${module.bookmarkPath}/$detailId",
+        )
         .isNotEmpty;
 
     return Padding(
@@ -515,11 +518,13 @@ class DetailModuleProfileWidget extends ModuleWidget<DetailModule> {
       },
       child: Container(
         decoration: BoxDecoration(
-            border: Border.symmetric(
-                horizontal: BorderSide(
-          color: context.theme.dividerColor.withOpacity(0.25),
-          width: 1,
-        ))),
+          border: Border.symmetric(
+            horizontal: BorderSide(
+              color: context.theme.dividerColor.withOpacity(0.25),
+              width: 1,
+            ),
+          ),
+        ),
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -544,9 +549,13 @@ class DetailModuleProfileWidget extends ModuleWidget<DetailModule> {
                     ),
                   ),
                   const Space.height(8),
-                  Text(text,
-                      style: TextStyle(
-                          fontSize: 14, color: context.theme.disabledColor)),
+                  Text(
+                    text,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: context.theme.disabledColor,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -577,7 +586,8 @@ class DetailModuleBookmarkIcon extends ModuleWidget<DetailModule> {
     }
     final bookmark = ref
         .watchDocumentModel(
-            "${module.userPath}/${context.model?.userId}/${bookmarkPath ?? module.bookmarkPath}/$detailId")
+          "${module.userPath}/${context.model?.userId}/${bookmarkPath ?? module.bookmarkPath}/$detailId",
+        )
         .isNotEmpty;
 
     return IconButton(

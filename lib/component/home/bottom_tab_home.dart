@@ -59,7 +59,10 @@ class BottomTabHomeModuleHome extends PageModuleWidget<BottomTabHomeModule> {
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, BottomTabHomeModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    BottomTabHomeModule module,
+  ) {
     final initialId = module.initialPath ??
         module.menu.firstWhereOrNull((e) => e.path.isNotEmpty)?.path ??
         "";
@@ -96,10 +99,13 @@ class BottomTabHomeModuleHome extends PageModuleWidget<BottomTabHomeModule> {
                           children: [
                             Icon(center.icon),
                             const Space.height(2.0),
-                            Text(center.name,
-                                style: TextStyle(
-                                    color: context.theme.textColorOnPrimary,
-                                    fontSize: 10))
+                            Text(
+                              center.name,
+                              style: TextStyle(
+                                color: context.theme.textColorOnPrimary,
+                                fontSize: 10,
+                              ),
+                            )
                           ],
                         )
                       : Icon(center.icon),

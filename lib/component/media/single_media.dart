@@ -149,7 +149,8 @@ class SingleMediaModuleEdit extends PageModuleWidget<SingleMediaModule> {
   Widget build(BuildContext context, WidgetRef ref, SingleMediaModule module) {
     final form = ref.useForm();
     final item = ref.watchDocumentModel(
-        module.query?.value.trimQuery() ?? module.queryPath);
+      module.query?.value.trimQuery() ?? module.queryPath,
+    );
     final name = item.get(module.nameKey, "");
     final media = item.get(module.mediaKey, "");
 

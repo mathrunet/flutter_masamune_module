@@ -62,10 +62,12 @@ class SliverHomeModuleHome extends PageModuleWidget<SliverHomeModule> {
     // Please describe the Widget.
     return UIScaffold(
       appBar: UIAppBar(
-        title: Text(module.title ?? context.app?.title ?? "",
-            style: TextStyle(
-              color: module.foregroundColor ?? context.theme.textColorOnPrimary,
-            )),
+        title: Text(
+          module.title ?? context.app?.title ?? "",
+          style: TextStyle(
+            color: module.foregroundColor ?? context.theme.textColorOnPrimary,
+          ),
+        ),
         expandedHeight: module.headerHeight,
         automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
         backgroundColor: module.backgroundColor ?? context.theme.primaryColor,

@@ -29,7 +29,7 @@ class EmailLoginAndRegisterModule extends PageModule {
       MenuConfig(
         path: "login",
         name: "Login",
-        icon: FontAwesomeIcons.signInAlt,
+        icon: FontAwesomeIcons.rightToBracket,
       ),
     ],
     this.titlePadding =
@@ -160,7 +160,10 @@ class EmailLoginAndRegisterModuleLanding
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, EmailLoginAndRegisterModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    EmailLoginAndRegisterModule module,
+  ) {
     final animation = ref.useAutoPlayAnimationScenario(
       "main",
       [
@@ -184,8 +187,10 @@ class EmailLoginAndRegisterModuleLanding
           body: Stack(
             fit: StackFit.expand,
             children: [
-              _EmailLoginAndRegisterModuleBackgroundImage(module,
-                  opacity: 0.75),
+              _EmailLoginAndRegisterModuleBackgroundImage(
+                module,
+                opacity: 0.75,
+              ),
               AnimationScope(
                 animation: animation,
                 builder: (context, child, animation) {
@@ -211,7 +216,8 @@ class EmailLoginAndRegisterModuleLanding
                                           BorderRadius.zero,
                                       child: Image(
                                         image: NetworkOrAsset.image(
-                                            module.featureImage!),
+                                          module.featureImage!,
+                                        ),
                                         fit: module.featureImageFit,
                                       ),
                                     ),
@@ -270,23 +276,28 @@ class EmailLoginAndRegisterModuleLanding
                                                   ?.signInAnonymously()
                                                   .showIndicator(context);
                                               if (_hasAnonymousRegistrationData(
-                                                  context, module)) {
+                                                context,
+                                                module,
+                                              )) {
                                                 context.navigator
                                                     .pushReplacementNamed(
-                                                        "/register/anonymous");
+                                                  "/register/anonymous",
+                                                );
                                               } else {
                                                 context.navigator
                                                     .pushReplacementNamed(
-                                                        module.redirectTo);
+                                                  module.redirectTo,
+                                                );
                                                 if (module
                                                     .runAfterFinishBootHooksOnRidirect) {
                                                   Future.wait(
                                                     Module.registeredHooks.map(
-                                                        (e) =>
-                                                            e.onAfterFinishBoot(
-                                                                context
-                                                                    .navigator
-                                                                    .context)),
+                                                      (e) =>
+                                                          e.onAfterFinishBoot(
+                                                        context
+                                                            .navigator.context,
+                                                      ),
+                                                    ),
                                                   );
                                                 }
                                               }
@@ -302,8 +313,9 @@ class EmailLoginAndRegisterModuleLanding
                                             break;
                                           default:
                                             context.navigator.pushNamed(
-                                                "/register/${menu.path}",
-                                                arguments: RouteQuery.fade);
+                                              "/register/${menu.path}",
+                                              arguments: RouteQuery.fade,
+                                            );
                                             break;
                                         }
                                       },
@@ -325,7 +337,9 @@ class EmailLoginAndRegisterModuleLanding
   }
 
   bool _hasAnonymousRegistrationData(
-      BuildContext context, EmailLoginAndRegisterModule module) {
+    BuildContext context,
+    EmailLoginAndRegisterModule module,
+  ) {
     if ((context.app?.userVariables
                 .where((e) => !module.showOnlyRequiredVariable || e.required)
                 .length ??
@@ -343,7 +357,10 @@ class EmailLoginAndRegisterModuleLogin
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, EmailLoginAndRegisterModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    EmailLoginAndRegisterModule module,
+  ) {
     final form = ref.useForm();
     final emailFocus = ref.useFocusNode("email");
     final passFocus = ref.useFocusNode("pass");
@@ -399,8 +416,11 @@ class EmailLoginAndRegisterModuleLogin
                   ),
                 ),
               const Space.height(36),
-              DividHeadline("Email".localize(),
-                  icon: Icons.email, color: color.withOpacity(0.75)),
+              DividHeadline(
+                "Email".localize(),
+                icon: Icons.email,
+                color: color.withOpacity(0.75),
+              ),
               FormItemTextField(
                 dense: true,
                 focusNode: emailFocus,
@@ -421,8 +441,11 @@ class EmailLoginAndRegisterModuleLogin
                   passFocus.requestFocus();
                 },
               ),
-              DividHeadline("Password".localize(),
-                  icon: Icons.lock, color: color.withOpacity(0.75)),
+              DividHeadline(
+                "Password".localize(),
+                icon: Icons.lock,
+                color: color.withOpacity(0.75),
+              ),
               FormItemTextField(
                 dense: true,
                 focusNode: passFocus,
@@ -464,7 +487,8 @@ class EmailLoginAndRegisterModuleLogin
               const Space.height(16),
               Indent(
                 padding: EdgeInsets.symmetric(
-                    horizontal: module.padding.horizontal / 2.0),
+                  horizontal: module.padding.horizontal / 2.0,
+                ),
                 children: [
                   Center(
                     child: TextButton(
@@ -555,7 +579,10 @@ class EmailLoginAndRegisterModuleRegister
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, EmailLoginAndRegisterModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    EmailLoginAndRegisterModule module,
+  ) {
     final form = ref.useForm();
     final emailFocus = ref.useFocusNode("email");
     final passFocus = ref.useFocusNode("pass");
@@ -622,8 +649,11 @@ class EmailLoginAndRegisterModuleRegister
                   ),
                 ),
               const Space.height(36),
-              DividHeadline("Email".localize(),
-                  icon: Icons.email, color: color.withOpacity(0.75)),
+              DividHeadline(
+                "Email".localize(),
+                icon: Icons.email,
+                color: color.withOpacity(0.75),
+              ),
               FormItemTextField(
                 dense: true,
                 hintText: "Input %s".localize().format(["Email".localize()]),
@@ -643,8 +673,11 @@ class EmailLoginAndRegisterModuleRegister
                   passFocus.requestFocus();
                 },
               ),
-              DividHeadline("Password".localize(),
-                  icon: Icons.lock, color: color.withOpacity(0.75)),
+              DividHeadline(
+                "Password".localize(),
+                icon: Icons.lock,
+                color: color.withOpacity(0.75),
+              ),
               FormItemTextField(
                 dense: true,
                 hintText: "Input %s".localize().format(["Password".localize()]),
@@ -683,8 +716,11 @@ class EmailLoginAndRegisterModuleRegister
                   passConfirmFocus.requestFocus();
                 },
               ),
-              DividHeadline("ConfirmationPassword".localize(),
-                  icon: Icons.lock, color: color.withOpacity(0.75)),
+              DividHeadline(
+                "ConfirmationPassword".localize(),
+                icon: Icons.lock,
+                color: color.withOpacity(0.75),
+              ),
               FormItemTextField(
                 dense: true,
                 hintText: "Input %s".localize().format(["Password".localize()]),
@@ -754,7 +790,9 @@ class EmailLoginAndRegisterModuleRegister
                   checkColor: context.theme.primaryColor,
                   activeColor: color,
                   linkTextStyle: TextStyle(
-                      color: color, decoration: TextDecoration.underline),
+                    color: color,
+                    decoration: TextDecoration.underline,
+                  ),
                   onSaved: (value) {
                     context["terms"] = value;
                   },
@@ -763,7 +801,8 @@ class EmailLoginAndRegisterModuleRegister
               const Space.height(24),
               Indent(
                 padding: EdgeInsets.symmetric(
-                    horizontal: module.padding.horizontal / 2.0),
+                  horizontal: module.padding.horizontal / 2.0,
+                ),
                 children: [
                   FormItemSubmit(
                     role.name.localize(),
@@ -804,9 +843,11 @@ class EmailLoginAndRegisterModuleRegister
     FormContext form,
     MenuConfig role,
   ) async {
-    if (await context.model?.skipRegistration(data: {
-          module.roleKey: role.path,
-        }) ??
+    if (await context.model?.skipRegistration(
+          data: {
+            module.roleKey: role.path,
+          },
+        ) ??
         false) {
       context.navigator.pushReplacementNamed(module.redirectTo);
       if (module.runAfterFinishBootHooksOnRidirect) {
@@ -894,7 +935,10 @@ class EmailLoginAndRegisterModulePasswordReset
   const EmailLoginAndRegisterModulePasswordReset();
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, EmailLoginAndRegisterModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    EmailLoginAndRegisterModule module,
+  ) {
     final form = ref.useForm();
     final emailFocus = ref.useFocusNode("main");
 
@@ -955,8 +999,11 @@ class EmailLoginAndRegisterModulePasswordReset
                 margin: const EdgeInsets.symmetric(horizontal: 16),
               ),
               const Space.height(24),
-              DividHeadline("Email".localize(),
-                  icon: Icons.email, color: color.withOpacity(0.75)),
+              DividHeadline(
+                "Email".localize(),
+                icon: Icons.email,
+                color: color.withOpacity(0.75),
+              ),
               FormItemTextField(
                 dense: true,
                 focusNode: emailFocus,
@@ -979,7 +1026,8 @@ class EmailLoginAndRegisterModulePasswordReset
               const Space.height(24),
               Indent(
                 padding: EdgeInsets.symmetric(
-                    horizontal: module.padding.horizontal / 2.0),
+                  horizontal: module.padding.horizontal / 2.0,
+                ),
                 children: [
                   FormItemSubmit(
                     "Send mail".localize(),
@@ -1072,8 +1120,9 @@ class _EmailLoginAndRegisterModuleBackgroundImage extends StatelessWidget {
           if (module.backgroundImageBlur != null)
             BackdropFilter(
               filter: ImageFilter.blur(
-                  sigmaX: module.backgroundImageBlur!,
-                  sigmaY: module.backgroundImageBlur!),
+                sigmaX: module.backgroundImageBlur!,
+                sigmaY: module.backgroundImageBlur!,
+              ),
               child: _backgroundColor(context, opacity),
             )
           else
@@ -1099,7 +1148,8 @@ class _EmailLoginAndRegisterModuleBackgroundImage extends StatelessWidget {
       );
     } else {
       return ColoredBox(
-          color: module.backgroundColor ?? context.theme.backgroundColor);
+        color: module.backgroundColor ?? context.theme.backgroundColor,
+      );
     }
   }
 }
@@ -1110,7 +1160,10 @@ class EmailLoginAndRegisterModuleRegisterAnonymous
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, EmailLoginAndRegisterModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    EmailLoginAndRegisterModule module,
+  ) {
     final form = ref.useForm();
 
     return UIScaffold(

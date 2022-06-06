@@ -21,8 +21,9 @@ class CalendarModuleUserOrder extends PageModuleWidget<CalendarModule> {
     final users = ref.watchCollectionModel(userQuery?.value ?? module.userPath);
 
     final orders = ref.watchCollectionModel(queryPath);
-    orders.sort((a, b) =>
-        b.get(module.startTimeKey, 0) - a.get(module.startTimeKey, 0));
+    orders.sort(
+      (a, b) => b.get(module.startTimeKey, 0) - a.get(module.startTimeKey, 0),
+    );
     final order = orders.firstWhereOrNull((element) {
           return element.get(module.startTimeKey, 0) <=
               date.millisecondsSinceEpoch;

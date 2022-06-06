@@ -108,7 +108,10 @@ class TileGalleryMediaModuleHome
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, TileGalleryMediaModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    TileGalleryMediaModule module,
+  ) {
     final gallery = ref.watchCollectionModel(
       module.query?.value ?? module.queryPath,
     );
@@ -196,9 +199,13 @@ class TileGalleryMediaModuleMediaDetail
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, TileGalleryMediaModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    TileGalleryMediaModule module,
+  ) {
     final item = ref.watchDocumentModel(
-        "${module.query?.value.trimQuery() ?? module.queryPath}/${context.get("media_id", "")}");
+      "${module.query?.value.trimQuery() ?? module.queryPath}/${context.get("media_id", "")}",
+    );
 
     final now = ref.useNow();
     final name = item.get(module.nameKey, "");
@@ -307,9 +314,13 @@ class TileGalleryMediaModuleMediaView
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, TileGalleryMediaModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    TileGalleryMediaModule module,
+  ) {
     final item = ref.watchDocumentModel(
-        "${module.query?.value.trimQuery() ?? module.queryPath}/${context.get("media_id", "")}");
+      "${module.query?.value.trimQuery() ?? module.queryPath}/${context.get("media_id", "")}",
+    );
     final name = item.get(module.nameKey, "");
     final media = item.get(module.mediaKey, "");
     final type = getPlatformMediaType(media);
@@ -366,10 +377,14 @@ class TileGalleryMediaModuleEdit
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, TileGalleryMediaModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    TileGalleryMediaModule module,
+  ) {
     final form = ref.useForm("media_id");
     final item = ref.watchDocumentModel(
-        "${module.query?.value.trimQuery() ?? module.queryPath}/${form.uid}");
+      "${module.query?.value.trimQuery() ?? module.queryPath}/${form.uid}",
+    );
     final name = item.get(module.nameKey, "");
     final text = item.get(module.textKey, "");
     final media = item.get(module.mediaKey, "");
@@ -378,10 +393,12 @@ class TileGalleryMediaModuleEdit
       waitTransition: true,
       appBar: UIAppBar(
         sliverLayoutWhenModernDesign: false,
-        title: Text(form.select(
-          "Editing %s".localize().format([name]),
-          "A new entry".localize(),
-        )),
+        title: Text(
+          form.select(
+            "Editing %s".localize().format([name]),
+            "A new entry".localize(),
+          ),
+        ),
         actions: [
           if (form.exists)
             IconButton(

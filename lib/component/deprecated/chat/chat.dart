@@ -79,9 +79,13 @@ class ChatModule extends PageModule with VerifyAppReroutePageModuleMixin {
   final bool allowEditRoomName;
 
   /// ルートのパス。
+  @override
+  // ignore: overridden_fields
   final String routePath;
 
   /// チャットデータのパス。
+  @override
+  // ignore: overridden_fields
   final String queryPath;
 
   /// メンバーデータのキー。
@@ -161,7 +165,8 @@ class ChatModuleHome extends PageModuleWidget<ChatModule> {
         whereIn: chat.map((e) {
           final member = e.get(module.memberKey, []);
           final u = member.firstWhereOrNull(
-              (item) => item.toString() != user.get(Const.uid, ""));
+            (item) => item.toString() != user.get(Const.uid, ""),
+          );
           return u.toString();
         }).distinct(),
       ).value,
@@ -171,7 +176,8 @@ class ChatModuleHome extends PageModuleWidget<ChatModule> {
       test: (o, a) {
         final member = o.get(module.memberKey, []);
         final u = member.firstWhereOrNull(
-            (item) => item.toString() == a.get(Const.uid, ""));
+          (item) => item.toString() == a.get(Const.uid, ""),
+        );
         return u != null;
       },
       apply: (o, a) =>
@@ -254,7 +260,9 @@ class ChatModuleHome extends PageModuleWidget<ChatModule> {
                   subtitle: Text(
                     DateTime.fromMillisecondsSinceEpoch(
                       item.get(
-                          module.createdTimeKey, now.millisecondsSinceEpoch),
+                        module.createdTimeKey,
+                        now.millisecondsSinceEpoch,
+                      ),
                     ).format("yyyy/MM/dd HH:mm"),
                   ),
                   onTap: () async {
@@ -300,17 +308,20 @@ class ChatModuleTimeline extends PageModuleWidget<ChatModule> {
     final now = ref.useNow();
     final userId = context.model?.userId;
     final chat = ref.watchDocumentModel(
-        "${module.queryPath}/${context.get("chat_id", "")}");
+      "${module.queryPath}/${context.get("chat_id", "")}",
+    );
     final timeline = ref.watchCollectionModel(
       ModelQuery(
-              "${module.queryPath}/${context.get("chat_id", "")}/${module.queryPath}",
-              order: ModelQueryOrder.desc,
-              orderBy: module.createdTimeKey,
-              limit: 500)
-          .value,
+        "${module.queryPath}/${context.get("chat_id", "")}/${module.queryPath}",
+        order: ModelQueryOrder.desc,
+        orderBy: module.createdTimeKey,
+        limit: 500,
+      ).value,
     );
-    timeline.sort((a, b) =>
-        b.get(module.createdTimeKey, 0) - a.get(module.createdTimeKey, 0));
+    timeline.sort(
+      (a, b) =>
+          b.get(module.createdTimeKey, 0) - a.get(module.createdTimeKey, 0),
+    );
     final timlineWithUser = timeline.mergeUserInformation(
       ref,
       userCollectionPath: module.userPath,
@@ -339,13 +350,14 @@ class ChatModuleTimeline extends PageModuleWidget<ChatModule> {
         actions: [
           if (chat.get(module.typeKey, "") == ChatType.group.text)
             IconButton(
-                onPressed: () {
-                  context.rootNavigator.pushNamed(
-                    "/${module.routePath}/${context.get("chat_id", "")}/member",
-                    arguments: RouteQuery.fullscreenOrModal,
-                  );
-                },
-                icon: const Icon(Icons.people_alt)),
+              onPressed: () {
+                context.rootNavigator.pushNamed(
+                  "/${module.routePath}/${context.get("chat_id", "")}/member",
+                  arguments: RouteQuery.fullscreenOrModal,
+                );
+              },
+              icon: const Icon(Icons.people_alt),
+            ),
           if (module.allowEditRoomName)
             IconButton(
               onPressed: () {
@@ -376,7 +388,9 @@ class ChatModuleTimeline extends PageModuleWidget<ChatModule> {
                   children: [
                     DefaultTextStyle(
                       style: TextStyle(
-                          fontSize: 10, color: context.theme.disabledColor),
+                        fontSize: 10,
+                        color: context.theme.disabledColor,
+                      ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.end,
                         crossAxisAlignment: CrossAxisAlignment.end,
@@ -408,8 +422,9 @@ class ChatModuleTimeline extends PageModuleWidget<ChatModule> {
                       width: 48,
                       child: CircleAvatar(
                         backgroundImage: NetworkOrAsset.image(
-                            item.get("${Const.user}${module.mediaKey}", ""),
-                            ImageSize.thumbnail),
+                          item.get("${Const.user}${module.mediaKey}", ""),
+                          ImageSize.thumbnail,
+                        ),
                       ),
                     ),
                     const Space.width(4),
@@ -581,7 +596,8 @@ class ChatModuleMediaView extends PageModuleWidget<ChatModule> {
   @override
   Widget build(BuildContext context, WidgetRef ref, ChatModule module) {
     final item = ref.watchDocumentModel(
-        "${module.queryPath}/${context.get("chat_id", "")}/${module.queryPath}/${context.get("timeline_id", "")}");
+      "${module.queryPath}/${context.get("chat_id", "")}/${module.queryPath}/${context.get("timeline_id", "")}",
+    );
     final media = item.get(module.mediaKey, "");
     final type = getPlatformMediaType(media);
 
@@ -626,14 +642,16 @@ class ChatModuleEdit extends PageModuleWidget<ChatModule> {
   Widget build(BuildContext context, WidgetRef ref, ChatModule module) {
     final form = ref.useForm();
     final chat = ref.watchDocumentModel(
-        "${module.queryPath}/${context.get("chat_id", "")}");
+      "${module.queryPath}/${context.get("chat_id", "")}",
+    );
     final name = chat.get(module.nameKey, "");
 
     return UIScaffold(
       waitTransition: true,
       appBar: UIAppBar(
-          sliverLayoutWhenModernDesign: false,
-          title: Text("Editing %s".localize().format(["Chat".localize()]))),
+        sliverLayoutWhenModernDesign: false,
+        title: Text("Editing %s".localize().format(["Chat".localize()])),
+      ),
       body: FormBuilder(
         padding: const EdgeInsets.all(0),
         key: form.key,

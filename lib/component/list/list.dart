@@ -122,8 +122,12 @@ class ListModuleHome extends PageModuleWidget<ListModule> {
 class ListModuleItem extends ModuleValueWidget<ListModule, DynamicMap> {
   const ListModuleItem();
   @override
-  Widget build(BuildContext context, WidgetRef ref, ListModule module,
-      DynamicMap value) {
+  Widget build(
+    BuildContext context,
+    WidgetRef ref,
+    ListModule module,
+    DynamicMap value,
+  ) {
     return ListItem(
       title: Text(value.get(Const.name, "")),
     );
@@ -133,8 +137,12 @@ class ListModuleItem extends ModuleValueWidget<ListModule, DynamicMap> {
 class ListModuleProfile extends ModuleValueWidget<ListModule, DynamicMap> {
   const ListModuleProfile();
   @override
-  Widget build(BuildContext context, WidgetRef ref, ListModule module,
-      DynamicMap value) {
+  Widget build(
+    BuildContext context,
+    WidgetRef ref,
+    ListModule module,
+    DynamicMap value,
+  ) {
     return Container(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

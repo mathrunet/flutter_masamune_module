@@ -87,8 +87,9 @@ class ContentFormConfig extends VariableFormConfig<String> {
         return [
           Theme(
             data: context.theme.copyWith(
-                canvasColor:
-                    toolbarColor ?? context.theme.scaffoldBackgroundColor),
+              canvasColor:
+                  toolbarColor ?? context.theme.scaffoldBackgroundColor,
+            ),
             child: QuillToolbar.basic(
               controller: controller,
               toolbarIconSize: 24,
@@ -124,8 +125,9 @@ class ContentFormConfig extends VariableFormConfig<String> {
                 color: color,
                 placeHolder: DefaultTextBlockStyle(
                   TextStyle(
-                      color: subColor ?? context.theme.disabledColor,
-                      fontSize: 16),
+                    color: subColor ?? context.theme.disabledColor,
+                    fontSize: 16,
+                  ),
                   const Tuple2(16, 0),
                   const Tuple2(0, 0),
                   null,

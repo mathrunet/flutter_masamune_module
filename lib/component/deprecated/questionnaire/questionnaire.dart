@@ -110,9 +110,13 @@ class QuestionnaireModule extends PageModule
   final bool automaticallyImplyLeadingOnHome;
 
   /// ルートのパス。
+  @override
+  // ignore: overridden_fields
   final String routePath;
 
   /// クエリーのパス。
+  @override
+  // ignore: overridden_fields
   final String queryPath;
 
   /// アンケートデータのパス。
@@ -160,12 +164,17 @@ class QuestionnaireModuleHome extends PageModuleWidget<QuestionnaireModule> {
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, QuestionnaireModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    QuestionnaireModule module,
+  ) {
     final now = ref.useNow();
     final question = ref.watchCollectionModel(
-        module.questionnaireQuery?.value ?? module.queryPath);
+      module.questionnaireQuery?.value ?? module.queryPath,
+    );
     final answered = ref.watchCollectionModel(
-        "${module.userPath}/${context.model?.userId}/${module.answerPath}");
+      "${module.userPath}/${context.model?.userId}/${module.answerPath}",
+    );
 
     final questionWithAnswer = question.map((e) {
       final uid = e.get(Const.uid, "");
@@ -249,7 +258,10 @@ class QuestionnaireModuleView extends PageModuleWidget<QuestionnaireModule> {
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, QuestionnaireModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    QuestionnaireModule module,
+  ) {
     if (!module.questioner) {
       return module.answerViewPage;
     } else {
@@ -263,12 +275,17 @@ class QuestionnaireAanswerView extends PageModuleWidget<QuestionnaireModule> {
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, QuestionnaireModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    QuestionnaireModule module,
+  ) {
     final now = ref.useNow();
     final question = ref.watchDocumentModel(
-        "${module.queryPath}/${context.get("question_id", "")}");
+      "${module.queryPath}/${context.get("question_id", "")}",
+    );
     final questions = ref.watchCollectionModel(
-        "${module.queryPath}/${context.get("question_id", "")}/${module.questionPath}");
+      "${module.queryPath}/${context.get("question_id", "")}/${module.questionPath}",
+    );
     final answers = ref.watchCollectionModel(
       "${module.queryPath}/${context.get("question_id", "")}/${module.answerPath}",
     );
@@ -317,8 +334,10 @@ class QuestionnaireAanswerView extends PageModuleWidget<QuestionnaireModule> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Center(
-                child: MessageBox("設問が設定されていません。こちらから設問を設定してください。",
-                    color: context.theme.errorColor),
+                child: MessageBox(
+                  "設問が設定されていません。こちらから設問を設定してください。",
+                  color: context.theme.errorColor,
+                ),
               ),
             ),
           );
@@ -358,9 +377,12 @@ class QuestionnaireAanswerView extends PageModuleWidget<QuestionnaireModule> {
               ListItem(
                 title: Text(item.get("${Const.user}${module.nameKey}", "")),
                 subtitle: Text(
-                  DateTime.fromMillisecondsSinceEpoch(item.get(
-                          module.createdTimeKey, now.millisecondsSinceEpoch))
-                      .format("yyyy/MM/dd HH:mm"),
+                  DateTime.fromMillisecondsSinceEpoch(
+                    item.get(
+                      module.createdTimeKey,
+                      now.millisecondsSinceEpoch,
+                    ),
+                  ).format("yyyy/MM/dd HH:mm"),
                 ),
                 onTap: () {
                   context.rootNavigator.pushNamed(
@@ -383,15 +405,20 @@ class QuestionnaireModuleAnswerDetail
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, QuestionnaireModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    QuestionnaireModule module,
+  ) {
     int i = 0;
     final questions = ref.watchCollectionModel(
-        "${module.queryPath}/${context.get("question_id", "")}/${module.questionPath}");
+      "${module.queryPath}/${context.get("question_id", "")}/${module.questionPath}",
+    );
     final answer = ref.watchDocumentModel(
       "${module.queryPath}/${context.get("question_id", "")}/${module.answerPath}/${context.get("answer_id", "")}",
     );
     final user = ref.watchDocumentModel(
-        "${module.userPath}/${answer.get(Const.user, "empty")}");
+      "${module.userPath}/${answer.get(Const.user, "empty")}",
+    );
 
     return UIScaffold(
       waitTransition: true,
@@ -431,13 +458,18 @@ class QuestionnaireModuleQuestionView
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, QuestionnaireModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    QuestionnaireModule module,
+  ) {
     int i = 0;
     final form = ref.useForm();
     final question = ref.watchDocumentModel(
-        "${module.queryPath}/${context.get("question_id", "")}");
+      "${module.queryPath}/${context.get("question_id", "")}",
+    );
     final questions = ref.watchCollectionModel(
-        "${module.queryPath}/${context.get("question_id", "")}/${module.questionPath}");
+      "${module.queryPath}/${context.get("question_id", "")}/${module.questionPath}",
+    );
     final answer = ref.watchDocumentModel(
       "${module.queryPath}/${context.get("question_id", "")}/${module.answerPath}/${context.model?.userId}",
     );
@@ -573,7 +605,10 @@ class QuestionnaireModuleListTile extends ModuleWidget<QuestionnaireModule> {
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, QuestionnaireModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    QuestionnaireModule module,
+  ) {
     final uid = question.get(Const.uid, "");
     final type = question.get(module.typeKey, "").quenstionFormType;
     final name = question.get(module.nameKey, "");
@@ -607,9 +642,10 @@ class QuestionnaireModuleListTile extends ModuleWidget<QuestionnaireModule> {
               ),
               if (!canEdit) ...[
                 Divid(
-                    indent: 12,
-                    endIndent: 12,
-                    color: context.theme.dividerColor.withOpacity(0.5)),
+                  indent: 12,
+                  endIndent: 12,
+                  color: context.theme.dividerColor.withOpacity(0.5),
+                ),
                 FormItemDropdownField(
                   dense: true,
                   allowEmpty: !required,
@@ -630,9 +666,10 @@ class QuestionnaireModuleListTile extends ModuleWidget<QuestionnaireModule> {
                 ),
               ] else if (onlyView) ...[
                 Divid(
-                    indent: 12,
-                    endIndent: 12,
-                    color: context.theme.dividerColor.withOpacity(0.5)),
+                  indent: 12,
+                  endIndent: 12,
+                  color: context.theme.dividerColor.withOpacity(0.5),
+                ),
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -667,9 +704,10 @@ class QuestionnaireModuleListTile extends ModuleWidget<QuestionnaireModule> {
               ),
               if (!canEdit) ...[
                 Divid(
-                    indent: 12,
-                    endIndent: 12,
-                    color: context.theme.dividerColor.withOpacity(0.5)),
+                  indent: 12,
+                  endIndent: 12,
+                  color: context.theme.dividerColor.withOpacity(0.5),
+                ),
                 FormItemTextField(
                   dense: true,
                   allowEmpty: !required,
@@ -691,9 +729,10 @@ class QuestionnaireModuleListTile extends ModuleWidget<QuestionnaireModule> {
                 ),
               ] else if (onlyView) ...[
                 Divid(
-                    indent: 12,
-                    endIndent: 12,
-                    color: context.theme.dividerColor.withOpacity(0.5)),
+                  indent: 12,
+                  endIndent: 12,
+                  color: context.theme.dividerColor.withOpacity(0.5),
+                ),
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -713,10 +752,14 @@ class QuestionnaireModuleQuestionEdit
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, QuestionnaireModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    QuestionnaireModule module,
+  ) {
     final form = ref.useForm("item_id");
     final item = ref.watchDocumentModel(
-        "${module.queryPath}/${context.get("question_id", "")}/${module.questionPath}/${form.uid}");
+      "${module.queryPath}/${context.get("question_id", "")}/${module.questionPath}/${form.uid}",
+    );
     final name = item.get(module.nameKey, "");
     final type = item.get(module.typeKey, Const.text);
     final required = item.get(module.requiredKey, false);
@@ -729,10 +772,12 @@ class QuestionnaireModuleQuestionEdit
       waitTransition: true,
       appBar: UIAppBar(
         sliverLayoutWhenModernDesign: false,
-        title: Text(form.select(
-          "Editing %s".localize().format([name]),
-          "A new entry".localize(),
-        )),
+        title: Text(
+          form.select(
+            "Editing %s".localize().format([name]),
+            "A new entry".localize(),
+          ),
+        ),
         actions: [
           if (form.exists)
             IconButton(
@@ -887,7 +932,10 @@ class QuestionnaireModuleEdit extends PageModuleWidget<QuestionnaireModule> {
 
   @override
   Widget build(
-      BuildContext context, WidgetRef ref, QuestionnaireModule module) {
+    BuildContext context,
+    WidgetRef ref,
+    QuestionnaireModule module,
+  ) {
     final form = ref.useForm("question_id");
     final item = ref.watchDocumentModel("${module.queryPath}/${form.uid}");
     final name = item.get(module.nameKey, "");
@@ -898,10 +946,12 @@ class QuestionnaireModuleEdit extends PageModuleWidget<QuestionnaireModule> {
       waitTransition: true,
       appBar: UIAppBar(
         sliverLayoutWhenModernDesign: false,
-        title: Text(form.select(
-          "Editing %s".localize().format([name]),
-          "A new entry".localize(),
-        )),
+        title: Text(
+          form.select(
+            "Editing %s".localize().format([name]),
+            "A new entry".localize(),
+          ),
+        ),
         actions: [
           if (form.exists)
             IconButton(

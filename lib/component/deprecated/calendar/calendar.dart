@@ -90,9 +90,13 @@ class CalendarModule extends PageModule with VerifyAppReroutePageModuleMixin {
   final bool automaticallyImplyLeadingOnHome;
 
   /// ルートのパス。
+  @override
+  // ignore: overridden_fields
   final String routePath;
 
   /// イベントデータのパス。
+  @override
+  // ignore: overridden_fields
   final String queryPath;
 
   /// ユーザーのデータパス。
@@ -255,12 +259,15 @@ class CalendarModuleDayView extends PageModuleWidget<CalendarModule> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
               decoration: DefaultBoxDecoration(
-                  color: context.theme.dividerColor,
-                  width: 1,
-                  backgroundColor: context.theme.primaryColor,
-                  radius: 8.0),
-              child: Text(item.get(module.nameKey, ""),
-                  style: TextStyle(color: context.theme.textColorOnPrimary)),
+                color: context.theme.dividerColor,
+                width: 1,
+                backgroundColor: context.theme.primaryColor,
+                radius: 8.0,
+              ),
+              child: Text(
+                item.get(module.nameKey, ""),
+                style: TextStyle(color: context.theme.textColorOnPrimary),
+              ),
             ),
           );
         },
@@ -291,9 +298,11 @@ class CalendarModuleDetail extends PageModuleWidget<CalendarModule> {
   @override
   Widget build(BuildContext context, WidgetRef ref, CalendarModule module) {
     final event = ref.watchDocumentModel(
-        "${module.queryPath}/${context.get("event_id", "")}");
+      "${module.queryPath}/${context.get("event_id", "")}",
+    );
     final author = ref.watchDocumentModel(
-        "${module.userPath}/${event.get(module.userKey, uuid)}");
+      "${module.userPath}/${event.get(module.userKey, uuid)}",
+    );
     final name = event.get(module.nameKey, "");
     final text = event.get(module.textKey, "");
     final noteValue = event.get(module.noteKey, "");
@@ -312,10 +321,10 @@ class CalendarModuleDetail extends PageModuleWidget<CalendarModule> {
 
     final _comments = ref.watchCollectionModel(
       ModelQuery(
-              "${module.queryPath}/${context.get("event_id", "")}/${module.commentPath}",
-              order: ModelQueryOrder.desc,
-              orderBy: Const.time)
-          .value,
+        "${module.queryPath}/${context.get("event_id", "")}/${module.commentPath}",
+        order: ModelQueryOrder.desc,
+        orderBy: Const.time,
+      ).value,
     );
     final comments = _comments.mergeUserInformation(
       ref,
@@ -329,11 +338,13 @@ class CalendarModuleDetail extends PageModuleWidget<CalendarModule> {
 
     final appBar = UIAppBar(
       title: Text(name),
-      subtitle: Text(_timeString(
-        startTime: startTime,
-        endTime: endTime,
-        allDay: allDay,
-      )),
+      subtitle: Text(
+        _timeString(
+          startTime: startTime,
+          endTime: endTime,
+          allDay: allDay,
+        ),
+      ),
       actions: [
         IconButton(
           icon: const Icon(Icons.edit),
@@ -425,7 +436,8 @@ class CalendarModuleDetail extends PageModuleWidget<CalendarModule> {
             ...comments.mapListenable((item) {
               return CommentTile(
                 avatar: NetworkOrAsset.image(
-                    item.get("${Const.user}${module.imageKey}", "")),
+                  item.get("${Const.user}${module.imageKey}", ""),
+                ),
                 name: item.get("${Const.user}${module.nameKey}", ""),
                 date: item.getAsDateTime(Const.time),
                 text: item.get(module.textKey, ""),
@@ -471,18 +483,22 @@ class CalendarModuleDetail extends PageModuleWidget<CalendarModule> {
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 customStyles: DefaultStyles(
                   placeHolder: DefaultTextBlockStyle(
-                      TextStyle(
-                          color: context.theme.disabledColor, fontSize: 16),
-                      const Tuple2(16, 0),
-                      const Tuple2(0, 0),
-                      null),
+                    TextStyle(
+                      color: context.theme.disabledColor,
+                      fontSize: 16,
+                    ),
+                    const Tuple2(16, 0),
+                    const Tuple2(0, 0),
+                    null,
+                  ),
                 ),
               ),
               ...footer,
               ...comments.mapListenable((item) {
                 return CommentTile(
                   avatar: NetworkOrAsset.image(
-                      item.get("${Const.user}${module.imageKey}", "")),
+                    item.get("${Const.user}${module.imageKey}", ""),
+                  ),
                   name: item.get("${Const.user}${module.nameKey}", ""),
                   date: item.getAsDateTime(Const.time),
                   text: item.get(module.textKey, ""),
@@ -516,7 +532,8 @@ class CalendarModuleDetail extends PageModuleWidget<CalendarModule> {
               ...comments.mapListenable((item) {
                 return CommentTile(
                   avatar: NetworkOrAsset.image(
-                      item.get("${Const.user}${module.imageKey}", "")),
+                    item.get("${Const.user}${module.imageKey}", ""),
+                  ),
                   name: item.get("${Const.user}${module.nameKey}", ""),
                   date: item.getAsDateTime(Const.time),
                   text: item.get(module.textKey, ""),
@@ -586,7 +603,8 @@ class CalendarModuleTemplate extends PageModuleWidget<CalendarModule> {
                       onPressed: () async {
                         try {
                           final tmp = template.firstWhereOrNull(
-                              (e) => e.get(module.textKey, "") == item);
+                            (e) => e.get(module.textKey, "") == item,
+                          );
                           if (tmp == null) {
                             return;
                           }
@@ -642,7 +660,8 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
       allDayState.value
           ? FormItemDateTimeField.formatDate(startTime.millisecondsSinceEpoch)
           : FormItemDateTimeField.formatDateTime(
-              startTime.millisecondsSinceEpoch),
+              startTime.millisecondsSinceEpoch,
+            ),
     );
     final endTimeOrStartTime =
         endTime ?? startTime.add(const Duration(hours: 1));
@@ -650,9 +669,11 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
       "endTime",
       allDayState.value
           ? FormItemDateTimeField.formatDate(
-              endTimeOrStartTime.millisecondsSinceEpoch)
+              endTimeOrStartTime.millisecondsSinceEpoch,
+            )
           : FormItemDateTimeField.formatDateTime(
-              endTimeOrStartTime.millisecondsSinceEpoch),
+              endTimeOrStartTime.millisecondsSinceEpoch,
+            ),
     );
     final titleController = ref.useTextEditingController("title", name);
     final textController = ref.useTextEditingController("text", text);
@@ -670,11 +691,13 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
         ),
       ),
       subtitle: form.select(
-        Text(_timeString(
-          startTime: startTime,
-          endTime: endTime,
-          allDay: allDay,
-        )),
+        Text(
+          _timeString(
+            startTime: startTime,
+            endTime: endTime,
+            allDay: allDay,
+          ),
+        ),
         null,
       ),
       actions: [
@@ -742,9 +765,11 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
               }
               final start = allDayState.value
                   ? FormItemDateTimeField.tryParseFromDate(
-                      startTimeController.text)
+                      startTimeController.text,
+                    )
                   : FormItemDateTimeField.tryParseFromDateTime(
-                      startTimeController.text);
+                      startTimeController.text,
+                    );
               if (start == null) {
                 return "No input %s"
                     .localize()
@@ -856,7 +881,8 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
               const Divid(),
               Theme(
                 data: context.theme.copyWith(
-                    canvasColor: context.theme.scaffoldBackgroundColor),
+                  canvasColor: context.theme.scaffoldBackgroundColor,
+                ),
                 child: QuillToolbar.basic(
                   controller: controller,
                   toolbarIconSize: 24,
@@ -888,11 +914,14 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
                   padding: const EdgeInsets.all(12),
                   customStyles: DefaultStyles(
                     placeHolder: DefaultTextBlockStyle(
-                        TextStyle(
-                            color: context.theme.disabledColor, fontSize: 16),
-                        const Tuple2(16, 0),
-                        const Tuple2(0, 0),
-                        null),
+                      TextStyle(
+                        color: context.theme.disabledColor,
+                        fontSize: 16,
+                      ),
+                      const Tuple2(16, 0),
+                      const Tuple2(0, 0),
+                      null,
+                    ),
                   ),
                 ),
               ),
@@ -912,7 +941,9 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
                 item[module.allDayKey] = allDay;
                 item[module.userKey] = user.uid;
                 item[module.startTimeKey] = context.get(
-                    module.startTimeKey, now.millisecondsSinceEpoch);
+                  module.startTimeKey,
+                  now.millisecondsSinceEpoch,
+                );
                 item[module.endTimeKey] =
                     allDay ? null : context.get<int?>(module.endTimeKey, null);
                 await context.model?.saveDocument(item).showIndicator(context);
@@ -975,7 +1006,9 @@ class CalendarModuleEdit extends PageModuleWidget<CalendarModule> {
                 item[module.allDayKey] = allDay;
                 item[module.userKey] = user.uid;
                 item[module.startTimeKey] = context.get(
-                    module.startTimeKey, now.millisecondsSinceEpoch);
+                  module.startTimeKey,
+                  now.millisecondsSinceEpoch,
+                );
                 item[module.endTimeKey] =
                     allDay ? null : context.get<int?>(module.endTimeKey, null);
                 await context.model?.saveDocument(item).showIndicator(context);

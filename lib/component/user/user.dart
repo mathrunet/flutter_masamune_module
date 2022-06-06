@@ -195,7 +195,8 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
 
     final report = ref.watchDocumentModel("${module.reportPath}/$userId");
     final block = ref.watchDocumentModel(
-        "${module.queryPath}/${context.model?.userId}/${module.blockPath}/$userId");
+      "${module.queryPath}/${context.model?.userId}/${module.blockPath}/$userId",
+    );
 
     if (block.isNotEmpty) {
       return UIScaffold(
@@ -256,7 +257,8 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 shape: StadiumBorder(
-                    side: BorderSide(color: context.theme.textColor, width: 2)),
+                  side: BorderSide(color: context.theme.textColor, width: 2),
+                ),
                 primary: context.theme.textColor,
                 backgroundColor: context.theme.scaffoldBackgroundColor,
               ),
@@ -420,7 +422,8 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
                 children: [
                   Container(
                     constraints: BoxConstraints.expand(
-                        height: module.expandedHeight - 56),
+                      height: module.expandedHeight - 56,
+                    ),
                     color: module.enableImageEditing
                         ? context.theme.disabledColor
                         : (context.theme.appBarTheme.backgroundColor ??
@@ -457,7 +460,8 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
                   children: [
                     Container(
                       constraints: BoxConstraints.expand(
-                          height: module.expandedHeight - 56),
+                        height: module.expandedHeight - 56,
+                      ),
                       decoration: BoxDecoration(
                         color: module.enableImageEditing
                             ? context.theme.disabledColor
@@ -469,7 +473,9 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
                         image: module.enableImageEditing
                             ? DecorationImage(
                                 image: NetworkOrAsset.image(
-                                    image, ImageSize.large),
+                                  image,
+                                  ImageSize.large,
+                                ),
                                 fit: BoxFit.cover,
                                 colorFilter: const ColorFilter.mode(
                                   Colors.black87,
@@ -484,10 +490,10 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
                                 final media =
                                     await context.platform?.mediaDialog(
                                   context,
-                                  title: "Please select your %s"
-                                      .localize()
-                                      .format(
-                                          ["Media".localize().toLowerCase()]),
+                                  title:
+                                      "Please select your %s".localize().format(
+                                    ["Media".localize().toLowerCase()],
+                                  ),
                                   type: PlatformMediaType.image,
                                 );
                                 if (media?.path == null) {
@@ -506,8 +512,11 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
                                 fit: StackFit.expand,
                                 children: const [
                                   ColoredBox(color: Colors.black54),
-                                  Icon(Icons.add_a_photo,
-                                      color: Colors.white, size: 48),
+                                  Icon(
+                                    Icons.add_a_photo,
+                                    color: Colors.white,
+                                    size: 48,
+                                  ),
                                 ],
                               ),
                             )
@@ -552,9 +561,13 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
                               fit: StackFit.expand,
                               children: const [
                                 ClipOval(
-                                    child: ColoredBox(color: Colors.black54)),
-                                Icon(Icons.add_a_photo,
-                                    color: Colors.white, size: 32),
+                                  child: ColoredBox(color: Colors.black54),
+                                ),
+                                Icon(
+                                  Icons.add_a_photo,
+                                  color: Colors.white,
+                                  size: 32,
+                                ),
                               ],
                             ),
                           ),
@@ -614,7 +627,9 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
   }
 
   List<VariableConfig> _buildVariables(
-      BuildContext context, UserModule module) {
+    BuildContext context,
+    UserModule module,
+  ) {
     final variables = <VariableConfig>[
       ...context.app?.userVariables ?? [],
       ...module.variables,
@@ -1082,7 +1097,8 @@ class UserModuleAccountBlockList extends PageModuleWidget<UserModule> {
   @override
   Widget build(BuildContext context, WidgetRef ref, UserModule module) {
     final blocks = ref.watchCollectionModel(
-        "${module.queryPath}/${context.model?.userId}/${module.blockPath}");
+      "${module.queryPath}/${context.model?.userId}/${module.blockPath}",
+    );
     final users = ref.watchCollectionModel(
       ModelQuery(
         module.queryPath,

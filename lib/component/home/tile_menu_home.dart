@@ -208,7 +208,8 @@ class TileMenuHomeModuleHome extends ModuleWidget<TileMenuHomeModule> {
                               image: module.featureImage.isNotEmpty
                                   ? DecorationImage(
                                       image: NetworkOrAsset.image(
-                                          module.featureImage!),
+                                        module.featureImage!,
+                                      ),
                                       fit: module.featureImageFit,
                                       alignment: module.featureImageAlignment,
                                     )
@@ -219,8 +220,10 @@ class TileMenuHomeModuleHome extends ModuleWidget<TileMenuHomeModule> {
                               children: [
                                 if (module.featureIcon.isNotEmpty) ...[
                                   Image(
-                                      image: NetworkOrAsset.image(
-                                          module.featureIcon!)),
+                                    image: NetworkOrAsset.image(
+                                      module.featureIcon!,
+                                    ),
+                                  ),
                                   const Space.width(8),
                                 ],
                                 Expanded(
@@ -256,7 +259,9 @@ class TileMenuHomeModuleHome extends ModuleWidget<TileMenuHomeModule> {
                                 child: Container(
                                   alignment: Alignment.centerLeft,
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 0),
+                                    horizontal: 16,
+                                    vertical: 0,
+                                  ),
                                   color: module.color ??
                                       context.theme.primaryColor,
                                   child: module.profile,
@@ -268,7 +273,9 @@ class TileMenuHomeModuleHome extends ModuleWidget<TileMenuHomeModule> {
                                     module.color ?? context.theme.primaryColor,
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
                                   child: Text(
                                     "MyPage".localize(),
                                     textAlign: TextAlign.center,
@@ -280,7 +287,8 @@ class TileMenuHomeModuleHome extends ModuleWidget<TileMenuHomeModule> {
                                 ),
                                 onTap: () {
                                   context.navigator.pushNamed(
-                                      "/${module.profileRoutePath}/${context.model?.userId}");
+                                    "/${module.profileRoutePath}/${context.model?.userId}",
+                                  );
                                 },
                               ),
                             ],
@@ -346,11 +354,11 @@ class TileMenuHomeModuleHome extends ModuleWidget<TileMenuHomeModule> {
                                 item.name,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                    color: module.textColor ??
-                                        context.theme.textColorOnPrimary,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize:
-                                        context.isMobileOrSmall ? null : 15),
+                                  color: module.textColor ??
+                                      context.theme.textColorOnPrimary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: context.isMobileOrSmall ? null : 15,
+                                ),
                               ),
                             ],
                           ),
@@ -511,11 +519,14 @@ class TileMenuHomeModuleInformation extends ModuleWidget<TileMenuHomeModule> {
             const Space.height(4),
             if (info.isEmpty)
               Container(
-                  alignment: Alignment.center,
-                  height: 60,
-                  child: Text(dataLabel.isEmpty
+                alignment: Alignment.center,
+                height: 60,
+                child: Text(
+                  dataLabel.isEmpty
                       ? "No data.".localize()
-                      : "No %s.".localize().format([dataLabel!.localize()])))
+                      : "No %s.".localize().format([dataLabel!.localize()]),
+                ),
+              )
             else
               Grid.extent(
                 padding: const EdgeInsets.all(0),
@@ -553,7 +564,9 @@ class TileMenuHomeModuleInformation extends ModuleWidget<TileMenuHomeModule> {
                                     const Space.width(4),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 4, vertical: 2),
+                                        horizontal: 4,
+                                        vertical: 2,
+                                      ),
                                       color: context.theme.colorScheme.error,
                                       child: Text(
                                         "NEW".localize(),
@@ -804,9 +817,10 @@ class TileMenuHomeModuleChangeAffiliation
 
     return DefaultTextStyle(
       style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: context.theme.colorScheme.onPrimary),
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: context.theme.colorScheme.onPrimary,
+      ),
       child: SizedBox(
         height: 50,
         child: Row(

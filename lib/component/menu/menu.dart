@@ -193,8 +193,10 @@ class MenuModuleAccountComponent extends MenuModuleComponent {
           icon: Icons.person,
         ),
         ListItem(
-          title: Text("Logout".localize(),
-              style: const TextStyle(color: Colors.red)),
+          title: Text(
+            "Logout".localize(),
+            style: const TextStyle(color: Colors.red),
+          ),
           leading: const Icon(Icons.logout),
           onTap: () async {
             UIConfirm.show(
