@@ -11,6 +11,7 @@ import 'package:masamune_module/masamune_module.dart';
 import 'package:tuple/tuple.dart';
 
 const _kQuillToolbarHeight = 80;
+
 enum CalendarEditingType { planeText, wysiwyg }
 
 @immutable
