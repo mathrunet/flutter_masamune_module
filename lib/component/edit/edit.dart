@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:masamune_module/masamune_module.dart';
 
 @immutable
@@ -20,6 +22,7 @@ class EditModule extends PageModule {
     this.homePage = const EditModuleHome(),
     this.top = const [],
     this.bottom = const [],
+    this.function,
   }) : super(
           enabled: enabled,
           title: title,
@@ -74,6 +77,9 @@ class EditModule extends PageModule {
 
   /// True if the form is fixed rather than scrollable.
   final bool fixed;
+
+  /// Defined if there are additional processes.
+  final EditModuleFunctionAdapter? function;
 }
 
 class EditModuleHome extends PageModuleWidget<EditModule> {
@@ -104,8 +110,21 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
                         .format(["Data".localize()]),
                     submitText: "Yes".localize(),
                     onSubmit: () async {
+                      await module.function
+                          ?.preProcessOnDelete(
+                            context,
+                            ref,
+                            doc,
+                          )
+                          .showIndicator(context);
                       await context.model
                           ?.deleteDocument(doc)
+                          .showIndicator(context);
+                      await module.function
+                          ?.postProcessOnDelete(
+                            context,
+                            ref,
+                          )
                           .showIndicator(context);
                       UIDialog.show(
                         context,
@@ -171,7 +190,21 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
                 ref: ref,
                 updated: form.exists,
               );
+              await module.function
+                  ?.preProcessOnAddOrUpdate(
+                    context,
+                    ref,
+                    doc,
+                  )
+                  .showIndicator(context);
               await context.model?.saveDocument(doc).showIndicator(context);
+              await module.function
+                  ?.postProcessOnAddOrUpdate(
+                    context,
+                    ref,
+                    doc,
+                  )
+                  .showIndicator(context);
               UIDialog.show(
                 context,
                 title: "Success".localize(),
@@ -196,7 +229,21 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
                 ref: ref,
                 updated: form.exists,
               );
+              await module.function
+                  ?.preProcessOnAddOrUpdate(
+                    context,
+                    ref,
+                    doc,
+                  )
+                  .showIndicator(context);
               await context.model?.saveDocument(doc).showIndicator(context);
+              await module.function
+                  ?.postProcessOnAddOrUpdate(
+                    context,
+                    ref,
+                    doc,
+                  )
+                  .showIndicator(context);
               UIDialog.show(
                 context,
                 title: "Success".localize(),
@@ -223,4 +270,36 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
       ),
     );
   }
+}
+
+@immutable
+class EditModuleFunctionAdapter extends FunctionAdapter {
+  const EditModuleFunctionAdapter();
+
+  /// Define if pre-processing is required.
+  FutureOr<void> preProcessOnAddOrUpdate(
+    BuildContext context,
+    WidgetRef ref,
+    DynamicDocumentModel doc,
+  ) {}
+
+  /// Defined when post-processing is required.
+  FutureOr<void> postProcessOnAddOrUpdate(
+    BuildContext context,
+    WidgetRef ref,
+    DynamicDocumentModel doc,
+  ) {}
+
+  /// Define if pre-processing is required.
+  FutureOr<void> preProcessOnDelete(
+    BuildContext context,
+    WidgetRef ref,
+    DynamicDocumentModel doc,
+  ) {}
+
+  /// Defined when post-processing is required.
+  FutureOr<void> postProcessOnDelete(
+    BuildContext context,
+    WidgetRef ref,
+  ) {}
 }
