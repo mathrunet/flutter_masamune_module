@@ -18,6 +18,7 @@ class TileGalleryMediaModule extends PageModule {
     this.childAspectRatioForMobile = 0.5625,
     this.childAspectRatioForDesktop = 1,
     this.heightOnDetailView = 200,
+    this.backgroundColor,
     this.tileSpacing = 1,
     this.automaticallyImplyLeadingOnHome = true,
     this.sliverLayoutWhenModernDesignOnHome = true,
@@ -72,6 +73,9 @@ class TileGalleryMediaModule extends PageModule {
   /// 作成日のキー。
   final String createdTimeKey;
 
+  /// リスト画面の背景色。
+  final Color? backgroundColor;
+
   /// 編集を可能にする場合true.
   final bool enableEdit;
 
@@ -117,6 +121,7 @@ class TileGalleryMediaModuleHome
     );
 
     return UIScaffold(
+      backgroundColor: module.backgroundColor,
       appBar: UIAppBar(
         title: Text(module.title ?? "Gallery".localize()),
         automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,

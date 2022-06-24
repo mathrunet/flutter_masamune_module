@@ -107,22 +107,24 @@ class SingleMediaModuleHome extends PageModuleWidget<SingleMediaModule> {
       ),
       backgroundColor: Colors.black,
       body: media.isEmpty
-          ? Center(
-              child: TextButton.icon(
-                style: TextButton.styleFrom(
-                  primary: context.theme.textColorOnPrimary,
-                  backgroundColor: context.theme.primaryColor,
-                ),
-                label: Text("Add".localize()),
-                icon: const Icon(Icons.add),
-                onPressed: () {
-                  context.navigator.pushNamed(
-                    "/${module.routePath}/edit",
-                    arguments: RouteQuery.fullscreenOrModal,
-                  );
-                },
-              ),
-            )
+          ? module.enableEdit
+              ? Center(
+                  child: TextButton.icon(
+                    style: TextButton.styleFrom(
+                      primary: context.theme.textColorOnPrimary,
+                      backgroundColor: context.theme.primaryColor,
+                    ),
+                    label: Text("Add".localize()),
+                    icon: const Icon(Icons.add),
+                    onPressed: () {
+                      context.navigator.pushNamed(
+                        "/${module.routePath}/edit",
+                        arguments: RouteQuery.fullscreenOrModal,
+                      );
+                    },
+                  ),
+                )
+              : const Empty()
           : () {
               switch (type) {
                 case PlatformMediaType.video:
