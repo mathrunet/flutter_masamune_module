@@ -159,6 +159,8 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
 
     switch (module.layoutType) {
       case LoginLayoutType.fixed:
+        final featureImage =
+            module.featureImage ?? context.app?.imageTheme?.landingFeatureImage;
         return UIScaffold(
           body: Stack(
             fit: StackFit.expand,
@@ -180,7 +182,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                if (module.featureImage.isNotEmpty)
+                                if (featureImage.isNotEmpty)
                                   SizedBox(
                                     width: module.featureImageSize?.width,
                                     height: module.featureImageSize?.height,
@@ -189,7 +191,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
                                           BorderRadius.zero,
                                       child: Image(
                                         image: NetworkOrAsset.image(
-                                          module.featureImage!,
+                                          featureImage!,
                                           ImageSize.medium,
                                         ),
                                         fit: module.featureImageFit,
@@ -476,12 +478,14 @@ class _LoginModuleBackgroundImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final backgroundImage = module.backgroundImage ??
+        context.app?.imageTheme?.landingBackgroundImage;
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (module.backgroundImage.isNotEmpty) ...[
+        if (backgroundImage.isNotEmpty) ...[
           Image(
-            image: NetworkOrAsset.image(module.backgroundImage!),
+            image: NetworkOrAsset.image(backgroundImage!),
             fit: BoxFit.cover,
           ),
           if (module.backgroundImageBlur != null)
