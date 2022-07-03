@@ -263,8 +263,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
   ) {
     final buttonColor =
         module.buttonColor ?? module.color ?? context.theme.textColorOnPrimary;
-    final buttonBackgroundColor =
-        module.buttonBackgroundColor ?? context.theme.primaryColor;
+    final buttonBackgroundColor = module.buttonBackgroundColor;
     switch (adapter.provider) {
       case "mock":
         return FormItemSubmit(
