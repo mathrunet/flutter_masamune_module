@@ -6,7 +6,7 @@ class MenuModule extends PageModule {
   const MenuModule({
     bool enabled = true,
     String? title,
-    String routePath = "menu",
+    required this.routePathPrefix,
     this.automaticallyImplyLeadingOnHome = true,
     this.sliverLayoutWhenModernDesignOnHome = true,
     required this.menu,
@@ -14,35 +14,33 @@ class MenuModule extends PageModule {
     List<RerouteConfig> rerouteConfigs = const [],
     this.top = const [],
     this.bottom = const [],
-    this.homePage = const MenuModuleHome(),
+    this.homePage = const PageConfig(
+      "/",
+      MenuModuleHomePage(),
+    ),
   }) : super(
           enabled: enabled,
           title: title,
-          routePath: routePath,
           rerouteConfigs: rerouteConfigs,
         );
 
   @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
+  final String routePathPrefix;
 
-    final route = {
-      "/$routePath": RouteConfig((_) => homePage),
-    };
-    return route;
-  }
+  @override
+  List<PageConfig<Widget>> get pages => [
+        homePage,
+      ];
 
   // Page settings.
-  final PageModuleWidget<MenuModule> homePage;
+  final PageConfig<PageModuleWidget<MenuModule>> homePage;
 
   /// Widget parts.
   final List<Widget> top;
   final List<Widget> bottom;
 
   /// メニューの一覧。
-  final List<MenuModuleComponent> menu;
+  final List<MenuModuleWidget> menu;
 
   /// True if Home is a sliver layout.
   final bool sliverLayoutWhenModernDesignOnHome;
@@ -54,13 +52,13 @@ class MenuModule extends PageModule {
   final EdgeInsetsGeometry padding;
 }
 
-abstract class MenuModuleComponent extends ModuleWidget<MenuModule> {
-  const MenuModuleComponent();
+abstract class MenuModuleWidget extends ModuleWidget<MenuModule> {
+  const MenuModuleWidget();
 }
 
 @immutable
-class MenuModuleGroupComponent extends MenuModuleComponent {
-  const MenuModuleGroupComponent({
+class MenuModuleGroupWidget extends MenuModuleWidget {
+  const MenuModuleGroupWidget({
     this.name,
     this.icon,
     this.menus = const [],
@@ -69,7 +67,7 @@ class MenuModuleGroupComponent extends MenuModuleComponent {
 
   final String? name;
   final IconData? icon;
-  final List<MenuModuleComponent> menus;
+  final List<MenuModuleWidget> menus;
   final Color? dividerColor;
 
   @override
@@ -101,8 +99,8 @@ class MenuModuleGroupComponent extends MenuModuleComponent {
   }
 }
 
-class MenuModuleItemComponent extends MenuModuleComponent {
-  const MenuModuleItemComponent({
+class MenuModuleItemWidget extends MenuModuleWidget {
+  const MenuModuleItemWidget({
     required this.name,
     this.path,
     this.icon,
@@ -152,8 +150,8 @@ class MenuModuleItemComponent extends MenuModuleComponent {
   }
 }
 
-class MenuModuleHome extends PageModuleWidget<MenuModule> {
-  const MenuModuleHome();
+class MenuModuleHomePage extends PageModuleWidget<MenuModule> {
+  const MenuModuleHomePage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, MenuModule module) {
@@ -166,7 +164,7 @@ class MenuModuleHome extends PageModuleWidget<MenuModule> {
         automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
         sliverLayoutWhenModernDesign: module.sliverLayoutWhenModernDesignOnHome,
       ),
-      body: UIListBuilder<MenuModuleComponent>(
+      body: UIListBuilder<MenuModuleWidget>(
         source: module.menu,
         padding: module.padding,
         top: module.top,
@@ -181,8 +179,8 @@ class MenuModuleHome extends PageModuleWidget<MenuModule> {
   }
 }
 
-class MenuModuleAccountComponent extends MenuModuleComponent {
-  const MenuModuleAccountComponent();
+class MenuModuleAccountWidget extends MenuModuleWidget {
+  const MenuModuleAccountWidget();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, MenuModule module) {
@@ -204,7 +202,7 @@ class MenuModuleAccountComponent extends MenuModuleComponent {
               title: "Confirmation".localize(),
               text: "You're logging out. Are you sure?".localize(),
               submitText: "Yes".localize(),
-              cacnelText: "No".localize(),
+              cancelText: "No".localize(),
               onSubmit: () async {
                 await context.model?.signOut();
                 UIDialog.show(

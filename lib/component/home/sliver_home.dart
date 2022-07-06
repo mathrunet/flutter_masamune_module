@@ -5,7 +5,6 @@ class SliverHomeModule extends PageModule {
   const SliverHomeModule({
     bool enabled = true,
     String? title,
-    String routePath = "home",
     this.backgroundImage,
     this.automaticallyImplyLeadingOnHome = true,
     this.backgroundColor,
@@ -13,28 +12,23 @@ class SliverHomeModule extends PageModule {
     this.headerHeight = 210,
     this.components = const [],
     List<RerouteConfig> rerouteConfigs = const [],
-    this.homePage = const SliverHomeModuleHome(),
+    this.homePage = const PageConfig(
+      "/home",
+      SliverHomeModuleHomePage(),
+    ),
   }) : super(
           enabled: enabled,
-          routePath: routePath,
           title: title,
           rerouteConfigs: rerouteConfigs,
         );
 
   @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
-
-    final route = {
-      "/$routePath": RouteConfig((_) => homePage),
-    };
-    return route;
-  }
+  List<PageConfig<Widget>> get pages => [
+        homePage,
+      ];
 
   // Widget.
-  final PageModuleWidget<SliverHomeModule> homePage;
+  final PageConfig<PageModuleWidget<SliverHomeModule>> homePage;
 
   final List<ModuleWidget<SliverHomeModule>> components;
 
@@ -52,8 +46,8 @@ class SliverHomeModule extends PageModule {
   final bool automaticallyImplyLeadingOnHome;
 }
 
-class SliverHomeModuleHome extends PageModuleWidget<SliverHomeModule> {
-  const SliverHomeModuleHome();
+class SliverHomeModuleHomePage extends PageModuleWidget<SliverHomeModule> {
+  const SliverHomeModuleHomePage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, SliverHomeModule module) {
@@ -93,8 +87,8 @@ class SliverHomeModuleHome extends PageModuleWidget<SliverHomeModule> {
   }
 }
 
-class SliverHomeModuleListComponent extends ModuleWidget<SliverHomeModule> {
-  const SliverHomeModuleListComponent({
+class SliverHomeModuleListWidget extends ModuleWidget<SliverHomeModule> {
+  const SliverHomeModuleListWidget({
     required this.query,
     required this.title,
     this.child = const SliverHomeModuleListTileComponent(),
@@ -154,10 +148,10 @@ class SliverHomeModuleListTileComponent
   }
 }
 
-class SliverHomeModuleMenuComponent extends ModuleWidget<SliverHomeModule> {
-  const SliverHomeModuleMenuComponent(this.menu);
+class SliverHomeModuleMenuWidget extends ModuleWidget<SliverHomeModule> {
+  const SliverHomeModuleMenuWidget(this.menu);
 
-  final List<MenuModuleComponent> menu;
+  final List<MenuModuleWidget> menu;
 
   @override
   Widget build(BuildContext context, WidgetRef ref, SliverHomeModule module) {

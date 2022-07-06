@@ -8,10 +8,9 @@ class EditModule extends PageModule {
     bool enabled = true,
     required this.variables,
     String? title,
-    String routePath = "edit",
     String queryPath = "edit",
     ModelQuery? query,
-    this.queryKey = "edit_id",
+    required this.routePathPrefix,
     this.enableDelete = true,
     this.fixed = false,
     this.bottomSpace = 120,
@@ -19,7 +18,8 @@ class EditModule extends PageModule {
     this.automaticallyImplyLeadingOnHome = true,
     this.sliverLayoutWhenModernDesignOnHome = false,
     List<RerouteConfig> rerouteConfigs = const [],
-    this.homePage = const EditModuleHome(),
+    this.addPage = const PageConfig("/edit", EditModuleHomePage()),
+    this.editPage = const PageConfig("/{edit_id}/edit", EditModuleHomePage()),
     this.top = const [],
     this.bottom = const [],
     this.function,
@@ -27,23 +27,24 @@ class EditModule extends PageModule {
           enabled: enabled,
           title: title,
           query: query,
-          routePath: routePath,
           queryPath: queryPath,
           rerouteConfigs: rerouteConfigs,
         );
 
   @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
+  final String routePathPrefix;
 
-    final route = {
-      "/$routePath/edit": RouteConfig((_) => homePage),
-      "/$routePath/{$queryKey}/edit": RouteConfig((_) => homePage),
-    };
-    return route;
+  @override
+  List<PageConfig<Widget>> get pages {
+    return [
+      addPage,
+      editPage,
+    ];
   }
+
+  // Page settings.
+  final PageConfig<PageModuleWidget<EditModule>> addPage;
+  final PageConfig<PageModuleWidget<EditModule>> editPage;
 
   /// Form padding.
   final EdgeInsetsGeometry padding;
@@ -54,14 +55,8 @@ class EditModule extends PageModule {
   /// Bottom widget.
   final List<ModuleWidget<EditModule>> bottom;
 
-  // Page settings.
-  final PageModuleWidget<EditModule> homePage;
-
   /// True if you want to enable deletion.
   final bool enableDelete;
-
-  /// Query key.
-  final String queryKey;
 
   /// List of forms.
   final List<VariableConfig> variables;
@@ -82,12 +77,13 @@ class EditModule extends PageModule {
   final EditModuleFunctionAdapter? function;
 }
 
-class EditModuleHome extends PageModuleWidget<EditModule> {
-  const EditModuleHome();
+class EditModuleHomePage extends PageModuleWidget<EditModule> {
+  const EditModuleHomePage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, EditModule module) {
-    final form = ref.useForm(module.queryKey);
+    final queryKey = module.editPage.queryKeys.firstOrNull;
+    final form = ref.useForm(queryKey ?? "edit_id");
     final doc = ref.watchDocumentModel("${module.queryPath}/${form.uid}");
     final variables = module.variables;
 
@@ -138,7 +134,7 @@ class EditModuleHome extends PageModuleWidget<EditModule> {
                         },
                       );
                     },
-                    cacnelText: "No".localize(),
+                    cancelText: "No".localize(),
                   );
                 } catch (e) {
                   UIDialog.show(

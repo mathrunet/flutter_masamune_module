@@ -6,10 +6,9 @@ class ViewModule extends PageModule {
     bool enabled = true,
     required this.variables,
     String? title,
-    String routePath = "view",
+    required this.routePathPrefix,
     String queryPath = "view",
     ModelQuery? query,
-    this.queryKey = "view_id",
     this.titleKey = Const.name,
     this.bottomSpace = 120,
     this.padding = const EdgeInsets.symmetric(vertical: 16),
@@ -17,47 +16,45 @@ class ViewModule extends PageModule {
     this.automaticallyImplyLeadingOnHome = true,
     this.sliverLayoutWhenModernDesignOnHome = false,
     List<RerouteConfig> rerouteConfigs = const [],
-    this.homePage = const EditModuleHome(),
+    this.homePage = const PageConfig(
+      "/{view_id}",
+      ViewModuleHomePage(),
+    ),
+    this.editPage = const PageConfig("/{view_id}/edit"),
     this.top = const [],
     this.bottom = const [],
   }) : super(
           enabled: enabled,
           title: title,
           query: query,
-          routePath: routePath,
           queryPath: queryPath,
           rerouteConfigs: rerouteConfigs,
         );
 
   @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
+  final String routePathPrefix;
 
-    final route = {
-      "/$routePath/{$queryKey}": RouteConfig((_) => homePage),
-    };
-    return route;
-  }
+  @override
+  List<PageConfig<Widget>> get pages => [
+        homePage,
+        editPage,
+      ];
 
   /// Form padding.
   final EdgeInsetsGeometry padding;
 
   /// Top widget.
-  final List<ModuleWidget<EditModule>> top;
+  final List<ModuleWidget<ViewModule>> top;
 
   /// Bottom widget.
-  final List<ModuleWidget<EditModule>> bottom;
+  final List<ModuleWidget<ViewModule>> bottom;
 
   // Page settings.
-  final PageModuleWidget<EditModule> homePage;
+  final PageConfig<PageModuleWidget<ViewModule>> homePage;
+  final PageConfig<PageModuleWidget<ViewModule>> editPage;
 
   /// True if editing is enabled.
   final bool enableEdit;
-
-  /// Query key.
-  final String queryKey;
 
   /// Title key.
   final String titleKey;
@@ -75,12 +72,13 @@ class ViewModule extends PageModule {
   final double bottomSpace;
 }
 
-class ViewModuleHome extends PageModuleWidget<ViewModule> {
-  const ViewModuleHome();
+class ViewModuleHomePage extends PageModuleWidget<ViewModule> {
+  const ViewModuleHomePage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, ViewModule module) {
-    final queryId = context.get(module.queryKey, "");
+    final queryKey = module.homePage.queryKeys.firstOrNull;
+    final queryId = context.get(queryKey ?? "view_id", "");
     final doc = ref.watchDocumentModel("${module.queryPath}/$queryId");
     final variables = module.variables;
     final title = doc.get(module.titleKey, module.title ?? "Edit".localize());
@@ -95,8 +93,14 @@ class ViewModuleHome extends PageModuleWidget<ViewModule> {
             IconButton(
               icon: const Icon(Icons.edit),
               onPressed: () {
-                context.navigator
-                    .pushNamed("/${module.routePath}/{$module.queryKey}/edit");
+                context.navigator.pushNamed(
+                  ref.applyModuleTag(
+                    module.editPage.apply(
+                      {queryKey ?? "view_id": queryId},
+                      module.routePathPrefix,
+                    ),
+                  ),
+                );
               },
             )
         ],

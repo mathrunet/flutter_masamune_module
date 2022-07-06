@@ -7,7 +7,6 @@ class TileMenuHomeModule extends PageModule
     bool enabled = true,
     String? title = "",
     this.color,
-    String routePath = "",
     this.textColor,
     this.featureIcon,
     this.featureImage,
@@ -29,34 +28,33 @@ class TileMenuHomeModule extends PageModule
     this.submenuChildAspectRatio = 3.0,
     this.menuContentPadding = const EdgeInsets.all(8),
     this.submenuContentPadding = const EdgeInsets.all(8),
-    this.profileRoutePath = "user",
     List<RerouteConfig> rerouteConfigs = const [],
     this.header,
     this.footer,
-    this.profile = const TileMenuHomeModuleProfile(),
-    this.homePage = const TileMenuHomeModuleHome(),
-    this.tileMenuHomeInformationWidget = const TileMenuHomeModuleInformation(),
-    this.tileMenuHomeCalendarWidget = const TileMenuHomeModuleCalendar(),
+    this.homePage = const PageConfig(
+      "/",
+      TileMenuHomeModuleHomePage(),
+    ),
+    this.profilePage = const PageConfig("/user/{user_id}"),
+    this.profile = const TileMenuHomeModuleProfileWidget(),
+    this.tileMenuHomeInformationWidget =
+        const TileMenuHomeModuleInformationWidget(),
+    this.tileMenuHomeCalendarWidget = const TileMenuHomeModuleCalendarWidget(),
   }) : super(
           enabled: enabled,
           title: title,
-          routePath: routePath,
           rerouteConfigs: rerouteConfigs,
         );
 
   @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
-    final route = {
-      "/$routePath": RouteConfig((_) => homePage),
-    };
-    return route;
-  }
+  List<PageConfig<Widget>> get pages => [
+        homePage,
+        profilePage,
+      ];
 
   // ページの設定。
-  final ModuleWidget<TileMenuHomeModule> homePage;
+  final PageConfig<PageModuleWidget<TileMenuHomeModule>> homePage;
+  final PageConfig<PageModuleWidget<TileMenuHomeModule>> profilePage;
   final ModuleWidget<TileMenuHomeModule>? tileMenuHomeInformationWidget;
   final ModuleWidget<TileMenuHomeModule>? tileMenuHomeCalendarWidget;
 
@@ -107,9 +105,6 @@ class TileMenuHomeModule extends PageModule
   /// ユーザーのデータパス。
   final String userPath;
 
-  /// プロフィールページへのパス。
-  final String profileRoutePath;
-
   /// 名前のキー。
   final String nameKey;
 
@@ -129,50 +124,8 @@ class TileMenuHomeModule extends PageModule
   final EdgeInsetsGeometry submenuContentPadding;
 }
 
-@immutable
-class HomeCalendarModule extends CalendarModule {
-  const HomeCalendarModule({
-    bool enabled = true,
-    String? title,
-    String routePath = "calendar",
-    String queryPath = "event",
-    String startTimeKey = Const.startTime,
-    String endTimeKey = Const.endTime,
-    String allDayKey = "allDay",
-    this.icon = Icons.calendar_today,
-    PageModuleWidget<CalendarModule> detailPage = const CalendarModuleDetail(),
-    this.widget,
-  }) : super(
-          enabled: enabled,
-          title: title,
-          routePath: routePath,
-          queryPath: queryPath,
-          detailPage: detailPage,
-          startTimeKey: startTimeKey,
-          endTimeKey: endTimeKey,
-          allDayKey: allDayKey,
-        );
-
-  @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
-    final route = {
-      "/$routePath/{event_id}/detail": RouteConfig((_) => detailPage),
-    };
-    return route;
-  }
-
-  /// アイコン。
-  final IconData icon;
-
-  /// ウィジェット。
-  final Widget? widget;
-}
-
-class TileMenuHomeModuleHome extends ModuleWidget<TileMenuHomeModule> {
-  const TileMenuHomeModuleHome();
+class TileMenuHomeModuleHomePage extends PageModuleWidget<TileMenuHomeModule> {
+  const TileMenuHomeModuleHomePage();
   @override
   Widget build(BuildContext context, WidgetRef ref, TileMenuHomeModule module) {
     return Scaffold(
@@ -287,7 +240,11 @@ class TileMenuHomeModuleHome extends ModuleWidget<TileMenuHomeModule> {
                                 ),
                                 onTap: () {
                                   context.navigator.pushNamed(
-                                    "/${module.profileRoutePath}/${context.model?.userId}",
+                                    ref.applyModuleTag(
+                                      module.profilePage.apply(
+                                        {"user_id": context.model!.userId},
+                                      ),
+                                    ),
                                   );
                                 },
                               ),
@@ -421,8 +378,8 @@ class TileMenuHomeModuleHome extends ModuleWidget<TileMenuHomeModule> {
   }
 }
 
-class TileMenuHomeModuleProfile extends ModuleWidget<TileMenuHomeModule> {
-  const TileMenuHomeModuleProfile({
+class TileMenuHomeModuleProfileWidget extends ModuleWidget<TileMenuHomeModule> {
+  const TileMenuHomeModuleProfileWidget({
     this.roleName,
     this.roleIcon,
   });
@@ -471,26 +428,28 @@ class TileMenuHomeModuleProfile extends ModuleWidget<TileMenuHomeModule> {
   }
 }
 
-class TileMenuHomeModuleInformation extends ModuleWidget<TileMenuHomeModule> {
-  const TileMenuHomeModuleInformation({
+class TileMenuHomeModuleInformationWidget
+    extends ModuleWidget<TileMenuHomeModule> {
+  const TileMenuHomeModuleInformationWidget({
     this.title,
-    this.routePath = "info",
     this.queryPath = "info",
     this.icon = Icons.info_rounded,
     this.nameKey = Const.name,
     this.dataLabel,
+    this.infoPage = const PageConfig("/info/{info_id}"),
     this.createdTimeKey = Const.createdTime,
     this.limit = 10,
   });
 
   final String? title;
-  final String routePath;
   final String queryPath;
   final String? dataLabel;
   final IconData icon;
   final String nameKey;
   final String createdTimeKey;
   final int limit;
+
+  final PageConfig<PageModuleWidget<TileMenuHomeModule>> infoPage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref, TileMenuHomeModule module) {
@@ -548,7 +507,10 @@ class TileMenuHomeModuleInformation extends ModuleWidget<TileMenuHomeModule> {
                         color: module.color ?? context.theme.primaryColor,
                         onTap: () {
                           context.navigator.pushNamed(
-                            "/$routePath/${item.get(Const.uid, "")}",
+                            ref.applyModuleTag(
+                              infoPage
+                                  .apply({"info_id": item.get(Const.uid, "")}),
+                            ),
                             arguments: RouteQuery.fullscreenOrModal,
                           );
                         },
@@ -597,26 +559,27 @@ class TileMenuHomeModuleInformation extends ModuleWidget<TileMenuHomeModule> {
   }
 }
 
-class TileMenuHomeModuleCalendar extends ModuleWidget<TileMenuHomeModule> {
-  const TileMenuHomeModuleCalendar({
+class TileMenuHomeModuleCalendarWidget
+    extends ModuleWidget<TileMenuHomeModule> {
+  const TileMenuHomeModuleCalendarWidget({
     this.title,
-    this.routePath = "calendar",
     this.queryPath = "event",
     this.startTimeKey = Const.startTime,
     this.endTimeKey = Const.endTime,
     this.allDayKey = "allDay",
     this.icon = Icons.calendar_today,
     this.alwaysShown = false,
+    this.detailPage = const PageConfig("/calendar/{event_id}/detail"),
   });
 
   final String? title;
-  final String routePath;
   final String queryPath;
   final String startTimeKey;
   final String endTimeKey;
   final String allDayKey;
   final IconData icon;
   final bool alwaysShown;
+  final PageConfig<PageModuleWidget<TileMenuHomeModule>> detailPage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref, TileMenuHomeModule module) {
@@ -683,7 +646,9 @@ class TileMenuHomeModuleCalendar extends ModuleWidget<TileMenuHomeModule> {
                     return InkWell(
                       onTap: () {
                         context.navigator.pushNamed(
-                          "/$routePath/${item.uid}/detail",
+                          ref.applyModuleTag(
+                            detailPage.apply({"event_id": item.uid}),
+                          ),
                           arguments: RouteQuery.fullscreenOrModal,
                         );
                       },
@@ -786,9 +751,9 @@ class TileMenuHomeModuleHeadline extends ModuleWidget<TileMenuHomeModule> {
   }
 }
 
-class TileMenuHomeModuleChangeAffiliation
+class TileMenuHomeModuleChangeAffiliationWidget
     extends ModuleWidget<TileMenuHomeModule> {
-  const TileMenuHomeModuleChangeAffiliation({
+  const TileMenuHomeModuleChangeAffiliationWidget({
     required this.title,
     this.affiliationKey = "affiliation",
     this.targetPath = "user",
@@ -860,7 +825,7 @@ class TileMenuHomeModuleChangeAffiliation
                               builder: (context) => PageModuleScope(
                                 module: module,
                                 child:
-                                    TileMenuHomeModuleChangeAffiliationSelection(
+                                    TileMenuHomeModuleChangeAffiliationSelectionPage(
                                   title: title,
                                   affiliationKey: affiliationKey,
                                   targetPath: targetPath,
@@ -901,9 +866,9 @@ class TileMenuHomeModuleChangeAffiliation
   }
 }
 
-class TileMenuHomeModuleChangeAffiliationSelection
+class TileMenuHomeModuleChangeAffiliationSelectionPage
     extends PageModuleWidget<TileMenuHomeModule> {
-  const TileMenuHomeModuleChangeAffiliationSelection({
+  const TileMenuHomeModuleChangeAffiliationSelectionPage({
     required this.title,
     this.affiliationKey = "affiliation",
     this.targetPath = "user",

@@ -6,7 +6,6 @@ class TileGalleryMediaModule extends PageModule {
   const TileGalleryMediaModule({
     bool enabled = true,
     String? title,
-    String routePath = "gallery",
     String queryPath = "gallery",
     ModelQuery? query,
     this.mediaKey = Const.media,
@@ -26,40 +25,49 @@ class TileGalleryMediaModule extends PageModule {
     this.enableDetail = true,
     this.mediaType = PlatformMediaType.all,
     List<RerouteConfig> rerouteConfigs = const [],
-    this.homePage = const TileGalleryMediaModuleHome(),
-    this.editPage = const TileGalleryMediaModuleEdit(),
-    this.mediaViewPage = const TileGalleryMediaModuleMediaView(),
-    this.mediaDetailPage = const TileGalleryMediaModuleMediaDetail(),
+    this.homePage = const PageConfig(
+      "/gallery",
+      TileGalleryMediaModuleHomePage(),
+    ),
+    this.addPage = const PageConfig(
+      "/gallery/edit",
+      TileGalleryMediaModuleEditPage(),
+    ),
+    this.mediaDetailPage = const PageConfig(
+      "/gallery/media/{media_id}",
+      TileGalleryMediaModuleMediaDetailPage(),
+    ),
+    this.mediaViewPage = const PageConfig(
+      "/gallery/media/{media_id}/view",
+      TileGalleryMediaModuleMediaViewPage(),
+    ),
+    this.editPage = const PageConfig(
+      "/gallery/media/{media_id}/edit",
+      TileGalleryMediaModuleEditPage(),
+    ),
   }) : super(
           enabled: enabled,
           title: title,
-          routePath: routePath,
           query: query,
           queryPath: queryPath,
           rerouteConfigs: rerouteConfigs,
         );
 
   @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
-
-    final route = {
-      "/$routePath": RouteConfig((_) => homePage),
-      "/$routePath/edit": RouteConfig((_) => editPage),
-      "/$routePath/media/{media_id}": RouteConfig((_) => mediaDetailPage),
-      "/$routePath/media/{media_id}/view": RouteConfig((_) => mediaViewPage),
-      "/$routePath/media/{media_id}/edit": RouteConfig((_) => editPage),
-    };
-    return route;
-  }
+  List<PageConfig<Widget>> get pages => [
+        homePage,
+        addPage,
+        mediaDetailPage,
+        mediaViewPage,
+        editPage,
+      ];
 
   // Widget.
-  final PageModuleWidget<TileGalleryMediaModule> homePage;
-  final PageModuleWidget<TileGalleryMediaModule> editPage;
-  final PageModuleWidget<TileGalleryMediaModule> mediaDetailPage;
-  final PageModuleWidget<TileGalleryMediaModule> mediaViewPage;
+  final PageConfig<PageModuleWidget<TileGalleryMediaModule>> homePage;
+  final PageConfig<PageModuleWidget<TileGalleryMediaModule>> addPage;
+  final PageConfig<PageModuleWidget<TileGalleryMediaModule>> editPage;
+  final PageConfig<PageModuleWidget<TileGalleryMediaModule>> mediaDetailPage;
+  final PageConfig<PageModuleWidget<TileGalleryMediaModule>> mediaViewPage;
 
   /// 画像・映像のキー。
   final String mediaKey;
@@ -106,9 +114,9 @@ class TileGalleryMediaModule extends PageModule {
   final bool automaticallyImplyLeadingOnHome;
 }
 
-class TileGalleryMediaModuleHome
+class TileGalleryMediaModuleHomePage
     extends PageModuleWidget<TileGalleryMediaModule> {
-  const TileGalleryMediaModuleHome();
+  const TileGalleryMediaModuleHomePage();
 
   @override
   Widget build(
@@ -155,9 +163,15 @@ class TileGalleryMediaModuleHome
                         fit: BoxFit.cover,
                         onTap: () {
                           context.rootNavigator.pushNamed(
-                            !module.enableDetail
-                                ? "/${module.routePath}/media/${item.get(Const.uid, "")}/view"
-                                : "/${module.routePath}/media/${item.get(Const.uid, "")}",
+                            ref.applyModuleTag(
+                              !module.enableDetail
+                                  ? module.mediaViewPage.apply(
+                                      {"media_id": item.get(Const.uid, "")},
+                                    )
+                                  : module.mediaDetailPage.apply(
+                                      {"media_id": item.get(Const.uid, "")},
+                                    ),
+                            ),
                             arguments: RouteQuery.fullscreenOrModal,
                           );
                         },
@@ -170,9 +184,15 @@ class TileGalleryMediaModuleHome
                     fit: BoxFit.cover,
                     onTap: () {
                       context.rootNavigator.pushNamed(
-                        !module.enableDetail
-                            ? "/${module.routePath}/media/${item.get(Const.uid, "")}/view"
-                            : "/${module.routePath}/media/${item.get(Const.uid, "")}",
+                        ref.applyModuleTag(
+                          !module.enableDetail
+                              ? module.mediaViewPage.apply(
+                                  {"media_id": item.get(Const.uid, "")},
+                                )
+                              : module.mediaDetailPage.apply(
+                                  {"media_id": item.get(Const.uid, "")},
+                                ),
+                        ),
                         arguments: RouteQuery.fullscreenOrModal,
                       );
                     },
@@ -186,7 +206,9 @@ class TileGalleryMediaModuleHome
           ? FloatingActionButton.extended(
               onPressed: () {
                 context.navigator.pushNamed(
-                  "/${module.routePath}/edit",
+                  ref.applyModuleTag(
+                    module.addPage.apply(),
+                  ),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -198,9 +220,9 @@ class TileGalleryMediaModuleHome
   }
 }
 
-class TileGalleryMediaModuleMediaDetail
+class TileGalleryMediaModuleMediaDetailPage
     extends PageModuleWidget<TileGalleryMediaModule> {
-  const TileGalleryMediaModuleMediaDetail();
+  const TileGalleryMediaModuleMediaDetailPage();
 
   @override
   Widget build(
@@ -230,7 +252,10 @@ class TileGalleryMediaModuleMediaDetail
               icon: const Icon(Icons.edit),
               onPressed: () {
                 context.navigator.pushNamed(
-                  "/${module.routePath}/media/${context.get("media_id", "")}/edit",
+                  ref.applyModuleTag(
+                    module.editPage
+                        .apply({"media_id": context.get("media_id", "")}),
+                  ),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -242,7 +267,10 @@ class TileGalleryMediaModuleMediaDetail
           InkWell(
             onTap: () {
               context.navigator.pushNamed(
-                "/${module.routePath}/media/${context.get("media_id", "")}/view",
+                ref.applyModuleTag(
+                  module.mediaViewPage
+                      .apply({"media_id": context.get("media_id", "")}),
+                ),
                 arguments: RouteQuery.fullscreenOrModal,
               );
             },
@@ -313,9 +341,9 @@ class TileGalleryMediaModuleMediaDetail
   }
 }
 
-class TileGalleryMediaModuleMediaView
+class TileGalleryMediaModuleMediaViewPage
     extends PageModuleWidget<TileGalleryMediaModule> {
-  const TileGalleryMediaModuleMediaView();
+  const TileGalleryMediaModuleMediaViewPage();
 
   @override
   Widget build(
@@ -340,7 +368,10 @@ class TileGalleryMediaModuleMediaView
               icon: const Icon(Icons.edit),
               onPressed: () {
                 context.navigator.pushNamed(
-                  "/${module.routePath}/media/${context.get("media_id", "")}/edit",
+                  ref.applyModuleTag(
+                    module.editPage
+                        .apply({"media_id": context.get("media_id", "")}),
+                  ),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -376,9 +407,9 @@ class TileGalleryMediaModuleMediaView
   }
 }
 
-class TileGalleryMediaModuleEdit
+class TileGalleryMediaModuleEditPage
     extends PageModuleWidget<TileGalleryMediaModule> {
-  const TileGalleryMediaModuleEdit();
+  const TileGalleryMediaModuleEditPage();
 
   @override
   Widget build(
@@ -415,7 +446,7 @@ class TileGalleryMediaModuleEdit
                   text: "You can't undo it after deleting it. May I delete it?"
                       .localize(),
                   submitText: "Yes".localize(),
-                  cacnelText: "No".localize(),
+                  cancelText: "No".localize(),
                   onSubmit: () async {
                     await context.model
                         ?.deleteDocument(item)

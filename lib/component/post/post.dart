@@ -17,7 +17,7 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const PostModule({
     bool enabled = true,
     String? title = "",
-    String routePath = "post",
+    required this.routePathPrefix,
     String queryPath = "post",
     ModelQuery? query,
     this.userPath = "user",
@@ -30,36 +30,46 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
     this.editingType = PostEditingType.planeText,
     List<RerouteConfig> rerouteConfigs = const [],
     this.postQuery,
-    this.homePage = const PostModuleHome(),
-    this.editPage = const PostModuleEdit(),
-    this.viewPage = const PostModuleView(),
+    this.homePage = const PageConfig(
+      "/",
+      PostModuleHomePage(),
+    ),
+    this.addPage = const PageConfig(
+      "/edit",
+      PostModuleEditPage(),
+    ),
+    this.viewPage = const PageConfig(
+      "/{post_id}",
+      PostModuleViewPage(),
+    ),
+    this.editPage = const PageConfig(
+      "/{post_id}/edit",
+      PostModuleEditPage(),
+    ),
   }) : super(
           enabled: enabled,
           title: title,
-          routePath: routePath,
           query: query,
           queryPath: queryPath,
           rerouteConfigs: rerouteConfigs,
         );
 
   @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
-    final route = {
-      "/$routePath": RouteConfig((_) => homePage),
-      "/$routePath/edit": RouteConfig((_) => editPage),
-      "/$routePath/{post_id}": RouteConfig((_) => viewPage),
-      "/$routePath/{post_id}/edit": RouteConfig((_) => editPage),
-    };
-    return route;
-  }
+  final String routePathPrefix;
+
+  @override
+  List<PageConfig<Widget>> get pages => [
+        homePage,
+        addPage,
+        viewPage,
+        editPage,
+      ];
 
   /// ページ設定。
-  final PageModuleWidget<PostModule> homePage;
-  final PageModuleWidget<PostModule> editPage;
-  final PageModuleWidget<PostModule> viewPage;
+  final PageConfig<PageModuleWidget<PostModule>> homePage;
+  final PageConfig<PageModuleWidget<PostModule>> addPage;
+  final PageConfig<PageModuleWidget<PostModule>> editPage;
+  final PageConfig<PageModuleWidget<PostModule>> viewPage;
 
   /// ホームをスライバーレイアウトにする場合True.
   final bool sliverLayoutWhenModernDesignOnHome;
@@ -89,8 +99,8 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
   final bool enableEdit;
 }
 
-class PostModuleHome extends PageModuleWidget<PostModule> {
-  const PostModuleHome();
+class PostModuleHomePage extends PageModuleWidget<PostModule> {
+  const PostModuleHomePage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, PostModule module) {
@@ -103,7 +113,12 @@ class PostModuleHome extends PageModuleWidget<PostModule> {
       userCollectionPath: module.userPath,
     );
     final controller = ref.useNavigatorController(
-      "/${module.routePath}/${postWithUser.firstOrNull.get(Const.uid, "")}",
+      ref.applyModuleTag(
+        module.viewPage.apply(
+          {"post_id": postWithUser.firstOrNull.get(Const.uid, "")},
+          module.routePathPrefix,
+        ),
+      ),
       (route) => postWithUser.isEmpty,
     );
 
@@ -137,12 +152,22 @@ class PostModuleHome extends PageModuleWidget<PostModule> {
               onTap: () {
                 if (context.isMobile) {
                   context.navigator.pushNamed(
-                    "/${module.routePath}/${item.get(Const.uid, "")}",
+                    ref.applyModuleTag(
+                      module.viewPage.apply(
+                        {"post_id": item.get(Const.uid, "")},
+                        module.routePathPrefix,
+                      ),
+                    ),
                     arguments: RouteQuery.fullscreen,
                   );
                 } else {
                   controller.navigator.pushReplacementNamed(
-                    "/${module.routePath}/${item.get(Const.uid, "")}",
+                    ref.applyModuleTag(
+                      module.viewPage.apply(
+                        {"post_id": item.get(Const.uid, "")},
+                        module.routePathPrefix,
+                      ),
+                    ),
                   );
                 }
               },
@@ -156,7 +181,12 @@ class PostModuleHome extends PageModuleWidget<PostModule> {
               icon: const Icon(Icons.add),
               onPressed: () {
                 context.navigator.pushNamed(
-                  "/${module.routePath}/edit",
+                  ref.applyModuleTag(
+                    module.addPage.apply(
+                      {},
+                      module.routePathPrefix,
+                    ),
+                  ),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -166,8 +196,8 @@ class PostModuleHome extends PageModuleWidget<PostModule> {
   }
 }
 
-class PostModuleView extends PageModuleWidget<PostModule> {
-  const PostModuleView();
+class PostModuleViewPage extends PageModuleWidget<PostModule> {
+  const PostModuleViewPage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, PostModule module) {
@@ -192,7 +222,12 @@ class PostModuleView extends PageModuleWidget<PostModule> {
             icon: const Icon(Icons.edit),
             onPressed: () {
               context.rootNavigator.pushNamed(
-                "/${module.routePath}/${context.get("post_id", "")}/edit",
+                ref.applyModuleTag(
+                  module.editPage.apply(
+                    {"post_id": context.get("post_id", "")},
+                    module.routePathPrefix,
+                  ),
+                ),
                 arguments: RouteQuery.fullscreenOrModal,
               );
             },
@@ -285,8 +320,8 @@ class PostModuleView extends PageModuleWidget<PostModule> {
   }
 }
 
-class PostModuleEdit extends PageModuleWidget<PostModule> {
-  const PostModuleEdit();
+class PostModuleEditPage extends PageModuleWidget<PostModule> {
+  const PostModuleEditPage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, PostModule module) {
@@ -317,14 +352,13 @@ class PostModuleEdit extends PageModuleWidget<PostModule> {
                 text: "You can't undo it after deleting it. May I delete it?"
                     .localize(),
                 submitText: "Yes".localize(),
-                cacnelText: "No".localize(),
+                cancelText: "No".localize(),
                 onSubmit: () async {
                   await context.model
                       ?.deleteDocument(item)
                       .showIndicator(context);
-                  context.navigator
-                    ..pop()
-                    ..pop();
+                  context.navigator.pop();
+                  context.navigator.pop();
                 },
               );
             },

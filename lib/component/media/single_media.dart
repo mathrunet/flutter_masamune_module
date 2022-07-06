@@ -6,7 +6,6 @@ class SingleMediaModule extends PageModule {
   const SingleMediaModule({
     bool enabled = true,
     String? title,
-    String routePath = "media",
     String queryPath = "media",
     ModelQuery? query,
     this.mediaKey = Const.media,
@@ -18,33 +17,31 @@ class SingleMediaModule extends PageModule {
     this.automaticallyImplyLeadingOnHome = true,
     this.sliverLayoutWhenModernDesignOnHome = true,
     List<RerouteConfig> rerouteConfigs = const [],
-    this.homePage = const SingleMediaModuleHome(),
-    this.editPage = const SingleMediaModuleEdit(),
+    this.homePage = const PageConfig(
+      "/media",
+      SingleMediaModuleHomePage(),
+    ),
+    this.editPage = const PageConfig(
+      "/media/edit",
+      SingleMediaModuleEditPage(),
+    ),
   }) : super(
           enabled: enabled,
           title: title,
-          routePath: routePath,
           query: query,
           queryPath: queryPath,
           rerouteConfigs: rerouteConfigs,
         );
 
   @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
-
-    final route = {
-      "/$routePath": RouteConfig((_) => homePage),
-      "/$routePath/edit": RouteConfig((_) => editPage),
-    };
-    return route;
-  }
+  List<PageConfig<Widget>> get pages => [
+        homePage,
+        editPage,
+      ];
 
   // Widget.
-  final PageModuleWidget<SingleMediaModule> homePage;
-  final PageModuleWidget<SingleMediaModule> editPage;
+  final PageConfig<PageModuleWidget<SingleMediaModule>> homePage;
+  final PageConfig<PageModuleWidget<SingleMediaModule>> editPage;
 
   /// 画像・映像のキー。
   final String mediaKey;
@@ -71,8 +68,8 @@ class SingleMediaModule extends PageModule {
   final PlatformMediaType mediaType;
 }
 
-class SingleMediaModuleHome extends PageModuleWidget<SingleMediaModule> {
-  const SingleMediaModuleHome();
+class SingleMediaModuleHomePage extends PageModuleWidget<SingleMediaModule> {
+  const SingleMediaModuleHomePage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, SingleMediaModule module) {
@@ -96,7 +93,9 @@ class SingleMediaModuleHome extends PageModuleWidget<SingleMediaModule> {
               icon: const Icon(Icons.edit),
               onPressed: () {
                 context.navigator.pushNamed(
-                  "/${module.routePath}/edit",
+                  ref.applyModuleTag(
+                    module.editPage.apply(),
+                  ),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -118,7 +117,9 @@ class SingleMediaModuleHome extends PageModuleWidget<SingleMediaModule> {
                     icon: const Icon(Icons.add),
                     onPressed: () {
                       context.navigator.pushNamed(
-                        "/${module.routePath}/edit",
+                        ref.applyModuleTag(
+                          module.editPage.apply(),
+                        ),
                         arguments: RouteQuery.fullscreenOrModal,
                       );
                     },
@@ -144,8 +145,8 @@ class SingleMediaModuleHome extends PageModuleWidget<SingleMediaModule> {
   }
 }
 
-class SingleMediaModuleEdit extends PageModuleWidget<SingleMediaModule> {
-  const SingleMediaModuleEdit();
+class SingleMediaModuleEditPage extends PageModuleWidget<SingleMediaModule> {
+  const SingleMediaModuleEditPage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, SingleMediaModule module) {

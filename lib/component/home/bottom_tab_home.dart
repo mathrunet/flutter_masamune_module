@@ -17,7 +17,10 @@ class BottomTabHomeModule extends PageModule
     required this.menu,
     this.dividerColor = Colors.transparent,
     List<RerouteConfig> rerouteConfigs = const [],
-    this.homePage = const BottomTabHomeModuleHome(),
+    this.homePage = const PageConfig(
+      "/",
+      BottomTabHomeModuleHomePage(),
+    ),
   }) : super(
           enabled: enabled,
           title: title,
@@ -25,15 +28,9 @@ class BottomTabHomeModule extends PageModule
         );
 
   @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
-    final route = {
-      "/": RouteConfig((_) => homePage),
-    };
-    return route;
-  }
+  List<PageConfig<Widget>> get pages => [
+        homePage,
+      ];
 
   // ホームのパス。
   final String? initialPath;
@@ -51,11 +48,12 @@ class BottomTabHomeModule extends PageModule
   final Color? dividerColor;
 
   // ページの設定。
-  final PageModuleWidget<BottomTabHomeModule> homePage;
+  final PageConfig<PageModuleWidget<BottomTabHomeModule>> homePage;
 }
 
-class BottomTabHomeModuleHome extends PageModuleWidget<BottomTabHomeModule> {
-  const BottomTabHomeModuleHome();
+class BottomTabHomeModuleHomePage
+    extends PageModuleWidget<BottomTabHomeModule> {
+  const BottomTabHomeModuleHomePage();
 
   @override
   Widget build(
@@ -89,7 +87,7 @@ class BottomTabHomeModuleHome extends PageModuleWidget<BottomTabHomeModule> {
                       module.selectedItemColor ?? context.theme.primaryColor,
                   onPressed: () {
                     context.rootNavigator.pushNamed(
-                      center.path!,
+                      ref.applyModuleTag(center.path!),
                       arguments: RouteQuery.fullscreenOrModal,
                     );
                   },
@@ -132,20 +130,21 @@ class BottomTabHomeModuleHome extends PageModuleWidget<BottomTabHomeModule> {
               if (e.path.isEmpty) {
                 return null;
               }
+              final path = ref.applyModuleTag(e.path!);
               if (e == center) {
                 return UIBottomNavigationBarItem(
-                  id: e.path ?? "",
+                  id: path,
                   icon: const Empty(),
-                  onRouteChange: (settings) => settings?.name == e.path,
+                  onRouteChange: (settings) => settings?.name == path,
                 );
               }
               return UIBottomNavigationBarItem(
-                id: e.path ?? "",
+                id: path,
                 icon: Icon(e.icon),
                 label: e.name.isEmpty ? null : e.name,
-                onRouteChange: (settings) => settings?.name == e.path,
+                onRouteChange: (settings) => settings?.name == path,
                 onTap: () {
-                  controller.navigator.pushNamed(e.path!);
+                  controller.navigator.pushNamed(ref.applyModuleTag(path));
                 },
               );
             }),

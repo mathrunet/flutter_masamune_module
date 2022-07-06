@@ -8,36 +8,30 @@ class TutorialModule extends PageModule {
   const TutorialModule({
     bool enabled = true,
     String? title,
-    String routePath = "tutorial",
     this.displayedKey = "@tutorialDisplayed",
     this.redirectTo = "/",
     this.automaticallyImplyLeadingOnHome = true,
     this.sliverLayoutWhenModernDesignOnHome = true,
     List<RerouteConfig> rerouteConfigs = const [],
-    required this.pages,
-    this.homePage = const TutorialModuleHome(),
+    required this.tutorials,
+    this.homePage = const PageConfig(
+      "/tutorial",
+      TutorialModuleHomePage(),
+    ),
   }) : super(
           enabled: enabled,
           title: title,
-          routePath: routePath,
           rerouteConfigs: rerouteConfigs,
         );
 
   @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
-
-    final route = {
-      "/$routePath": RouteConfig((_) => homePage),
-    };
-    return route;
-  }
+  List<PageConfig<Widget>> get pages => [
+        homePage,
+      ];
 
   // Widget.
-  final PageModuleWidget<TutorialModule> homePage;
-  final List<ModuleWidget<TutorialModule>> pages;
+  final PageConfig<PageModuleWidget<TutorialModule>> homePage;
+  final List<ModuleWidget<TutorialModule>> tutorials;
 
   /// チュートリアルを表示したフラグを保存するキー。
   final String displayedKey;
@@ -52,8 +46,8 @@ class TutorialModule extends PageModule {
   final bool automaticallyImplyLeadingOnHome;
 }
 
-class TutorialModuleHome extends PageModuleWidget<TutorialModule> {
-  const TutorialModuleHome();
+class TutorialModuleHomePage extends PageModuleWidget<TutorialModule> {
+  const TutorialModuleHomePage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, TutorialModule module) {
@@ -67,7 +61,7 @@ class TutorialModuleHome extends PageModuleWidget<TutorialModule> {
         child: Stack(
           children: [
             _SlidingTutorial(
-              pages: module.pages,
+              pages: module.tutorials,
               controller: pageController,
               notifier: notifier,
             ),
@@ -92,8 +86,11 @@ class TutorialModuleHome extends PageModuleWidget<TutorialModule> {
                         IconButton(
                           onPressed: () {
                             Prefs.set(module.displayedKey, true);
-                            context.navigator
-                                .pushReplacementNamed(module.redirectTo);
+                            context.navigator.pushReplacementNamed(
+                              ref.applyModuleTag(
+                                module.redirectTo,
+                              ),
+                            );
                           },
                           color: context.theme.textColorOnPrimary,
                           icon: const Icon(Icons.close),
@@ -128,8 +125,11 @@ class TutorialModuleHome extends PageModuleWidget<TutorialModule> {
                         IconButton(
                           onPressed: () {
                             Prefs.set(module.displayedKey, true);
-                            context.navigator
-                                .pushReplacementNamed(module.redirectTo);
+                            context.navigator.pushReplacementNamed(
+                              ref.applyModuleTag(
+                                module.redirectTo,
+                              ),
+                            );
                           },
                           color: context.theme.textColorOnPrimary,
                           icon: const Icon(Icons.check_circle),

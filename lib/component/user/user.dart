@@ -5,9 +5,12 @@ class UserModule extends PageModule {
   const UserModule({
     bool enabled = true,
     String title = "",
-    this.contents = const [UserModuleAccountContent()],
-    this.accountContents = const [UserModuleAccountContent()],
-    String routePath = "user",
+    this.contents = const [
+      UserModuleAccountContentComponent(),
+    ],
+    this.accountContents = const [
+      UserModuleAccountContentComponent(),
+    ],
     String queryPath = "user",
     ModelQuery? query,
     this.reportPath = "report",
@@ -19,10 +22,11 @@ class UserModule extends PageModule {
     this.guestName = "Guest",
     this.expandedHeight = 160,
     this.additionalInformation = const {},
-    this.enableImageEditing = false,
+    this.enableFeature = false,
     this.enableFollow = false,
     this.enableBlock = true,
     this.enableReport = true,
+    this.enableAvatar = true,
     this.enableUserDeleting = false,
     this.sliverLayoutWhenModernDesignOnHome = true,
     this.automaticallyImplyLeadingOnHome = true,
@@ -32,49 +36,67 @@ class UserModule extends PageModule {
     this.variables = const [],
     this.meta,
     this.bottom = const [],
-    this.homePage = const UserModuleHome(),
-    this.editProfilePage = const UserModuleEditProfile(),
-    this.accountPage = const UserModuleAccount(),
-    this.reauthPage = const UserModuleAccountReauth(),
-    this.editEmailPage = const UserModuleAccountEditEmail(),
-    this.editPasswordPage = const UserModuleAccountEditPassword(),
-    this.blockListPage = const UserModuleAccountBlockList(),
+    this.homePage = const PageConfig(
+      "/user",
+      UserModuleHomePage(),
+    ),
+    this.editProfilePage = const PageConfig(
+      "/user/edit",
+      UserModuleEditProfilePage(),
+    ),
+    this.userPage = const PageConfig(
+      "/user/{user_id}",
+      UserModuleHomePage(),
+    ),
+    this.accountPage = const PageConfig(
+      "/user/account",
+      UserModuleAccountPage(),
+    ),
+    this.reauthPage = const PageConfig(
+      "/user/account/reauth",
+      UserModuleAccountReauthPage(),
+    ),
+    this.editEmailPage = const PageConfig(
+      "/user/account/email",
+      UserModuleAccountEditEmailPage(),
+    ),
+    this.editPasswordPage = const PageConfig(
+      "/user/account/password",
+      UserModuleAccountEditPasswordPage(),
+    ),
+    this.blockListPage = const PageConfig(
+      "/user/account/block",
+      UserModuleAccountBlockListPage(),
+    ),
   }) : super(
           enabled: enabled,
           title: title,
-          routePath: routePath,
           queryPath: queryPath,
           query: query,
           rerouteConfigs: rerouteConfigs,
         );
 
   @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
-    final route = {
-      "/$routePath": RouteConfig((_) => homePage),
-      "/$routePath/edit": RouteConfig((_) => editProfilePage),
-      "/$routePath/{user_id}": RouteConfig((_) => homePage),
-      "/$routePath/account": RouteConfig((_) => accountPage),
-      "/$routePath/account/reauth": RouteConfig((_) => reauthPage),
-      "/$routePath/account/email": RouteConfig((_) => editEmailPage),
-      "/$routePath/account/password": RouteConfig((_) => editPasswordPage),
-      "/$routePath/account/block": RouteConfig((_) => blockListPage),
-    };
-
-    return route;
-  }
+  List<PageConfig<Widget>> get pages => [
+        homePage,
+        editProfilePage,
+        userPage,
+        accountPage,
+        reauthPage,
+        editEmailPage,
+        editPasswordPage,
+        blockListPage,
+      ];
 
   /// ページ設定。
-  final Widget homePage;
-  final PageModuleWidget<UserModule> editProfilePage;
-  final PageModuleWidget<UserModule> accountPage;
-  final PageModuleWidget<UserModule> reauthPage;
-  final PageModuleWidget<UserModule> editEmailPage;
-  final PageModuleWidget<UserModule> editPasswordPage;
-  final PageModuleWidget<UserModule> blockListPage;
+  final PageConfig<PageModuleWidget<UserModule>> homePage;
+  final PageConfig<PageModuleWidget<UserModule>> editProfilePage;
+  final PageConfig<PageModuleWidget<UserModule>> userPage;
+  final PageConfig<PageModuleWidget<UserModule>> accountPage;
+  final PageConfig<PageModuleWidget<UserModule>> reauthPage;
+  final PageConfig<PageModuleWidget<UserModule>> editEmailPage;
+  final PageConfig<PageModuleWidget<UserModule>> editPasswordPage;
+  final PageConfig<PageModuleWidget<UserModule>> blockListPage;
 
   /// 追加ウィジェット。
   final Widget? meta;
@@ -120,7 +142,7 @@ class UserModule extends PageModule {
   final String guestName;
 
   /// ユーザーのフィーチャー画像が編集可能な場合`true`.
-  final bool enableImageEditing;
+  final bool enableFeature;
 
   /// フォロー機能を利用する場合`true`。
   final bool enableFollow;
@@ -134,6 +156,9 @@ class UserModule extends PageModule {
   /// ユーザーの削除を有効にする場合`true`。
   final bool enableUserDeleting;
 
+  /// アバター画像を有効にする場合`true`.
+  final bool enableAvatar;
+
   /// 表示する追加情報。
   final Map<String, String> additionalInformation;
 
@@ -144,35 +169,8 @@ class UserModule extends PageModule {
   final bool showHeaderDivider;
 }
 
-abstract class UserWidgetModule extends PageModule
-    with VerifyAppReroutePageModuleMixin {
-  const UserWidgetModule({
-    String? id,
-    bool enabled = true,
-    String? title,
-    ModelQuery? query,
-    String routePath = "",
-    String queryPath = "",
-    Map<String, RouteConfig> routeSettings = const {},
-    List<RerouteConfig> rerouteConfigs = const [],
-    bool verifyAppReroute = false,
-  }) : super(
-          id: id,
-          enabled: enabled,
-          title: title,
-          routePath: routePath,
-          query: query,
-          queryPath: queryPath,
-          routeSettings: routeSettings,
-          verifyAppReroute: verifyAppReroute,
-          rerouteConfigs: rerouteConfigs,
-        );
-  List<String> get enableRoles;
-  Widget build(BuildContext context);
-}
-
-class UserModuleHome extends PageModuleWidget<UserModule> {
-  const UserModuleHome();
+class UserModuleHomePage extends PageModuleWidget<UserModule> {
+  const UserModuleHomePage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, UserModule module) {
@@ -225,7 +223,9 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
       appBar: UIModernDetailAppBar(
         designType: DesignType.modern,
         expandedHeight: module.expandedHeight,
-        icon: NetworkOrAsset.image(icon, ImageSize.thumbnail),
+        icon: module.enableAvatar
+            ? NetworkOrAsset.image(icon, ImageSize.thumbnail)
+            : null,
         automaticallyImplyLeading:
             !own || module.automaticallyImplyLeadingOnHome,
         backgroundImage: image.isNotEmpty
@@ -236,7 +236,9 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
             TextButton(
               onPressed: () {
                 context.rootNavigator.pushNamed(
-                  "/${module.routePath}/edit",
+                  ref.applyModuleTag(
+                    module.editProfilePage.apply(),
+                  ),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -292,7 +294,7 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
                         .localize()
                         .format(["User".localize()]),
                     submitText: "Yes".localize(),
-                    cacnelText: "No".localize(),
+                    cancelText: "No".localize(),
                     onSubmit: () async {
                       try {
                         block[Const.user] = context.model?.userId;
@@ -333,7 +335,7 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
                         .localize()
                         .format(["User".localize()]),
                     submitText: "Yes".localize(),
-                    cacnelText: "No".localize(),
+                    cancelText: "No".localize(),
                     onSubmit: () async {
                       try {
                         final count = report.get(Const.count, 0);
@@ -394,8 +396,8 @@ class UserModuleHome extends PageModuleWidget<UserModule> {
   }
 }
 
-class UserModuleEditProfile extends PageModuleWidget<UserModule> {
-  const UserModuleEditProfile();
+class UserModuleEditProfilePage extends PageModuleWidget<UserModule> {
+  const UserModuleEditProfilePage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, UserModule module) {
@@ -424,7 +426,7 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
                     constraints: BoxConstraints.expand(
                       height: module.expandedHeight - 56,
                     ),
-                    color: module.enableImageEditing
+                    color: module.enableFeature
                         ? context.theme.disabledColor
                         : (context.theme.appBarTheme.backgroundColor ??
                             (context.theme.colorScheme.brightness ==
@@ -463,14 +465,14 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
                         height: module.expandedHeight - 56,
                       ),
                       decoration: BoxDecoration(
-                        color: module.enableImageEditing
+                        color: module.enableFeature
                             ? context.theme.disabledColor
                             : (context.theme.appBarTheme.backgroundColor ??
                                 (context.theme.colorScheme.brightness ==
                                         Brightness.dark
                                     ? context.theme.colorScheme.surface
                                     : context.theme.colorScheme.primary)),
-                        image: module.enableImageEditing
+                        image: module.enableFeature
                             ? DecorationImage(
                                 image: NetworkOrAsset.image(
                                   image,
@@ -484,7 +486,7 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
                               )
                             : null,
                       ),
-                      child: module.enableImageEditing
+                      child: module.enableFeature
                           ? InkWell(
                               onTap: () async {
                                 final media =
@@ -522,58 +524,61 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
                             )
                           : null,
                     ),
-                    Positioned(
-                      left: 24,
-                      bottom: 0,
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: context.theme.scaffoldBackgroundColor,
-                        ),
-                        child: CircleAvatar(
-                          backgroundImage:
-                              NetworkOrAsset.image(icon, ImageSize.thumbnail),
-                          child: InkWell(
-                            onTap: () async {
-                              final media = await context.platform?.mediaDialog(
-                                context,
-                                title: "Please select your %s"
-                                    .localize()
-                                    .format(["Media".localize().toLowerCase()]),
-                                type: PlatformMediaType.image,
-                              );
-                              if (media?.path == null) {
-                                return;
-                              }
+                    if (module.enableAvatar)
+                      Positioned(
+                        left: 24,
+                        bottom: 0,
+                        child: Container(
+                          width: 80,
+                          height: 80,
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: context.theme.scaffoldBackgroundColor,
+                          ),
+                          child: CircleAvatar(
+                            backgroundImage:
+                                NetworkOrAsset.image(icon, ImageSize.thumbnail),
+                            child: InkWell(
+                              onTap: () async {
+                                final media =
+                                    await context.platform?.mediaDialog(
+                                  context,
+                                  title:
+                                      "Please select your %s".localize().format(
+                                    ["Media".localize().toLowerCase()],
+                                  ),
+                                  type: PlatformMediaType.image,
+                                );
+                                if (media?.path == null) {
+                                  return;
+                                }
 
-                              final url = await context.model
-                                  ?.uploadMedia(media!.path!)
-                                  .showIndicator(context);
-                              user[module.iconKey] = url;
-                              await context.model
-                                  ?.saveDocument(user)
-                                  .showIndicator(context);
-                            },
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: const [
-                                ClipOval(
-                                  child: ColoredBox(color: Colors.black54),
-                                ),
-                                Icon(
-                                  Icons.add_a_photo,
-                                  color: Colors.white,
-                                  size: 32,
-                                ),
-                              ],
+                                final url = await context.model
+                                    ?.uploadMedia(media!.path!)
+                                    .showIndicator(context);
+                                user[module.iconKey] = url;
+                                await context.model
+                                    ?.saveDocument(user)
+                                    .showIndicator(context);
+                              },
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: const [
+                                  ClipOval(
+                                    child: ColoredBox(color: Colors.black54),
+                                  ),
+                                  Icon(
+                                    Icons.add_a_photo,
+                                    color: Colors.white,
+                                    size: 32,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -646,8 +651,8 @@ class UserModuleEditProfile extends PageModuleWidget<UserModule> {
   }
 }
 
-class UserModuleAccount extends PageModuleWidget<UserModule> {
-  const UserModuleAccount();
+class UserModuleAccountPage extends PageModuleWidget<UserModule> {
+  const UserModuleAccountPage();
   @override
   Widget build(BuildContext context, WidgetRef ref, UserModule module) {
     return UIScaffold(
@@ -665,81 +670,108 @@ class UserModuleAccount extends PageModuleWidget<UserModule> {
   }
 }
 
-class UserModuleAccountContent extends ModuleWidget<UserModule> {
-  const UserModuleAccountContent();
+class UserModuleAccountContentComponent extends ModuleWidget<UserModule> {
+  const UserModuleAccountContentComponent();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, UserModule module) {
     final userId = context.get("user_id", context.model?.userId ?? "");
     final own = userId == context.model?.userId;
+    final emailAntPasswordAuth = context.plugin?.signIns
+            .any((element) => element.provider == "password") ??
+        false;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         if (own) ...[
-          Headline("Information".localize()),
-          ListItem(
-            title: Text("Email".localize()),
-            textWidth: 150,
-            text: Text(
-              context.model?.email ?? "",
-              softWrap: false,
-            ),
-            trailing: IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {
-                if (context.model?.requiredReauthInEmailAndPassword() ??
-                    false) {
-                  context.navigator.pushNamed(
-                    "/${module.routePath}/account/reauth",
-                    arguments: RouteQuery(
-                      parameters: {
-                        "redirect_to": "/${module.routePath}/account/email"
-                      },
+          if (emailAntPasswordAuth) ...[
+            Headline("Information".localize()),
+            ListItem(
+              title: Text("Email".localize()),
+              textWidth: 150,
+              text: Text(
+                context.model?.email ?? "",
+                softWrap: false,
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.settings),
+                onPressed: () {
+                  if (context.model?.requiredReauthInEmailAndPassword() ??
+                      false) {
+                    context.rootNavigator.pushNamed(
+                      ref.applyModuleTag(module.reauthPage.apply()),
+                      arguments: RouteQuery(
+                        transition: Config.isDesktop
+                            ? PageTransition.modal
+                            : PageTransition.fullscreen,
+                        parameters: {
+                          "redirect_to": ref.applyModuleTag(
+                            module.editEmailPage.apply(),
+                          ),
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  context.rootNavigator.pushNamed(
+                    ref.applyModuleTag(
+                      module.editEmailPage.apply(),
                     ),
+                    arguments: RouteQuery.fullscreenOrModal,
                   );
-                  return;
-                }
-                context.navigator
-                    .pushNamed("/${module.routePath}/account/email");
-              },
+                },
+              ),
             ),
-          ),
-          ListItem(
-            title: Text("Password".localize()),
-            text: const Text(
-              "********",
-              softWrap: false,
-            ),
-            textWidth: 150,
-            trailing: IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {
-                if (context.model?.requiredReauthInEmailAndPassword() ??
-                    false) {
-                  context.navigator.pushNamed(
-                    "/${module.routePath}/account/reauth",
-                    arguments: RouteQuery(
-                      parameters: {
-                        "redirect_to": "/${module.routePath}/account/password"
-                      },
+            ListItem(
+              title: Text("Password".localize()),
+              text: const Text(
+                "********",
+                softWrap: false,
+              ),
+              textWidth: 150,
+              trailing: IconButton(
+                icon: const Icon(Icons.settings),
+                onPressed: () {
+                  if (context.model?.requiredReauthInEmailAndPassword() ??
+                      false) {
+                    context.rootNavigator.pushNamed(
+                      ref.applyModuleTag(module.reauthPage.apply()),
+                      arguments: RouteQuery(
+                        transition: Config.isDesktop
+                            ? PageTransition.modal
+                            : PageTransition.fullscreen,
+                        parameters: {
+                          "redirect_to": ref.applyModuleTag(
+                            module.editPasswordPage.apply(),
+                          ),
+                        },
+                      ),
+                    );
+                    return;
+                  }
+                  context.rootNavigator.pushNamed(
+                    ref.applyModuleTag(
+                      module.editPasswordPage.apply(),
                     ),
+                    arguments: RouteQuery.fullscreenOrModal,
                   );
-                  return;
-                }
-                context.navigator
-                    .pushNamed("/${module.routePath}/account/password");
-              },
+                },
+              ),
             ),
-          ),
+          ],
           Headline("Menu".localize()),
           if (module.enableBlock)
             ListItem(
               title: Text("%s list".localize().format(["Block".localize()])),
               onTap: () {
-                context.navigator
-                    .pushNamed("/${module.routePath}/account/block");
+                context.rootNavigator.pushNamed(
+                  ref.applyModuleTag(
+                    module.blockListPage.apply(),
+                  ),
+                  arguments: RouteQuery.fullscreenOrModal,
+                );
               },
             ),
           ListItem(
@@ -760,7 +792,7 @@ class UserModuleAccountContent extends ModuleWidget<UserModule> {
                       title: "Success".localize(),
                       text: "Logout is complete.".localize(),
                       onSubmit: () {
-                        context.navigator.resetAndPushNamed("/");
+                        context.rootNavigator.resetAndPushNamed("/");
                       },
                       submitText: "Back".localize(),
                     );
@@ -774,7 +806,7 @@ class UserModuleAccountContent extends ModuleWidget<UserModule> {
                   }
                 },
                 submitText: "Yes".localize(),
-                cacnelText: "No".localize(),
+                cancelText: "No".localize(),
               );
             },
           ),
@@ -799,7 +831,7 @@ class UserModuleAccountContent extends ModuleWidget<UserModule> {
                         title: "Success".localize(),
                         text: "Account deletion is complete.".localize(),
                         onSubmit: () {
-                          context.navigator.resetAndPushNamed("/");
+                          context.rootNavigator.resetAndPushNamed("/");
                         },
                         submitText: "Back".localize(),
                       );
@@ -813,7 +845,7 @@ class UserModuleAccountContent extends ModuleWidget<UserModule> {
                     }
                   },
                   submitText: "Yes".localize(),
-                  cacnelText: "No".localize(),
+                  cancelText: "No".localize(),
                 );
               },
             )
@@ -823,8 +855,8 @@ class UserModuleAccountContent extends ModuleWidget<UserModule> {
   }
 }
 
-class UserModuleAccountReauth extends PageModuleWidget<UserModule> {
-  const UserModuleAccountReauth();
+class UserModuleAccountReauthPage extends PageModuleWidget<UserModule> {
+  const UserModuleAccountReauthPage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, UserModule module) {
@@ -889,8 +921,9 @@ class UserModuleAccountReauth extends PageModuleWidget<UserModule> {
                   await context.model
                       ?.reauthInEmailAndPassword(password: password)
                       .showIndicator(context);
-                  context.navigator
-                      .pushReplacementNamed(context.get("redirect_to", "/"));
+                  context.navigator.pushReplacementNamed(
+                    context.get("redirect_to", "/"),
+                  );
                 } catch (e) {
                   UIDialog.show(
                     context,
@@ -910,8 +943,8 @@ class UserModuleAccountReauth extends PageModuleWidget<UserModule> {
   }
 }
 
-class UserModuleAccountEditEmail extends PageModuleWidget<UserModule> {
-  const UserModuleAccountEditEmail();
+class UserModuleAccountEditEmailPage extends PageModuleWidget<UserModule> {
+  const UserModuleAccountEditEmailPage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, UserModule module) {
@@ -992,8 +1025,8 @@ class UserModuleAccountEditEmail extends PageModuleWidget<UserModule> {
   }
 }
 
-class UserModuleAccountEditPassword extends PageModuleWidget<UserModule> {
-  const UserModuleAccountEditPassword();
+class UserModuleAccountEditPasswordPage extends PageModuleWidget<UserModule> {
+  const UserModuleAccountEditPasswordPage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, UserModule module) {
@@ -1091,8 +1124,8 @@ class UserModuleAccountEditPassword extends PageModuleWidget<UserModule> {
   }
 }
 
-class UserModuleAccountBlockList extends PageModuleWidget<UserModule> {
-  const UserModuleAccountBlockList();
+class UserModuleAccountBlockListPage extends PageModuleWidget<UserModule> {
+  const UserModuleAccountBlockListPage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, UserModule module) {
@@ -1141,7 +1174,7 @@ class UserModuleAccountBlockList extends PageModuleWidget<UserModule> {
                     text:
                         "You will unblock this user. Are you sure?".localize(),
                     submitText: "Yes".localize(),
-                    cacnelText: "No".localize(),
+                    cancelText: "No".localize(),
                     onSubmit: () async {
                       try {
                         final doc =

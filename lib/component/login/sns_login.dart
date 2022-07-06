@@ -29,14 +29,20 @@ class SnsLoginModule extends PageModule {
     this.titlePadding =
         const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
     this.padding = const EdgeInsets.all(36),
-    this.redirectTo = "/",
     this.registerVariables = const [],
     this.showOnlyRequiredVariable = true,
     this.anonymousSignInConfig,
     this.runAfterFinishBootHooksOnRidirect = true,
     List<RerouteConfig> rerouteConfigs = const [],
-    this.landingPage = const SnsLoginModuleLanding(),
-    this.registerPage = const SnsLoginModuleRegister(),
+    this.landingPage = const PageConfig(
+      "/landing",
+      SnsLoginModuleLandingPage(),
+    ),
+    this.registerPage = const PageConfig(
+      "/register",
+      SnsLoginModuleRegisterPage(),
+    ),
+    this.redirectPage = const PageConfig("/"),
   }) : super(
           enabled: enabled,
           title: title,
@@ -44,20 +50,15 @@ class SnsLoginModule extends PageModule {
         );
 
   @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
-
-    final route = {
-      "/landing": RouteConfig((_) => landingPage),
-    };
-    return route;
-  }
+  List<PageConfig<Widget>> get pages => [
+        landingPage,
+        registerPage,
+      ];
 
   /// Widget.
-  final PageModuleWidget<SnsLoginModule> landingPage;
-  final PageModuleWidget<SnsLoginModule> registerPage;
+  final PageConfig<PageModuleWidget<SnsLoginModule>> landingPage;
+  final PageConfig<PageModuleWidget<SnsLoginModule>> registerPage;
+  final PageConfig<PageModuleWidget<SnsLoginModule>> redirectPage;
 
   /// レイアウトタイプ。
   final LoginLayoutType layoutType;
@@ -122,9 +123,6 @@ class SnsLoginModule extends PageModule {
   /// コンテンツのパディング。
   final EdgeInsetsGeometry padding;
 
-  /// ログイン後のパス。
-  final String redirectTo;
-
   /// 登録時の値データ。
   final List<VariableConfig> registerVariables;
 
@@ -138,8 +136,8 @@ class SnsLoginModule extends PageModule {
   final bool runAfterFinishBootHooksOnRidirect;
 }
 
-class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
-  const SnsLoginModuleLanding();
+class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
+  const SnsLoginModuleLandingPage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, SnsLoginModule module) {
@@ -265,7 +263,8 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
   ) {
     final buttonColor =
         module.buttonColor ?? module.color ?? context.theme.textColorOnPrimary;
-    final buttonBackgroundColor = module.buttonBackgroundColor;
+    final buttonBackgroundColor =
+        module.buttonBackgroundColor ?? Colors.transparent;
     switch (adapter.provider) {
       case "mock":
         return FormItemSubmit(
@@ -280,7 +279,11 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              context.navigator.pushReplacementNamed(module.redirectTo);
+              context.navigator.pushReplacementNamed(
+                ref.applyModuleTag(
+                  module.registerPage.apply(),
+                ),
+              );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
                   Module.registeredHooks.map(
@@ -299,7 +302,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
             }
           },
         );
-      case "apple":
+      case "apple.com":
         if (!Config.isIOS) {
           return const Empty();
         }
@@ -315,7 +318,11 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              context.navigator.pushReplacementNamed(module.redirectTo);
+              context.navigator.pushReplacementNamed(
+                ref.applyModuleTag(
+                  module.registerPage.apply(),
+                ),
+              );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
                   Module.registeredHooks.map(
@@ -334,7 +341,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
             }
           },
         );
-      case "google":
+      case "google.com":
         return FormItemSubmit(
           "Google SignIn".localize(),
           borderRadius: 35,
@@ -347,7 +354,11 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              context.navigator.pushReplacementNamed(module.redirectTo);
+              context.navigator.pushReplacementNamed(
+                ref.applyModuleTag(
+                  module.registerPage.apply(),
+                ),
+              );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
                   Module.registeredHooks.map(
@@ -366,7 +377,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
             }
           },
         );
-      case "facebook":
+      case "facebook.com":
         return FormItemSubmit(
           "Facebook SignIn".localize(),
           borderRadius: 35,
@@ -379,7 +390,11 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              context.navigator.pushReplacementNamed(module.redirectTo);
+              context.navigator.pushReplacementNamed(
+                ref.applyModuleTag(
+                  module.registerPage.apply(),
+                ),
+              );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
                   Module.registeredHooks.map(
@@ -398,7 +413,7 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
             }
           },
         );
-      case "twitter":
+      case "twitter.com":
         return FormItemSubmit(
           "Twitter SignIn".localize(),
           borderRadius: 35,
@@ -411,7 +426,11 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              context.navigator.pushReplacementNamed(module.redirectTo);
+              context.navigator.pushReplacementNamed(
+                ref.applyModuleTag(
+                  module.registerPage.apply(),
+                ),
+              );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
                   Module.registeredHooks.map(
@@ -444,7 +463,11 @@ class SnsLoginModuleLanding extends PageModuleWidget<SnsLoginModule> {
           onPressed: () async {
             try {
               await adapter.signIn().showIndicator(context);
-              context.navigator.pushReplacementNamed(module.redirectTo);
+              context.navigator.pushReplacementNamed(
+                ref.applyModuleTag(
+                  module.registerPage.apply(),
+                ),
+              );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
                   Module.registeredHooks.map(
@@ -525,8 +548,8 @@ class _LoginModuleBackgroundImage extends StatelessWidget {
   }
 }
 
-class SnsLoginModuleRegister extends PageModuleWidget<SnsLoginModule> {
-  const SnsLoginModuleRegister();
+class SnsLoginModuleRegisterPage extends PageModuleWidget<SnsLoginModule> {
+  const SnsLoginModuleRegisterPage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, SnsLoginModule module) {
@@ -579,7 +602,11 @@ class SnsLoginModuleRegister extends PageModuleWidget<SnsLoginModule> {
               updated: false,
             );
             await context.model?.saveDocument(doc).showIndicator(context);
-            context.navigator.pushReplacementNamed(module.redirectTo);
+            context.navigator.pushReplacementNamed(
+              ref.applyModuleTag(
+                module.registerPage.apply(),
+              ),
+            );
             if (module.runAfterFinishBootHooksOnRidirect) {
               Future.wait(
                 Module.registeredHooks

@@ -7,9 +7,9 @@ class DetailModule extends PageModule {
   const DetailModule({
     bool enabled = true,
     String? title,
-    String routePath = "detail",
     required String queryPath,
     ModelQuery? query,
+    required this.routePathPrefix,
     this.commentQueryPath = "comment",
     this.nameKey = Const.name,
     this.textKey = Const.text,
@@ -18,7 +18,6 @@ class DetailModule extends PageModule {
     this.timeKey = Const.time,
     this.userKey = Const.user,
     this.tagKey = Const.tag,
-    this.searchPath = "search",
     this.likeCountKey = "likeCount",
     this.userPath = Const.user,
     this.enableBookmark = true,
@@ -32,8 +31,17 @@ class DetailModule extends PageModule {
     this.automaticallyImplyLeadingOnHome = true,
     this.expandedHeight = 240,
     List<RerouteConfig> rerouteConfigs = const [],
-    this.homePage = const DetailModuleHome(),
-    this.imagePage = const DetailModuleImageView(),
+    this.homePage = const PageConfig(
+      "/{detail_id}",
+      DetailModuleHomePage(),
+    ),
+    this.imagePage = const PageConfig(
+      "/{detail_id}/view",
+      DetailModuleImageViewPage(),
+    ),
+    this.editPage = const PageConfig("/{detail_id}/edit"),
+    this.searchPage = const PageConfig("/search"),
+    this.userPage = const PageConfig("/user/{user_id}"),
     this.appBarActions = const [],
     this.appBarBottomActions = const [
       DetailModuleDateWidget(),
@@ -51,26 +59,27 @@ class DetailModule extends PageModule {
           title: title,
           query: query,
           queryPath: queryPath,
-          routePath: routePath,
           rerouteConfigs: rerouteConfigs,
         );
 
   @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
+  final String routePathPrefix;
 
-    final route = {
-      "/$routePath/{detail_id}": RouteConfig((_) => homePage),
-      "/$routePath/{detail_id}/view": RouteConfig((_) => imagePage),
-    };
-    return route;
-  }
+  @override
+  List<PageConfig> get pages => [
+        searchPage,
+        userPage,
+        homePage,
+        imagePage,
+        editPage,
+      ];
 
   // Page settings.
-  final PageModuleWidget<DetailModule> homePage;
-  final PageModuleWidget<DetailModule> imagePage;
+  final PageConfig<PageModuleWidget<DetailModule>> homePage;
+  final PageConfig<PageModuleWidget<DetailModule>> imagePage;
+  final PageConfig<PageModuleWidget<DetailModule>> editPage;
+  final PageConfig<PageModuleWidget<DetailModule>> searchPage;
+  final PageConfig<PageModuleWidget<DetailModule>> userPage;
 
   /// Keys.
   final String tagKey;
@@ -88,7 +97,6 @@ class DetailModule extends PageModule {
   /// ツールバーの高さ
   final double expandedHeight;
 
-  final String searchPath;
   final String userPath;
   final String likePath;
   final String bookmarkPath;
@@ -110,8 +118,8 @@ class DetailModule extends PageModule {
   final Widget? bottom;
 }
 
-class DetailModuleHome extends PageModuleWidget<DetailModule> {
-  const DetailModuleHome();
+class DetailModuleHomePage extends PageModuleWidget<DetailModule> {
+  const DetailModuleHomePage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, DetailModule module) {
@@ -166,8 +174,14 @@ class DetailModuleHome extends PageModuleWidget<DetailModule> {
               title: Text(name),
               actions: module.appBarActions,
               onTapImage: () {
-                context.navigator
-                    .pushNamed("/${module.routePath}/$detailId/view");
+                context.navigator.pushNamed(
+                  ref.applyModuleTag(
+                    module.imagePage.apply(
+                      {"detail_id": detailId},
+                      module.routePathPrefix,
+                    ),
+                  ),
+                );
               },
               designType: DesignType.modern,
               expandedHeight: module.expandedHeight,
@@ -403,7 +417,9 @@ class DetailModuleTagsWidget extends ModuleWidget<DetailModule> {
             ),
             onPressed: () {
               context.rootNavigator.pushNamed(
-                "/${module.searchPath}",
+                ref.applyModuleTag(
+                  module.searchPage.apply(),
+                ),
                 arguments: RouteQuery(
                   transition: PageTransition.fullscreen,
                   parameters: {"query": e},
@@ -512,7 +528,9 @@ class DetailModuleProfileWidget extends ModuleWidget<DetailModule> {
     return InkWell(
       onTap: () {
         context.rootNavigator.pushNamed(
-          "/user/${context.model?.userId}",
+          ref.applyModuleTag(
+            module.userPage.apply({"user_id": context.model!.userId}),
+          ),
           arguments: RouteQuery.fullscreenOrModal,
         );
       },
@@ -615,11 +633,11 @@ class DetailModuleBookmarkIcon extends ModuleWidget<DetailModule> {
 class DetailModuleEditIcon extends ModuleWidget<DetailModule> {
   const DetailModuleEditIcon({
     this.icon = Icons.edit,
-    this.routePath,
+    this.editPage,
   });
 
   final IconData icon;
-  final String? routePath;
+  final PageConfig<PageModuleWidget<DetailModule>>? editPage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref, DetailModule module) {
@@ -633,7 +651,13 @@ class DetailModuleEditIcon extends ModuleWidget<DetailModule> {
       icon: Icon(icon),
       onPressed: () {
         context.rootNavigator.pushNamed(
-          routePath ?? "/${module.routePath}/$detailId/edit",
+          ref.applyModuleTag(
+            editPage?.apply({"detail_id": detailId}) ??
+                module.editPage.apply(
+                  {"detail_id": detailId},
+                  module.routePathPrefix,
+                ),
+          ),
           arguments: RouteQuery.fullscreenOrModal,
         );
       },
@@ -667,7 +691,7 @@ class DetailModuleDeleteIcon extends ModuleWidget<DetailModule> {
             [name],
           ),
           submitText: "Yes".localize(),
-          cacnelText: "No".localize(),
+          cancelText: "No".localize(),
           onSubmit: () async {
             await context.model?.deleteDocument(detail).showIndicator(context);
             UIDialog.show(
@@ -686,8 +710,8 @@ class DetailModuleDeleteIcon extends ModuleWidget<DetailModule> {
   }
 }
 
-class DetailModuleImageView extends PageModuleWidget<DetailModule> {
-  const DetailModuleImageView();
+class DetailModuleImageViewPage extends PageModuleWidget<DetailModule> {
+  const DetailModuleImageViewPage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, DetailModule module) {

@@ -10,47 +10,46 @@ class MemberModule extends PageModule {
   const MemberModule({
     bool enabled = true,
     String? title,
-    String routePath = "member",
     String queryPath = "user",
     ModelQuery? query,
     this.nameKey = Const.name,
     this.iconKey = Const.icon,
-    this.profilePath = Const.user,
     this.formMessage,
     this.groupId,
     this.affiliationKey = "affiliation",
     this.sliverLayoutWhenModernDesignOnHome = true,
     this.automaticallyImplyLeadingOnHome = true,
     List<RerouteConfig> rerouteConfigs = const [],
-    this.homePage = const MemberModuleHome(),
-    this.invitePage = const MemberModuleInvite(),
+    this.homePage = const PageConfig(
+      "/member",
+      MemberModuleHomePage(),
+    ),
+    this.invitePage = const PageConfig(
+      "/member/innvite",
+      MemberModuleInvitePage(),
+    ),
+    this.profilePage = const PageConfig("/user/{user_id}"),
     this.designType = DesignType.modern,
     this.inviteType = MemberModuleInviteType.none,
   }) : super(
           enabled: enabled,
           title: title,
-          routePath: routePath,
           query: query,
           queryPath: queryPath,
           rerouteConfigs: rerouteConfigs,
         );
 
   @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
-
-    final route = {
-      "/$routePath": RouteConfig((_) => homePage),
-      "/$routePath/invite": RouteConfig((_) => invitePage),
-    };
-    return route;
-  }
+  List<PageConfig<Widget>> get pages => [
+        homePage,
+        invitePage,
+        profilePage,
+      ];
 
   // Page settings.
-  final PageModuleWidget<MemberModule> homePage;
-  final PageModuleWidget<MemberModule> invitePage;
+  final PageConfig<PageModuleWidget<MemberModule>> homePage;
+  final PageConfig<PageModuleWidget<MemberModule>> invitePage;
+  final PageConfig<PageModuleWidget<MemberModule>> profilePage;
 
   /// ホームをスライバーレイアウトにする場合True.
   final bool sliverLayoutWhenModernDesignOnHome;
@@ -67,9 +66,6 @@ class MemberModule extends PageModule {
   /// アイコンのキー。
   final String iconKey;
 
-  /// プロフィールへのパス。
-  final String profilePath;
-
   /// 招待のタイプ。
   final MemberModuleInviteType inviteType;
 
@@ -83,8 +79,8 @@ class MemberModule extends PageModule {
   final String? formMessage;
 }
 
-class MemberModuleHome extends PageModuleWidget<MemberModule> {
-  const MemberModuleHome();
+class MemberModuleHomePage extends PageModuleWidget<MemberModule> {
+  const MemberModuleHomePage();
 
   String _groupId(BuildContext context, WidgetRef ref, MemberModule module) {
     if (module.groupId.isEmpty) {
@@ -140,7 +136,7 @@ class MemberModuleHome extends PageModuleWidget<MemberModule> {
                                   .localize()
                                   .format(["User".localize()]),
                           submitText: "Yes".localize(),
-                          cacnelText: "No".localize(),
+                          cancelText: "No".localize(),
                           onSubmit: () async {
                             final doc = members
                                 .firstWhereOrNull((e) => e.uid == item.uid);
@@ -180,7 +176,11 @@ class MemberModuleHome extends PageModuleWidget<MemberModule> {
                     ),
               onTap: () {
                 context.navigator.pushNamed(
-                  "/${module.profilePath}/${item.uid}",
+                  ref.applyModuleTag(
+                    module.profilePage.apply(
+                      {"user_id": item.uid},
+                    ),
+                  ),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -193,7 +193,7 @@ class MemberModuleHome extends PageModuleWidget<MemberModule> {
           : FloatingActionButton.extended(
               onPressed: () {
                 context.navigator.pushNamed(
-                  "/${module.routePath}/invite",
+                  ref.applyModuleTag(module.invitePage.apply()),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -204,8 +204,8 @@ class MemberModuleHome extends PageModuleWidget<MemberModule> {
   }
 }
 
-class MemberModuleInvite extends PageModuleWidget<MemberModule> {
-  const MemberModuleInvite();
+class MemberModuleInvitePage extends PageModuleWidget<MemberModule> {
+  const MemberModuleInvitePage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, MemberModule module) {

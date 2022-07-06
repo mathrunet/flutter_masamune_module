@@ -5,39 +5,36 @@ class ListModule extends PageModule {
   const ListModule({
     bool enabled = true,
     String? title,
-    String routePath = "list",
-    String queryPath = "list",
     ModelQuery? query,
+    required String queryPath,
+    required this.routePathPrefix,
     this.padding = const EdgeInsets.all(0),
     this.enableAdd = true,
     this.mergeConfig,
     this.automaticallyImplyLeadingOnHome = true,
     this.sliverLayoutWhenModernDesignOnHome = true,
     List<RerouteConfig> rerouteConfigs = const [],
-    this.homePage = const ListModuleHome(),
+    this.homePage = const PageConfig("/", ListModuleHomePage()),
+    this.editPage = const PageConfig("/edit"),
     this.top = const [],
     this.bottom = const [],
-    this.item = const ListModuleItem(),
+    this.item = const ListModuleItemWidget(),
   }) : super(
           enabled: enabled,
           title: title,
-          routePath: routePath,
           queryPath: queryPath,
           query: query,
           rerouteConfigs: rerouteConfigs,
         );
 
   @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
+  final String routePathPrefix;
 
-    final route = {
-      "/$routePath": RouteConfig((_) => homePage),
-    };
-    return route;
-  }
+  @override
+  List<PageConfig<Widget>> get pages => [
+        homePage,
+        editPage,
+      ];
 
   /// Form padding.
   final EdgeInsetsGeometry padding;
@@ -58,7 +55,8 @@ class ListModule extends PageModule {
   final MergeCollectionConfig? mergeConfig;
 
   /// Widget.
-  final PageModuleWidget<ListModule> homePage;
+  final PageConfig<PageModuleWidget<ListModule>> homePage;
+  final PageConfig<PageModuleWidget<ListModule>> editPage;
 
   /// True if Home is a sliver layout.
   final bool sliverLayoutWhenModernDesignOnHome;
@@ -67,8 +65,8 @@ class ListModule extends PageModule {
   final bool automaticallyImplyLeadingOnHome;
 }
 
-class ListModuleHome extends PageModuleWidget<ListModule> {
-  const ListModuleHome();
+class ListModuleHomePage extends PageModuleWidget<ListModule> {
+  const ListModuleHomePage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref, ListModule module) {
@@ -107,7 +105,9 @@ class ListModuleHome extends PageModuleWidget<ListModule> {
           ? FloatingActionButton.extended(
               onPressed: () {
                 context.rootNavigator.pushNamed(
-                  "/${module.routePath}/edit",
+                  ref.applyModuleTag(
+                    module.editPage.apply({}, module.routePathPrefix),
+                  ),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -119,8 +119,8 @@ class ListModuleHome extends PageModuleWidget<ListModule> {
   }
 }
 
-class ListModuleItem extends ModuleValueWidget<ListModule, DynamicMap> {
-  const ListModuleItem();
+class ListModuleItemWidget extends ModuleValueWidget<ListModule, DynamicMap> {
+  const ListModuleItemWidget();
   @override
   Widget build(
     BuildContext context,
@@ -134,8 +134,9 @@ class ListModuleItem extends ModuleValueWidget<ListModule, DynamicMap> {
   }
 }
 
-class ListModuleProfile extends ModuleValueWidget<ListModule, DynamicMap> {
-  const ListModuleProfile();
+class ListModuleProfileWidget
+    extends ModuleValueWidget<ListModule, DynamicMap> {
+  const ListModuleProfileWidget();
   @override
   Widget build(
     BuildContext context,

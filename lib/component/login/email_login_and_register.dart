@@ -35,17 +35,35 @@ class EmailLoginAndRegisterModule extends PageModule {
     this.titlePadding =
         const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
     this.padding = const EdgeInsets.all(36),
-    this.redirectTo = "/",
     List<RerouteConfig> rerouteConfigs = const [],
     this.registerVariables = const {},
     this.showOnlyRequiredVariable = true,
     this.runAfterFinishBootHooksOnRidirect = true,
-    this.landingPage = const EmailLoginAndRegisterModuleLanding(),
-    this.loginPage = const EmailLoginAndRegisterModuleLogin(),
-    this.resetPage = const EmailLoginAndRegisterModulePasswordReset(),
-    this.registerPage = const EmailLoginAndRegisterModuleRegister(),
-    this.registerAnonymousPage =
-        const EmailLoginAndRegisterModuleRegisterAnonymous(),
+    this.landingPage = const PageConfig(
+      "/landing",
+      EmailLoginAndRegisterModuleLandingPage(),
+    ),
+    this.loginPage = const PageConfig(
+      "/login",
+      EmailLoginAndRegisterModuleLoginPage(),
+    ),
+    this.resetPage = const PageConfig(
+      "/reset",
+      EmailLoginAndRegisterModulePasswordResetPage(),
+    ),
+    this.registerPage = const PageConfig(
+      "/register",
+      EmailLoginAndRegisterModuleRegisterPage(),
+    ),
+    this.registerAnonymousPage = const PageConfig(
+      "/register/anonymous",
+      EmailLoginAndRegisterModuleRegisterAnonymousPage(),
+    ),
+    this.registerWithRolePage = const PageConfig(
+      "/register/{role_id}",
+      EmailLoginAndRegisterModuleRegisterPage(),
+    ),
+    this.redirectPage = const PageConfig("/"),
   }) : super(
           enabled: enabled,
           title: title,
@@ -53,27 +71,25 @@ class EmailLoginAndRegisterModule extends PageModule {
         );
 
   @override
-  Map<String, RouteConfig> get routeSettings {
-    if (!enabled) {
-      return const {};
-    }
-    final route = {
-      "/landing": RouteConfig((_) => landingPage),
-      "/login": RouteConfig((_) => loginPage),
-      "/reset": RouteConfig((_) => resetPage),
-      "/register": RouteConfig((_) => registerPage),
-      "/register/anonymous": RouteConfig((_) => registerAnonymousPage),
-      "/register/{role_id}": RouteConfig((_) => registerPage),
-    };
-    return route;
-  }
+  List<PageConfig<Widget>> get pages => [
+        landingPage,
+        loginPage,
+        resetPage,
+        registerPage,
+        registerAnonymousPage,
+        registerWithRolePage,
+      ];
 
   // ページ。
-  final PageModuleWidget<EmailLoginAndRegisterModule> landingPage;
-  final PageModuleWidget<EmailLoginAndRegisterModule> loginPage;
-  final PageModuleWidget<EmailLoginAndRegisterModule> resetPage;
-  final PageModuleWidget<EmailLoginAndRegisterModule> registerPage;
-  final PageModuleWidget<EmailLoginAndRegisterModule> registerAnonymousPage;
+  final PageConfig<PageModuleWidget<EmailLoginAndRegisterModule>> landingPage;
+  final PageConfig<PageModuleWidget<EmailLoginAndRegisterModule>> loginPage;
+  final PageConfig<PageModuleWidget<EmailLoginAndRegisterModule>> resetPage;
+  final PageConfig<PageModuleWidget<EmailLoginAndRegisterModule>> registerPage;
+  final PageConfig<PageModuleWidget<EmailLoginAndRegisterModule>>
+      registerAnonymousPage;
+  final PageConfig<PageModuleWidget<EmailLoginAndRegisterModule>>
+      registerWithRolePage;
+  final PageConfig<PageModuleWidget<EmailLoginAndRegisterModule>> redirectPage;
 
   /// レイアウトタイプ。
   final LoginLayoutType layoutType;
@@ -141,9 +157,6 @@ class EmailLoginAndRegisterModule extends PageModule {
   /// コンテンツのパディング。
   final EdgeInsetsGeometry padding;
 
-  /// ログイン後のパス。
-  final String redirectTo;
-
   /// True if [AfterFinishBoot] hook is executed on redirect.
   final bool runAfterFinishBootHooksOnRidirect;
 
@@ -154,9 +167,9 @@ class EmailLoginAndRegisterModule extends PageModule {
   final bool showOnlyRequiredVariable;
 }
 
-class EmailLoginAndRegisterModuleLanding
+class EmailLoginAndRegisterModuleLandingPage
     extends PageModuleWidget<EmailLoginAndRegisterModule> {
-  const EmailLoginAndRegisterModuleLanding();
+  const EmailLoginAndRegisterModuleLandingPage();
 
   @override
   Widget build(
@@ -267,8 +280,11 @@ class EmailLoginAndRegisterModuleLanding
                                       onPressed: () async {
                                         switch (menu.path) {
                                           case "login":
-                                            context.navigator
-                                                .pushNamed("/${menu.path!}");
+                                            context.navigator.pushNamed(
+                                              ref.applyModuleTag(
+                                                "/${menu.path!}",
+                                              ),
+                                            );
                                             break;
                                           case "anonymous":
                                             try {
@@ -281,12 +297,16 @@ class EmailLoginAndRegisterModuleLanding
                                               )) {
                                                 context.navigator
                                                     .pushReplacementNamed(
-                                                  "/register/anonymous",
+                                                  ref.applyModuleTag(
+                                                    module.loginPage.apply(),
+                                                  ),
                                                 );
                                               } else {
                                                 context.navigator
                                                     .pushReplacementNamed(
-                                                  module.redirectTo,
+                                                  ref.applyModuleTag(
+                                                    module.redirectPage.apply(),
+                                                  ),
                                                 );
                                                 if (module
                                                     .runAfterFinishBootHooksOnRidirect) {
@@ -313,7 +333,12 @@ class EmailLoginAndRegisterModuleLanding
                                             break;
                                           default:
                                             context.navigator.pushNamed(
-                                              "/register/${menu.path}",
+                                              ref.applyModuleTag(
+                                                module.registerWithRolePage
+                                                    .apply({
+                                                  "role_id": menu.path!
+                                                }),
+                                              ),
                                               arguments: RouteQuery.fade,
                                             );
                                             break;
@@ -351,9 +376,9 @@ class EmailLoginAndRegisterModuleLanding
   }
 }
 
-class EmailLoginAndRegisterModuleLogin
+class EmailLoginAndRegisterModuleLoginPage
     extends PageModuleWidget<EmailLoginAndRegisterModule> {
-  const EmailLoginAndRegisterModuleLogin();
+  const EmailLoginAndRegisterModuleLoginPage();
 
   @override
   Widget build(
@@ -493,8 +518,12 @@ class EmailLoginAndRegisterModuleLogin
                   Center(
                     child: TextButton(
                       onPressed: () {
-                        context.navigator
-                            .pushNamed("/reset", arguments: RouteQuery.fade);
+                        context.navigator.pushNamed(
+                          ref.applyModuleTag(
+                            module.resetPage.apply(),
+                          ),
+                          arguments: RouteQuery.fade,
+                        );
                       },
                       child: Text(
                         "Click here if you forget your password".localize(),
@@ -554,7 +583,11 @@ class EmailLoginAndRegisterModuleLogin
             userPath: module.userPath,
           )
           .showIndicator(context);
-      context.navigator.pushReplacementNamed(module.redirectTo);
+      context.navigator.pushReplacementNamed(
+        ref.applyModuleTag(
+          module.redirectPage.apply(),
+        ),
+      );
       if (module.runAfterFinishBootHooksOnRidirect) {
         Future.wait(
           Module.registeredHooks
@@ -573,9 +606,9 @@ class EmailLoginAndRegisterModuleLogin
   }
 }
 
-class EmailLoginAndRegisterModuleRegister
+class EmailLoginAndRegisterModuleRegisterPage
     extends PageModuleWidget<EmailLoginAndRegisterModule> {
-  const EmailLoginAndRegisterModuleRegister();
+  const EmailLoginAndRegisterModuleRegisterPage();
 
   @override
   Widget build(
@@ -849,7 +882,11 @@ class EmailLoginAndRegisterModuleRegister
           },
         ) ??
         false) {
-      context.navigator.pushReplacementNamed(module.redirectTo);
+      context.navigator.pushReplacementNamed(
+        ref.applyModuleTag(
+          module.redirectPage.apply(),
+        ),
+      );
       if (module.runAfterFinishBootHooksOnRidirect) {
         Future.wait(
           Module.registeredHooks
@@ -908,7 +945,11 @@ class EmailLoginAndRegisterModuleRegister
         text: "Registration has been completed.".localize(),
         submitText: "Forward".localize(),
         onSubmit: () {
-          context.navigator.pushReplacementNamed(module.redirectTo);
+          context.navigator.pushReplacementNamed(
+            ref.applyModuleTag(
+              module.redirectPage.apply(),
+            ),
+          );
           if (module.runAfterFinishBootHooksOnRidirect) {
             Future.wait(
               Module.registeredHooks
@@ -930,9 +971,9 @@ class EmailLoginAndRegisterModuleRegister
   }
 }
 
-class EmailLoginAndRegisterModulePasswordReset
+class EmailLoginAndRegisterModulePasswordResetPage
     extends PageModuleWidget<EmailLoginAndRegisterModule> {
-  const EmailLoginAndRegisterModulePasswordReset();
+  const EmailLoginAndRegisterModulePasswordResetPage();
   @override
   Widget build(
     BuildContext context,
@@ -1154,9 +1195,9 @@ class _EmailLoginAndRegisterModuleBackgroundImage extends StatelessWidget {
   }
 }
 
-class EmailLoginAndRegisterModuleRegisterAnonymous
+class EmailLoginAndRegisterModuleRegisterAnonymousPage
     extends PageModuleWidget<EmailLoginAndRegisterModule> {
-  const EmailLoginAndRegisterModuleRegisterAnonymous();
+  const EmailLoginAndRegisterModuleRegisterAnonymousPage();
 
   @override
   Widget build(
@@ -1216,7 +1257,11 @@ class EmailLoginAndRegisterModuleRegisterAnonymous
               updated: false,
             );
             await context.model?.saveDocument(doc).showIndicator(context);
-            context.navigator.pushReplacementNamed(module.redirectTo);
+            context.navigator.pushReplacementNamed(
+              ref.applyModuleTag(
+                module.redirectPage.apply(),
+              ),
+            );
             if (module.runAfterFinishBootHooksOnRidirect) {
               Future.wait(
                 Module.registeredHooks
