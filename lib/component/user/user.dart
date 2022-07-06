@@ -707,7 +707,7 @@ class UserModuleAccountContentComponent extends ModuleWidget<UserModule> {
                             ? PageTransition.modal
                             : PageTransition.fullscreen,
                         parameters: {
-                          "redirect_to": ref.applyModuleTag(
+                          kRedirectTo: ref.applyModuleTag(
                             module.editEmailPage.apply(),
                           ),
                         },
@@ -743,7 +743,7 @@ class UserModuleAccountContentComponent extends ModuleWidget<UserModule> {
                             ? PageTransition.modal
                             : PageTransition.fullscreen,
                         parameters: {
-                          "redirect_to": ref.applyModuleTag(
+                          kRedirectTo: ref.applyModuleTag(
                             module.editPasswordPage.apply(),
                           ),
                         },
@@ -922,7 +922,7 @@ class UserModuleAccountReauthPage extends PageModuleWidget<UserModule> {
                       ?.reauthInEmailAndPassword(password: password)
                       .showIndicator(context);
                   context.navigator.pushReplacementNamed(
-                    context.get("redirect_to", "/"),
+                    context.get(kRedirectTo, "/"),
                   );
                 } catch (e) {
                   UIDialog.show(

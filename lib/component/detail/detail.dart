@@ -66,7 +66,7 @@ class DetailModule extends PageModule {
   final String routePathPrefix;
 
   @override
-  List<PageConfig> get pages => [
+  List<PageConfig<Widget>> get pages => [
         searchPage,
         userPage,
         homePage,
