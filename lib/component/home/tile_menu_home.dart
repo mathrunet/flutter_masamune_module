@@ -437,7 +437,7 @@ class TileMenuHomeModuleInformationWidget
     this.icon = Icons.info_rounded,
     this.nameKey = Const.name,
     this.dataLabel,
-    this.infoPage = const PageConfig("/info/{info_id}"),
+    this.infoPage = const ExternalPageConfig("/info/{info_id}"),
     this.createdTimeKey = Const.createdTime,
     this.limit = 10,
   });
@@ -450,7 +450,7 @@ class TileMenuHomeModuleInformationWidget
   final String createdTimeKey;
   final int limit;
 
-  final PageConfig<PageModuleWidget<TileMenuHomeModule>> infoPage;
+  final ExternalPageConfig<PageModuleWidget<TileMenuHomeModule>> infoPage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref, TileMenuHomeModule module) {
@@ -570,7 +570,7 @@ class TileMenuHomeModuleCalendarWidget
     this.allDayKey = "allDay",
     this.icon = Icons.calendar_today,
     this.alwaysShown = false,
-    this.detailPage = const PageConfig("/calendar/{event_id}/detail"),
+    this.detailPage = const ExternalPageConfig("/calendar/{event_id}/detail"),
   });
 
   final String? title;
@@ -580,7 +580,7 @@ class TileMenuHomeModuleCalendarWidget
   final String allDayKey;
   final IconData icon;
   final bool alwaysShown;
-  final PageConfig<PageModuleWidget<TileMenuHomeModule>> detailPage;
+  final ExternalPageConfig<PageModuleWidget<TileMenuHomeModule>> detailPage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref, TileMenuHomeModule module) {
