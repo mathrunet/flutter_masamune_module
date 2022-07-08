@@ -17,18 +17,19 @@ class MemberModule extends PageModule {
     this.formMessage,
     this.groupId,
     this.affiliationKey = "affiliation",
+    String routePathPrefix = "memter",
     this.sliverLayoutWhenModernDesignOnHome = true,
     this.automaticallyImplyLeadingOnHome = true,
     List<RerouteConfig> rerouteConfigs = const [],
     this.homePage = const PageConfig(
-      "/member",
+      "/",
       MemberModuleHomePage(),
     ),
     this.invitePage = const PageConfig(
-      "/member/innvite",
+      "/innvite",
       MemberModuleInvitePage(),
     ),
-    this.profilePage = const PageConfig("/user/{user_id}"),
+    this.profilePage = const ExternalPageConfig("/user/{user_id}"),
     this.designType = DesignType.modern,
     this.inviteType = MemberModuleInviteType.none,
   }) : super(
@@ -36,6 +37,7 @@ class MemberModule extends PageModule {
           title: title,
           query: query,
           queryPath: queryPath,
+          routePathPrefix: routePathPrefix,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -49,7 +51,7 @@ class MemberModule extends PageModule {
   // Page settings.
   final PageConfig<PageModuleWidget<MemberModule>> homePage;
   final PageConfig<PageModuleWidget<MemberModule>> invitePage;
-  final PageConfig<PageModuleWidget<MemberModule>> profilePage;
+  final ExternalPageConfig<PageModuleWidget<MemberModule>> profilePage;
 
   /// ホームをスライバーレイアウトにする場合True.
   final bool sliverLayoutWhenModernDesignOnHome;
@@ -176,10 +178,9 @@ class MemberModuleHomePage extends PageModuleWidget<MemberModule> {
                     ),
               onTap: () {
                 context.navigator.pushNamed(
-                  ref.applyModuleTag(
-                    module.profilePage.apply(
-                      {"user_id": item.uid},
-                    ),
+                  module.profilePage.apply(
+                    module,
+                    {"user_id": item.uid},
                   ),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -193,7 +194,7 @@ class MemberModuleHomePage extends PageModuleWidget<MemberModule> {
           : FloatingActionButton.extended(
               onPressed: () {
                 context.navigator.pushNamed(
-                  ref.applyModuleTag(module.invitePage.apply()),
+                  ref.applyModuleTag(module.invitePage.apply(module)),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },

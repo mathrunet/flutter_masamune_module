@@ -8,6 +8,7 @@ class TileGalleryMediaModule extends PageModule {
     String? title,
     String queryPath = "gallery",
     ModelQuery? query,
+    String routePathPrefix = "gallery",
     this.mediaKey = Const.media,
     this.nameKey = Const.name,
     this.textKey = Const.text,
@@ -26,23 +27,23 @@ class TileGalleryMediaModule extends PageModule {
     this.mediaType = PlatformMediaType.all,
     List<RerouteConfig> rerouteConfigs = const [],
     this.homePage = const PageConfig(
-      "/gallery",
+      "/",
       TileGalleryMediaModuleHomePage(),
     ),
     this.addPage = const PageConfig(
-      "/gallery/edit",
+      "/edit",
       TileGalleryMediaModuleEditPage(),
     ),
     this.mediaDetailPage = const PageConfig(
-      "/gallery/media/{media_id}",
+      "/media/{media_id}",
       TileGalleryMediaModuleMediaDetailPage(),
     ),
     this.mediaViewPage = const PageConfig(
-      "/gallery/media/{media_id}/view",
+      "/media/{media_id}/view",
       TileGalleryMediaModuleMediaViewPage(),
     ),
     this.editPage = const PageConfig(
-      "/gallery/media/{media_id}/edit",
+      "/media/{media_id}/edit",
       TileGalleryMediaModuleEditPage(),
     ),
   }) : super(
@@ -50,6 +51,7 @@ class TileGalleryMediaModule extends PageModule {
           title: title,
           query: query,
           queryPath: queryPath,
+          routePathPrefix: routePathPrefix,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -163,15 +165,15 @@ class TileGalleryMediaModuleHomePage
                         fit: BoxFit.cover,
                         onTap: () {
                           context.rootNavigator.pushNamed(
-                            ref.applyModuleTag(
-                              !module.enableDetail
-                                  ? module.mediaViewPage.apply(
-                                      {"media_id": item.get(Const.uid, "")},
-                                    )
-                                  : module.mediaDetailPage.apply(
-                                      {"media_id": item.get(Const.uid, "")},
-                                    ),
-                            ),
+                            !module.enableDetail
+                                ? module.mediaViewPage.apply(
+                                    module,
+                                    {"media_id": item.get(Const.uid, "")},
+                                  )
+                                : module.mediaDetailPage.apply(
+                                    module,
+                                    {"media_id": item.get(Const.uid, "")},
+                                  ),
                             arguments: RouteQuery.fullscreenOrModal,
                           );
                         },
@@ -184,15 +186,15 @@ class TileGalleryMediaModuleHomePage
                     fit: BoxFit.cover,
                     onTap: () {
                       context.rootNavigator.pushNamed(
-                        ref.applyModuleTag(
-                          !module.enableDetail
-                              ? module.mediaViewPage.apply(
-                                  {"media_id": item.get(Const.uid, "")},
-                                )
-                              : module.mediaDetailPage.apply(
-                                  {"media_id": item.get(Const.uid, "")},
-                                ),
-                        ),
+                        !module.enableDetail
+                            ? module.mediaViewPage.apply(
+                                module,
+                                {"media_id": item.get(Const.uid, "")},
+                              )
+                            : module.mediaDetailPage.apply(
+                                module,
+                                {"media_id": item.get(Const.uid, "")},
+                              ),
                         arguments: RouteQuery.fullscreenOrModal,
                       );
                     },
@@ -206,9 +208,7 @@ class TileGalleryMediaModuleHomePage
           ? FloatingActionButton.extended(
               onPressed: () {
                 context.navigator.pushNamed(
-                  ref.applyModuleTag(
-                    module.addPage.apply(),
-                  ),
+                  module.addPage.apply(module),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -252,9 +252,9 @@ class TileGalleryMediaModuleMediaDetailPage
               icon: const Icon(Icons.edit),
               onPressed: () {
                 context.navigator.pushNamed(
-                  ref.applyModuleTag(
-                    module.editPage
-                        .apply({"media_id": context.get("media_id", "")}),
+                  module.editPage.apply(
+                    module,
+                    {"media_id": context.get("media_id", "")},
                   ),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
@@ -267,9 +267,9 @@ class TileGalleryMediaModuleMediaDetailPage
           InkWell(
             onTap: () {
               context.navigator.pushNamed(
-                ref.applyModuleTag(
-                  module.mediaViewPage
-                      .apply({"media_id": context.get("media_id", "")}),
+                module.mediaViewPage.apply(
+                  module,
+                  {"media_id": context.get("media_id", "")},
                 ),
                 arguments: RouteQuery.fullscreenOrModal,
               );
@@ -368,9 +368,9 @@ class TileGalleryMediaModuleMediaViewPage
               icon: const Icon(Icons.edit),
               onPressed: () {
                 context.navigator.pushNamed(
-                  ref.applyModuleTag(
-                    module.editPage
-                        .apply({"media_id": context.get("media_id", "")}),
+                  module.editPage.apply(
+                    module,
+                    {"media_id": context.get("media_id", "")},
                   ),
                   arguments: RouteQuery.fullscreenOrModal,
                 );

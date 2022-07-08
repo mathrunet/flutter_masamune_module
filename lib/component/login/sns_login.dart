@@ -9,6 +9,7 @@ class SnsLoginModule extends PageModule {
     bool enabled = true,
     String? title,
     this.color,
+    String routePathPrefix = "",
     this.userPath = Const.user,
     this.backgroundColor,
     this.backgroundGradient,
@@ -42,10 +43,11 @@ class SnsLoginModule extends PageModule {
       "/register",
       SnsLoginModuleRegisterPage(),
     ),
-    this.redirectPage = const PageConfig("/"),
+    this.redirectPage = const ExternalPageConfig("/"),
   }) : super(
           enabled: enabled,
           title: title,
+          routePathPrefix: routePathPrefix,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -58,7 +60,7 @@ class SnsLoginModule extends PageModule {
   /// Widget.
   final PageConfig<PageModuleWidget<SnsLoginModule>> landingPage;
   final PageConfig<PageModuleWidget<SnsLoginModule>> registerPage;
-  final PageConfig<PageModuleWidget<SnsLoginModule>> redirectPage;
+  final ExternalPageConfig<PageModuleWidget<SnsLoginModule>> redirectPage;
 
   /// レイアウトタイプ。
   final LoginLayoutType layoutType;
@@ -280,9 +282,7 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(
-                ref.applyModuleTag(
-                  module.registerPage.apply(),
-                ),
+                module.registerPage.apply(module),
               );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
@@ -319,9 +319,7 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(
-                ref.applyModuleTag(
-                  module.registerPage.apply(),
-                ),
+                module.registerPage.apply(module),
               );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
@@ -355,9 +353,7 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(
-                ref.applyModuleTag(
-                  module.registerPage.apply(),
-                ),
+                module.registerPage.apply(module),
               );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
@@ -391,9 +387,7 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(
-                ref.applyModuleTag(
-                  module.registerPage.apply(),
-                ),
+                module.registerPage.apply(module),
               );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
@@ -427,9 +421,7 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(
-                ref.applyModuleTag(
-                  module.registerPage.apply(),
-                ),
+                module.registerPage.apply(module),
               );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
@@ -464,9 +456,7 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(
-                ref.applyModuleTag(
-                  module.registerPage.apply(),
-                ),
+                module.registerPage.apply(module),
               );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
@@ -603,9 +593,7 @@ class SnsLoginModuleRegisterPage extends PageModuleWidget<SnsLoginModule> {
             );
             await context.model?.saveDocument(doc).showIndicator(context);
             context.navigator.pushReplacementNamed(
-              ref.applyModuleTag(
-                module.registerPage.apply(),
-              ),
+              module.registerPage.apply(module),
             );
             if (module.runAfterFinishBootHooksOnRidirect) {
               Future.wait(

@@ -13,6 +13,7 @@ class TileMenuHomeModule extends PageModule
     this.featureImageFit = BoxFit.cover,
     this.featureImageAlignment = Alignment.center,
     this.titleTextStyle,
+    String routePathPrefix = "",
     this.titleAlignment = Alignment.center,
     this.titlePadding = const EdgeInsets.all(12),
     this.contentPadding = const EdgeInsets.all(8),
@@ -35,7 +36,7 @@ class TileMenuHomeModule extends PageModule
       "/",
       TileMenuHomeModuleHomePage(),
     ),
-    this.profilePage = const PageConfig("/user/{user_id}"),
+    this.profilePage = const ExternalPageConfig("/user/{user_id}"),
     this.profile = const TileMenuHomeModuleProfileWidget(),
     this.tileMenuHomeInformationWidget =
         const TileMenuHomeModuleInformationWidget(),
@@ -43,6 +44,7 @@ class TileMenuHomeModule extends PageModule
   }) : super(
           enabled: enabled,
           title: title,
+          routePathPrefix: routePathPrefix,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -54,7 +56,7 @@ class TileMenuHomeModule extends PageModule
 
   // ページの設定。
   final PageConfig<PageModuleWidget<TileMenuHomeModule>> homePage;
-  final PageConfig<PageModuleWidget<TileMenuHomeModule>> profilePage;
+  final ExternalPageConfig<PageModuleWidget<TileMenuHomeModule>> profilePage;
   final ModuleWidget<TileMenuHomeModule>? tileMenuHomeInformationWidget;
   final ModuleWidget<TileMenuHomeModule>? tileMenuHomeCalendarWidget;
 
@@ -240,10 +242,9 @@ class TileMenuHomeModuleHomePage extends PageModuleWidget<TileMenuHomeModule> {
                                 ),
                                 onTap: () {
                                   context.navigator.pushNamed(
-                                    ref.applyModuleTag(
-                                      module.profilePage.apply(
-                                        {"user_id": context.model!.userId},
-                                      ),
+                                    module.profilePage.apply(
+                                      module,
+                                      {"user_id": context.model!.userId},
                                     ),
                                   );
                                 },
@@ -507,9 +508,9 @@ class TileMenuHomeModuleInformationWidget
                         color: module.color ?? context.theme.primaryColor,
                         onTap: () {
                           context.navigator.pushNamed(
-                            ref.applyModuleTag(
-                              infoPage
-                                  .apply({"info_id": item.get(Const.uid, "")}),
+                            infoPage.apply(
+                              module,
+                              {"info_id": item.get(Const.uid, "")},
                             ),
                             arguments: RouteQuery.fullscreenOrModal,
                           );
@@ -646,8 +647,9 @@ class TileMenuHomeModuleCalendarWidget
                     return InkWell(
                       onTap: () {
                         context.navigator.pushNamed(
-                          ref.applyModuleTag(
-                            detailPage.apply({"event_id": item.uid}),
+                          detailPage.apply(
+                            module,
+                            {"event_id": item.uid},
                           ),
                           arguments: RouteQuery.fullscreenOrModal,
                         );

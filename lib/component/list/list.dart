@@ -7,7 +7,7 @@ class ListModule extends PageModule {
     String? title,
     ModelQuery? query,
     required String queryPath,
-    required this.routePathPrefix,
+    required String routePathPrefix,
     this.padding = const EdgeInsets.all(0),
     this.enableAdd = true,
     this.mergeConfig,
@@ -24,11 +24,9 @@ class ListModule extends PageModule {
           title: title,
           queryPath: queryPath,
           query: query,
+          routePathPrefix: routePathPrefix,
           rerouteConfigs: rerouteConfigs,
         );
-
-  @override
-  final String routePathPrefix;
 
   @override
   List<PageConfig<Widget>> get pages => [
@@ -105,9 +103,7 @@ class ListModuleHomePage extends PageModuleWidget<ListModule> {
           ? FloatingActionButton.extended(
               onPressed: () {
                 context.rootNavigator.pushNamed(
-                  ref.applyModuleTag(
-                    module.editPage.apply({}, module.routePathPrefix),
-                  ),
+                  module.editPage.apply(module),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },

@@ -9,7 +9,7 @@ class DetailModule extends PageModule {
     String? title,
     required String queryPath,
     ModelQuery? query,
-    required this.routePathPrefix,
+    required String routePathPrefix,
     this.commentQueryPath = "comment",
     this.nameKey = Const.name,
     this.textKey = Const.text,
@@ -40,8 +40,8 @@ class DetailModule extends PageModule {
       DetailModuleImageViewPage(),
     ),
     this.editPage = const PageConfig("/{detail_id}/edit"),
-    this.searchPage = const PageConfig("/search"),
-    this.userPage = const PageConfig("/user/{user_id}"),
+    this.searchPage = const ExternalPageConfig("/search"),
+    this.userPage = const ExternalPageConfig("/user/{user_id}"),
     this.appBarActions = const [],
     this.appBarBottomActions = const [
       DetailModuleDateWidget(),
@@ -59,11 +59,9 @@ class DetailModule extends PageModule {
           title: title,
           query: query,
           queryPath: queryPath,
+          routePathPrefix: routePathPrefix,
           rerouteConfigs: rerouteConfigs,
         );
-
-  @override
-  final String routePathPrefix;
 
   @override
   List<PageConfig<Widget>> get pages => [
@@ -78,8 +76,8 @@ class DetailModule extends PageModule {
   final PageConfig<PageModuleWidget<DetailModule>> homePage;
   final PageConfig<PageModuleWidget<DetailModule>> imagePage;
   final PageConfig<PageModuleWidget<DetailModule>> editPage;
-  final PageConfig<PageModuleWidget<DetailModule>> searchPage;
-  final PageConfig<PageModuleWidget<DetailModule>> userPage;
+  final ExternalPageConfig<PageModuleWidget<DetailModule>> searchPage;
+  final ExternalPageConfig<PageModuleWidget<DetailModule>> userPage;
 
   /// Keys.
   final String tagKey;
@@ -175,11 +173,9 @@ class DetailModuleHomePage extends PageModuleWidget<DetailModule> {
               actions: module.appBarActions,
               onTapImage: () {
                 context.navigator.pushNamed(
-                  ref.applyModuleTag(
-                    module.imagePage.apply(
-                      {"detail_id": detailId},
-                      module.routePathPrefix,
-                    ),
+                  module.imagePage.apply(
+                    module,
+                    {"detail_id": detailId},
                   ),
                 );
               },
@@ -417,9 +413,7 @@ class DetailModuleTagsWidget extends ModuleWidget<DetailModule> {
             ),
             onPressed: () {
               context.rootNavigator.pushNamed(
-                ref.applyModuleTag(
-                  module.searchPage.apply(),
-                ),
+                module.searchPage.apply(module),
                 arguments: RouteQuery(
                   transition: PageTransition.fullscreen,
                   parameters: {"query": e},
@@ -528,9 +522,7 @@ class DetailModuleProfileWidget extends ModuleWidget<DetailModule> {
     return InkWell(
       onTap: () {
         context.rootNavigator.pushNamed(
-          ref.applyModuleTag(
-            module.userPage.apply({"user_id": context.model!.userId}),
-          ),
+          module.userPage.apply(module, {"user_id": context.model!.userId}),
           arguments: RouteQuery.fullscreenOrModal,
         );
       },
@@ -651,13 +643,11 @@ class DetailModuleEditIcon extends ModuleWidget<DetailModule> {
       icon: Icon(icon),
       onPressed: () {
         context.rootNavigator.pushNamed(
-          ref.applyModuleTag(
-            editPage?.apply({"detail_id": detailId}) ??
-                module.editPage.apply(
-                  {"detail_id": detailId},
-                  module.routePathPrefix,
-                ),
-          ),
+          editPage?.apply(module, {"detail_id": detailId}) ??
+              module.editPage.apply(
+                module,
+                {"detail_id": detailId},
+              ),
           arguments: RouteQuery.fullscreenOrModal,
         );
       },

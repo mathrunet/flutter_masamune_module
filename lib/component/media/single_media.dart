@@ -8,6 +8,7 @@ class SingleMediaModule extends PageModule {
     String? title,
     String queryPath = "media",
     ModelQuery? query,
+    String routePathPrefix = "media",
     this.mediaKey = Const.media,
     this.nameKey = Const.name,
     this.textKey = Const.text,
@@ -18,17 +19,18 @@ class SingleMediaModule extends PageModule {
     this.sliverLayoutWhenModernDesignOnHome = true,
     List<RerouteConfig> rerouteConfigs = const [],
     this.homePage = const PageConfig(
-      "/media",
+      "/",
       SingleMediaModuleHomePage(),
     ),
     this.editPage = const PageConfig(
-      "/media/edit",
+      "/edit",
       SingleMediaModuleEditPage(),
     ),
   }) : super(
           enabled: enabled,
           title: title,
           query: query,
+          routePathPrefix: routePathPrefix,
           queryPath: queryPath,
           rerouteConfigs: rerouteConfigs,
         );
@@ -93,9 +95,7 @@ class SingleMediaModuleHomePage extends PageModuleWidget<SingleMediaModule> {
               icon: const Icon(Icons.edit),
               onPressed: () {
                 context.navigator.pushNamed(
-                  ref.applyModuleTag(
-                    module.editPage.apply(),
-                  ),
+                  module.editPage.apply(module),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -117,9 +117,7 @@ class SingleMediaModuleHomePage extends PageModuleWidget<SingleMediaModule> {
                     icon: const Icon(Icons.add),
                     onPressed: () {
                       context.navigator.pushNamed(
-                        ref.applyModuleTag(
-                          module.editPage.apply(),
-                        ),
+                        module.editPage.apply(module),
                         arguments: RouteQuery.fullscreenOrModal,
                       );
                     },

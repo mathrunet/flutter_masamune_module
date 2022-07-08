@@ -10,17 +10,19 @@ class TutorialModule extends PageModule {
     String? title,
     this.displayedKey = "@tutorialDisplayed",
     this.redirectTo = "/",
+    String routePathPrefix = "tutorial",
     this.automaticallyImplyLeadingOnHome = true,
     this.sliverLayoutWhenModernDesignOnHome = true,
     List<RerouteConfig> rerouteConfigs = const [],
     required this.tutorials,
     this.homePage = const PageConfig(
-      "/tutorial",
+      "/",
       TutorialModuleHomePage(),
     ),
   }) : super(
           enabled: enabled,
           title: title,
+          routePathPrefix: routePathPrefix,
           rerouteConfigs: rerouteConfigs,
         );
 

@@ -7,6 +7,7 @@ class BottomTabHomeModule extends PageModule
     bool enabled = true,
     String? title = "",
     this.initialPath,
+    String routePathPrefix = "",
     this.backgroundColor,
     this.selectedItemColor,
     this.unselectedItemColor,
@@ -24,6 +25,7 @@ class BottomTabHomeModule extends PageModule
   }) : super(
           enabled: enabled,
           title: title,
+          routePathPrefix: routePathPrefix,
           rerouteConfigs: rerouteConfigs,
         );
 

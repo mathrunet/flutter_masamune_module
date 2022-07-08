@@ -17,7 +17,7 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
   const PostModule({
     bool enabled = true,
     String? title = "",
-    required this.routePathPrefix,
+    required String routePathPrefix,
     String queryPath = "post",
     ModelQuery? query,
     this.userPath = "user",
@@ -51,11 +51,9 @@ class PostModule extends PageModule with VerifyAppReroutePageModuleMixin {
           title: title,
           query: query,
           queryPath: queryPath,
+          routePathPrefix: routePathPrefix,
           rerouteConfigs: rerouteConfigs,
         );
-
-  @override
-  final String routePathPrefix;
 
   @override
   List<PageConfig<Widget>> get pages => [
@@ -113,11 +111,9 @@ class PostModuleHomePage extends PageModuleWidget<PostModule> {
       userCollectionPath: module.userPath,
     );
     final controller = ref.useNavigatorController(
-      ref.applyModuleTag(
-        module.viewPage.apply(
-          {"post_id": postWithUser.firstOrNull.get(Const.uid, "")},
-          module.routePathPrefix,
-        ),
+      module.viewPage.apply(
+        module,
+        {"post_id": postWithUser.firstOrNull.get(Const.uid, "")},
       ),
       (route) => postWithUser.isEmpty,
     );
@@ -152,21 +148,17 @@ class PostModuleHomePage extends PageModuleWidget<PostModule> {
               onTap: () {
                 if (context.isMobile) {
                   context.navigator.pushNamed(
-                    ref.applyModuleTag(
-                      module.viewPage.apply(
-                        {"post_id": item.get(Const.uid, "")},
-                        module.routePathPrefix,
-                      ),
+                    module.viewPage.apply(
+                      module,
+                      {"post_id": item.get(Const.uid, "")},
                     ),
                     arguments: RouteQuery.fullscreen,
                   );
                 } else {
                   controller.navigator.pushReplacementNamed(
-                    ref.applyModuleTag(
-                      module.viewPage.apply(
-                        {"post_id": item.get(Const.uid, "")},
-                        module.routePathPrefix,
-                      ),
+                    module.viewPage.apply(
+                      module,
+                      {"post_id": item.get(Const.uid, "")},
                     ),
                   );
                 }
@@ -181,12 +173,7 @@ class PostModuleHomePage extends PageModuleWidget<PostModule> {
               icon: const Icon(Icons.add),
               onPressed: () {
                 context.navigator.pushNamed(
-                  ref.applyModuleTag(
-                    module.addPage.apply(
-                      {},
-                      module.routePathPrefix,
-                    ),
-                  ),
+                  module.addPage.apply(module),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -222,11 +209,9 @@ class PostModuleViewPage extends PageModuleWidget<PostModule> {
             icon: const Icon(Icons.edit),
             onPressed: () {
               context.rootNavigator.pushNamed(
-                ref.applyModuleTag(
-                  module.editPage.apply(
-                    {"post_id": context.get("post_id", "")},
-                    module.routePathPrefix,
-                  ),
+                module.editPage.apply(
+                  module,
+                  {"post_id": context.get("post_id", "")},
                 ),
                 arguments: RouteQuery.fullscreenOrModal,
               );

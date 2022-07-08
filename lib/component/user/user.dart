@@ -13,6 +13,7 @@ class UserModule extends PageModule {
     ],
     String queryPath = "user",
     ModelQuery? query,
+    String routePathPrefix = "user",
     this.reportPath = "report",
     this.blockPath = "block",
     this.nameKey = Const.name,
@@ -37,35 +38,35 @@ class UserModule extends PageModule {
     this.meta,
     this.bottom = const [],
     this.homePage = const PageConfig(
-      "/user",
+      "/",
       UserModuleHomePage(),
     ),
     this.editProfilePage = const PageConfig(
-      "/user/edit",
+      "/edit",
       UserModuleEditProfilePage(),
     ),
     this.userPage = const PageConfig(
-      "/user/{user_id}",
+      "/{user_id}",
       UserModuleHomePage(),
     ),
     this.accountPage = const PageConfig(
-      "/user/account",
+      "/account",
       UserModuleAccountPage(),
     ),
     this.reauthPage = const PageConfig(
-      "/user/account/reauth",
+      "/account/reauth",
       UserModuleAccountReauthPage(),
     ),
     this.editEmailPage = const PageConfig(
-      "/user/account/email",
+      "/account/email",
       UserModuleAccountEditEmailPage(),
     ),
     this.editPasswordPage = const PageConfig(
-      "/user/account/password",
+      "/account/password",
       UserModuleAccountEditPasswordPage(),
     ),
     this.blockListPage = const PageConfig(
-      "/user/account/block",
+      "/account/block",
       UserModuleAccountBlockListPage(),
     ),
   }) : super(
@@ -73,6 +74,7 @@ class UserModule extends PageModule {
           title: title,
           queryPath: queryPath,
           query: query,
+          routePathPrefix: routePathPrefix,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -236,9 +238,7 @@ class UserModuleHomePage extends PageModuleWidget<UserModule> {
             TextButton(
               onPressed: () {
                 context.rootNavigator.pushNamed(
-                  ref.applyModuleTag(
-                    module.editProfilePage.apply(),
-                  ),
+                  module.editProfilePage.apply(module),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },
@@ -701,24 +701,20 @@ class UserModuleAccountContentComponent extends ModuleWidget<UserModule> {
                   if (context.model?.requiredReauthInEmailAndPassword() ??
                       false) {
                     context.rootNavigator.pushNamed(
-                      ref.applyModuleTag(module.reauthPage.apply()),
+                      module.reauthPage.apply(module),
                       arguments: RouteQuery(
                         transition: Config.isDesktop
                             ? PageTransition.modal
                             : PageTransition.fullscreen,
                         parameters: {
-                          kRedirectTo: ref.applyModuleTag(
-                            module.editEmailPage.apply(),
-                          ),
+                          kRedirectTo: module.editEmailPage.apply(module),
                         },
                       ),
                     );
                     return;
                   }
                   context.rootNavigator.pushNamed(
-                    ref.applyModuleTag(
-                      module.editEmailPage.apply(),
-                    ),
+                    module.editEmailPage.apply(module),
                     arguments: RouteQuery.fullscreenOrModal,
                   );
                 },
@@ -737,24 +733,20 @@ class UserModuleAccountContentComponent extends ModuleWidget<UserModule> {
                   if (context.model?.requiredReauthInEmailAndPassword() ??
                       false) {
                     context.rootNavigator.pushNamed(
-                      ref.applyModuleTag(module.reauthPage.apply()),
+                      module.reauthPage.apply(module),
                       arguments: RouteQuery(
                         transition: Config.isDesktop
                             ? PageTransition.modal
                             : PageTransition.fullscreen,
                         parameters: {
-                          kRedirectTo: ref.applyModuleTag(
-                            module.editPasswordPage.apply(),
-                          ),
+                          kRedirectTo: module.editPasswordPage.apply(module),
                         },
                       ),
                     );
                     return;
                   }
                   context.rootNavigator.pushNamed(
-                    ref.applyModuleTag(
-                      module.editPasswordPage.apply(),
-                    ),
+                    module.editPasswordPage.apply(module),
                     arguments: RouteQuery.fullscreenOrModal,
                   );
                 },
@@ -767,9 +759,7 @@ class UserModuleAccountContentComponent extends ModuleWidget<UserModule> {
               title: Text("%s list".localize().format(["Block".localize()])),
               onTap: () {
                 context.rootNavigator.pushNamed(
-                  ref.applyModuleTag(
-                    module.blockListPage.apply(),
-                  ),
+                  module.blockListPage.apply(module),
                   arguments: RouteQuery.fullscreenOrModal,
                 );
               },

@@ -6,6 +6,7 @@ class SliverHomeModule extends PageModule {
     bool enabled = true,
     String? title,
     this.backgroundImage,
+    String routePathPrefix = "",
     this.automaticallyImplyLeadingOnHome = true,
     this.backgroundColor,
     this.foregroundColor,
@@ -19,6 +20,7 @@ class SliverHomeModule extends PageModule {
   }) : super(
           enabled: enabled,
           title: title,
+          routePathPrefix: routePathPrefix,
           rerouteConfigs: rerouteConfigs,
         );
 

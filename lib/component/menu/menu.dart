@@ -6,7 +6,7 @@ class MenuModule extends PageModule {
   const MenuModule({
     bool enabled = true,
     String? title,
-    required this.routePathPrefix,
+    required String routePathPrefix,
     this.automaticallyImplyLeadingOnHome = true,
     this.sliverLayoutWhenModernDesignOnHome = true,
     required this.menu,
@@ -21,11 +21,9 @@ class MenuModule extends PageModule {
   }) : super(
           enabled: enabled,
           title: title,
+          routePathPrefix: routePathPrefix,
           rerouteConfigs: rerouteConfigs,
         );
-
-  @override
-  final String routePathPrefix;
 
   @override
   List<PageConfig<Widget>> get pages => [

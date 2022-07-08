@@ -6,7 +6,7 @@ class ViewModule extends PageModule {
     bool enabled = true,
     required this.variables,
     String? title,
-    required this.routePathPrefix,
+    required String routePathPrefix,
     String queryPath = "view",
     ModelQuery? query,
     this.titleKey = Const.name,
@@ -28,11 +28,9 @@ class ViewModule extends PageModule {
           title: title,
           query: query,
           queryPath: queryPath,
+          routePathPrefix: routePathPrefix,
           rerouteConfigs: rerouteConfigs,
         );
-
-  @override
-  final String routePathPrefix;
 
   @override
   List<PageConfig<Widget>> get pages => [
@@ -94,11 +92,9 @@ class ViewModuleHomePage extends PageModuleWidget<ViewModule> {
               icon: const Icon(Icons.edit),
               onPressed: () {
                 context.navigator.pushNamed(
-                  ref.applyModuleTag(
-                    module.editPage.apply(
-                      {queryKey ?? "view_id": queryId},
-                      module.routePathPrefix,
-                    ),
+                  module.editPage.apply(
+                    module,
+                    {queryKey ?? "view_id": queryId},
                   ),
                 );
               },

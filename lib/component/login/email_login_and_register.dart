@@ -8,6 +8,7 @@ class EmailLoginAndRegisterModule extends PageModule {
     String title = "",
     this.layoutType = LoginLayoutType.fixed,
     this.color,
+    String routePathPrefix = "",
     this.userPath = Const.user,
     this.roleKey = Const.role,
     this.backgroundColor,
@@ -63,10 +64,11 @@ class EmailLoginAndRegisterModule extends PageModule {
       "/register/{role_id}",
       EmailLoginAndRegisterModuleRegisterPage(),
     ),
-    this.redirectPage = const PageConfig("/"),
+    this.redirectPage = const ExternalPageConfig("/"),
   }) : super(
           enabled: enabled,
           title: title,
+          routePathPrefix: routePathPrefix,
           rerouteConfigs: rerouteConfigs,
         );
 
@@ -89,7 +91,8 @@ class EmailLoginAndRegisterModule extends PageModule {
       registerAnonymousPage;
   final PageConfig<PageModuleWidget<EmailLoginAndRegisterModule>>
       registerWithRolePage;
-  final PageConfig<PageModuleWidget<EmailLoginAndRegisterModule>> redirectPage;
+  final ExternalPageConfig<PageModuleWidget<EmailLoginAndRegisterModule>>
+      redirectPage;
 
   /// レイアウトタイプ。
   final LoginLayoutType layoutType;
@@ -297,16 +300,14 @@ class EmailLoginAndRegisterModuleLandingPage
                                               )) {
                                                 context.navigator
                                                     .pushReplacementNamed(
-                                                  ref.applyModuleTag(
-                                                    module.loginPage.apply(),
-                                                  ),
+                                                  module.loginPage
+                                                      .apply(module),
                                                 );
                                               } else {
                                                 context.navigator
                                                     .pushReplacementNamed(
-                                                  ref.applyModuleTag(
-                                                    module.redirectPage.apply(),
-                                                  ),
+                                                  module.redirectPage
+                                                      .apply(module),
                                                 );
                                                 if (module
                                                     .runAfterFinishBootHooksOnRidirect) {
@@ -333,11 +334,9 @@ class EmailLoginAndRegisterModuleLandingPage
                                             break;
                                           default:
                                             context.navigator.pushNamed(
-                                              ref.applyModuleTag(
-                                                module.registerWithRolePage
-                                                    .apply({
-                                                  "role_id": menu.path!
-                                                }),
+                                              module.registerWithRolePage.apply(
+                                                module,
+                                                {"role_id": menu.path!},
                                               ),
                                               arguments: RouteQuery.fade,
                                             );
@@ -519,9 +518,7 @@ class EmailLoginAndRegisterModuleLoginPage
                     child: TextButton(
                       onPressed: () {
                         context.navigator.pushNamed(
-                          ref.applyModuleTag(
-                            module.resetPage.apply(),
-                          ),
+                          module.resetPage.apply(module),
                           arguments: RouteQuery.fade,
                         );
                       },
@@ -584,9 +581,7 @@ class EmailLoginAndRegisterModuleLoginPage
           )
           .showIndicator(context);
       context.navigator.pushReplacementNamed(
-        ref.applyModuleTag(
-          module.redirectPage.apply(),
-        ),
+        module.redirectPage.apply(module),
       );
       if (module.runAfterFinishBootHooksOnRidirect) {
         Future.wait(
@@ -883,9 +878,7 @@ class EmailLoginAndRegisterModuleRegisterPage
         ) ??
         false) {
       context.navigator.pushReplacementNamed(
-        ref.applyModuleTag(
-          module.redirectPage.apply(),
-        ),
+        module.redirectPage.apply(module),
       );
       if (module.runAfterFinishBootHooksOnRidirect) {
         Future.wait(
@@ -946,9 +939,7 @@ class EmailLoginAndRegisterModuleRegisterPage
         submitText: "Forward".localize(),
         onSubmit: () {
           context.navigator.pushReplacementNamed(
-            ref.applyModuleTag(
-              module.redirectPage.apply(),
-            ),
+            module.redirectPage.apply(module),
           );
           if (module.runAfterFinishBootHooksOnRidirect) {
             Future.wait(
@@ -1258,9 +1249,7 @@ class EmailLoginAndRegisterModuleRegisterAnonymousPage
             );
             await context.model?.saveDocument(doc).showIndicator(context);
             context.navigator.pushReplacementNamed(
-              ref.applyModuleTag(
-                module.redirectPage.apply(),
-              ),
+              module.redirectPage.apply(module),
             );
             if (module.runAfterFinishBootHooksOnRidirect) {
               Future.wait(

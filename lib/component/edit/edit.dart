@@ -10,7 +10,7 @@ class EditModule extends PageModule {
     String? title,
     String queryPath = "edit",
     ModelQuery? query,
-    required this.routePathPrefix,
+    required String routePathPrefix,
     this.enableDelete = true,
     this.fixed = false,
     this.bottomSpace = 120,
@@ -28,11 +28,9 @@ class EditModule extends PageModule {
           title: title,
           query: query,
           queryPath: queryPath,
+          routePathPrefix: routePathPrefix,
           rerouteConfigs: rerouteConfigs,
         );
-
-  @override
-  final String routePathPrefix;
 
   @override
   List<PageConfig<Widget>> get pages {
