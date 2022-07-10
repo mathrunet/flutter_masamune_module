@@ -390,7 +390,7 @@ class TileMenuHomeModuleProfileWidget extends ModuleWidget<TileMenuHomeModule> {
 
   @override
   Widget build(BuildContext context, WidgetRef ref, TileMenuHomeModule module) {
-    final user = ref.watchUserDocumentModel(module.userPath);
+    final user = ref.watchUserDocumentModel(userPath: module.userPath);
     final name = user.get(module.nameKey, "Unknown".localize());
 
     return Column(

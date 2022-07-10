@@ -460,7 +460,7 @@ class DetailModuleActionWidget extends ModuleWidget<DetailModule> {
               ),
               icon: const Icon(Icons.thumb_up),
               onPressed: () {
-                final counter = context.model?.transaction(
+                final counter = context.model?.collectionTransaction(
                   collectionPath:
                       "${module.queryPath}/$detailId/${module.likePath}",
                   linkedCollectionPath:
@@ -490,7 +490,7 @@ class DetailModuleActionWidget extends ModuleWidget<DetailModule> {
                   : context.theme.textColor,
               icon: const Icon(Icons.bookmark),
               onPressed: () {
-                final counter = context.model?.transaction(
+                final counter = context.model?.collectionTransaction(
                   collectionPath:
                       "${module.queryPath}/$detailId/${module.bookmarkPath}",
                   linkedCollectionPath:
@@ -606,7 +606,7 @@ class DetailModuleBookmarkIcon extends ModuleWidget<DetailModule> {
         color: bookmark ? context.theme.primaryColor : context.theme.textColor,
       ),
       onPressed: () {
-        final counter = context.model?.transaction(
+        final counter = context.model?.collectionTransaction(
           collectionPath:
               "${module.queryPath}/$detailId/${bookmarkPath ?? module.bookmarkPath}",
           linkedCollectionPath:

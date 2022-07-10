@@ -103,7 +103,7 @@ class PostModuleHomePage extends PageModuleWidget<PostModule> {
   @override
   Widget build(BuildContext context, WidgetRef ref, PostModule module) {
     final now = ref.useNow();
-    final user = ref.watchUserDocumentModel(module.userPath);
+    final user = ref.watchUserDocumentModel(userPath: module.userPath);
     final post =
         ref.watchCollectionModel(module.postQuery?.value ?? module.queryPath);
     final postWithUser = post.mergeUserInformation(
