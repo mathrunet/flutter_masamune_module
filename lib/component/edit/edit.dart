@@ -199,17 +199,6 @@ class EditModuleHomePage extends PageModuleWidget<EditModule> {
                     doc,
                   )
                   .showIndicator(context);
-              UIDialog.show(
-                context,
-                title: "Success".localize(),
-                text: "%s is completed."
-                    .localize()
-                    .format(["Editing".localize()]),
-                submitText: "Back".localize(),
-                onSubmit: () {
-                  context.navigator.pop();
-                },
-              );
             } else {
               final model = context.model;
               if (model == null) {
@@ -238,18 +227,17 @@ class EditModuleHomePage extends PageModuleWidget<EditModule> {
                     doc,
                   )
                   .showIndicator(context);
-              UIDialog.show(
-                context,
-                title: "Success".localize(),
-                text: "%s is completed."
-                    .localize()
-                    .format(["Editing".localize()]),
-                submitText: "Back".localize(),
-                onSubmit: () {
-                  context.navigator.pop();
-                },
-              );
             }
+            UIDialog.show(
+              context,
+              title: "Success".localize(),
+              text:
+                  "%s is completed.".localize().format(["Editing".localize()]),
+              submitText: "Back".localize(),
+              onSubmit: () {
+                context.navigator.pop();
+              },
+            );
           } catch (e) {
             UIDialog.show(
               context,

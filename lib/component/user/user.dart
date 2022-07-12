@@ -902,7 +902,6 @@ class UserModuleAccountReauthPage extends PageModuleWidget<UserModule> {
               "Reauthentication".localize(),
               icon: Icons.check,
               borderRadius: 35,
-              height: 70,
               onPressed: () async {
                 if (!form.validate()) {
                   return;
@@ -976,7 +975,6 @@ class UserModuleAccountEditEmailPage extends PageModuleWidget<UserModule> {
               "Submit".localize(),
               icon: Icons.check,
               borderRadius: 35,
-              height: 70,
               onPressed: () async {
                 if (!form.validate()) {
                   return;
@@ -1065,7 +1063,6 @@ class UserModuleAccountEditPasswordPage extends PageModuleWidget<UserModule> {
               "Submit".localize(),
               icon: Icons.check,
               borderRadius: 35,
-              height: 70,
               onPressed: () async {
                 if (!form.validate()) {
                   return;

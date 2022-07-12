@@ -272,8 +272,6 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
         return FormItemSubmit(
           "SignIn".localize(),
           borderRadius: 35,
-          height: 70,
-          width: 1.6,
           color: buttonColor,
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
@@ -309,8 +307,6 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
         return FormItemSubmit(
           "Apple SignIn".localize(),
           borderRadius: 35,
-          height: 70,
-          width: 1.6,
           color: buttonColor,
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
@@ -343,8 +339,6 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
         return FormItemSubmit(
           "Google SignIn".localize(),
           borderRadius: 35,
-          height: 70,
-          width: 1.6,
           color: buttonColor,
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
@@ -377,8 +371,6 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
         return FormItemSubmit(
           "Facebook SignIn".localize(),
           borderRadius: 35,
-          height: 70,
-          width: 1.6,
           color: buttonColor,
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
@@ -411,8 +403,6 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
         return FormItemSubmit(
           "Twitter SignIn".localize(),
           borderRadius: 35,
-          height: 70,
-          width: 1.6,
           color: buttonColor,
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
@@ -446,8 +436,6 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
           module.anonymousSignInConfig?.name.localize() ??
               "Anonymous SingIn".localize(),
           borderRadius: 35,
-          height: 70,
-          width: 1.6,
           color: buttonColor,
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,

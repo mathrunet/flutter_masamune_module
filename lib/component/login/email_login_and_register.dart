@@ -274,8 +274,6 @@ class EmailLoginAndRegisterModuleLandingPage
                                     FormItemSubmit(
                                       menu.name.localize(),
                                       borderRadius: 35,
-                                      height: 70,
-                                      width: 1.6,
                                       color: buttonColor,
                                       borderColor: buttonColor,
                                       backgroundColor: buttonBackgroundColor,
@@ -535,8 +533,6 @@ class EmailLoginAndRegisterModuleLoginPage
                   FormItemSubmit(
                     "Login".localize(),
                     borderRadius: 35,
-                    height: 70,
-                    width: 1.6,
                     color: buttonColor,
                     backgroundColor: buttonBackgroundColor,
                     borderColor: buttonColor,
@@ -835,8 +831,6 @@ class EmailLoginAndRegisterModuleRegisterPage
                   FormItemSubmit(
                     role.name.localize(),
                     borderRadius: 35,
-                    height: 70,
-                    width: 1.6,
                     color: buttonColor,
                     backgroundColor: buttonBackgroundColor,
                     borderColor: buttonColor,
@@ -1064,8 +1058,6 @@ class EmailLoginAndRegisterModulePasswordResetPage
                   FormItemSubmit(
                     "Send mail".localize(),
                     borderRadius: 35,
-                    height: 70,
-                    width: 1.6,
                     color: buttonColor,
                     backgroundColor: buttonBackgroundColor,
                     borderColor: buttonColor,
