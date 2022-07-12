@@ -282,7 +282,7 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(
-                module.registerPage.apply(module),
+                module.redirectPage.apply(module),
               );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
@@ -319,7 +319,7 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(
-                module.registerPage.apply(module),
+                module.redirectPage.apply(module),
               );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
@@ -353,7 +353,7 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(
-                module.registerPage.apply(module),
+                module.redirectPage.apply(module),
               );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
@@ -387,7 +387,7 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(
-                module.registerPage.apply(module),
+                module.redirectPage.apply(module),
               );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
@@ -421,7 +421,7 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(
-                module.registerPage.apply(module),
+                module.redirectPage.apply(module),
               );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
@@ -456,7 +456,7 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
             try {
               await adapter.signIn().showIndicator(context);
               context.navigator.pushReplacementNamed(
-                module.registerPage.apply(module),
+                module.redirectPage.apply(module),
               );
               if (module.runAfterFinishBootHooksOnRidirect) {
                 Future.wait(
@@ -593,7 +593,7 @@ class SnsLoginModuleRegisterPage extends PageModuleWidget<SnsLoginModule> {
             );
             await context.model?.saveDocument(doc).showIndicator(context);
             context.navigator.pushReplacementNamed(
-              module.registerPage.apply(module),
+              module.redirectPage.apply(module),
             );
             if (module.runAfterFinishBootHooksOnRidirect) {
               Future.wait(
