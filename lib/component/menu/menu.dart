@@ -38,7 +38,7 @@ class MenuModule extends PageModule {
   final List<Widget> bottom;
 
   /// メニューの一覧。
-  final List<MenuModuleWidget> menu;
+  final List<MenuModuleComponent> menu;
 
   /// True if Home is a sliver layout.
   final bool sliverLayoutWhenModernDesignOnHome;
@@ -50,13 +50,13 @@ class MenuModule extends PageModule {
   final EdgeInsetsGeometry padding;
 }
 
-abstract class MenuModuleWidget extends ModuleWidget<MenuModule> {
-  const MenuModuleWidget();
+abstract class MenuModuleComponent extends ScopedWidget {
+  const MenuModuleComponent();
 }
 
 @immutable
-class MenuModuleGroupWidget extends MenuModuleWidget {
-  const MenuModuleGroupWidget({
+class MenuModuleGroupComponent extends MenuModuleComponent {
+  const MenuModuleGroupComponent({
     this.name,
     this.icon,
     this.menus = const [],
@@ -65,11 +65,11 @@ class MenuModuleGroupWidget extends MenuModuleWidget {
 
   final String? name;
   final IconData? icon;
-  final List<MenuModuleWidget> menus;
+  final List<MenuModuleComponent> menus;
   final Color? dividerColor;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref, MenuModule module) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -97,8 +97,8 @@ class MenuModuleGroupWidget extends MenuModuleWidget {
   }
 }
 
-class MenuModuleItemWidget extends MenuModuleWidget {
-  const MenuModuleItemWidget({
+class MenuModuleItemComponent extends MenuModuleComponent {
+  const MenuModuleItemComponent({
     required this.name,
     this.path,
     this.icon,
@@ -122,7 +122,7 @@ class MenuModuleItemWidget extends MenuModuleWidget {
   final Color? backgroundColor;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref, MenuModule module) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ListItem(
       tileColor: backgroundColor,
       leading: icon != null
@@ -162,7 +162,7 @@ class MenuModuleHomePage extends PageModuleWidget<MenuModule> {
         automaticallyImplyLeading: module.automaticallyImplyLeadingOnHome,
         sliverLayoutWhenModernDesign: module.sliverLayoutWhenModernDesignOnHome,
       ),
-      body: UIListBuilder<MenuModuleWidget>(
+      body: UIListBuilder<MenuModuleComponent>(
         source: module.menu,
         padding: module.padding,
         top: module.top,
@@ -177,11 +177,11 @@ class MenuModuleHomePage extends PageModuleWidget<MenuModule> {
   }
 }
 
-class MenuModuleAccountWidget extends MenuModuleWidget {
-  const MenuModuleAccountWidget();
+class MenuModuleAccountComponent extends MenuModuleComponent {
+  const MenuModuleAccountComponent();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref, MenuModule module) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
         Headline(

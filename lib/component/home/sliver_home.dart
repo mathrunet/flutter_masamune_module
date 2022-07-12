@@ -153,7 +153,7 @@ class SliverHomeModuleListTileComponent
 class SliverHomeModuleMenuWidget extends ModuleWidget<SliverHomeModule> {
   const SliverHomeModuleMenuWidget(this.menu);
 
-  final List<MenuModuleWidget> menu;
+  final List<MenuModuleComponent> menu;
 
   @override
   Widget build(BuildContext context, WidgetRef ref, SliverHomeModule module) {

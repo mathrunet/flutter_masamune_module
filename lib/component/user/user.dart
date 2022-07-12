@@ -114,10 +114,10 @@ class UserModule extends PageModule {
   final double expandedHeight;
 
   /// メインコンテンツ。
-  final List<ModuleWidget<UserModule>> contents;
+  final List<Widget> contents;
 
   /// アカウント用コンテンツ。
-  final List<ModuleWidget<UserModule>> accountContents;
+  final List<Widget> accountContents;
 
   /// タイトルのキー。
   final String nameKey;
