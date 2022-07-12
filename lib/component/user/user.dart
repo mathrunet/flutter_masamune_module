@@ -177,7 +177,9 @@ class UserModuleHomePage extends PageModuleWidget<UserModule> {
   @override
   Widget build(BuildContext context, WidgetRef ref, UserModule module) {
     final userId = context.get("user_id", context.model?.userId ?? "");
-    final user = ref.watchDocumentModel("${module.queryPath}/$userId");
+    final user = ref.watchDocumentModel(
+      "${module.queryPath}/$userId",
+    );
     final name = user.get(module.nameKey, module.guestName.localize());
     final text = user.get(module.textKey, "");
     final image = user.get(module.imageKey, "");
