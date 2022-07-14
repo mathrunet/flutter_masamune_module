@@ -898,7 +898,7 @@ class UserModuleAccountReauthPage extends PageModuleWidget<UserModule> {
           const Divid(),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
-            child: FormItemSubmit(
+            child: FormItemButton(
               "Reauthentication".localize(),
               icon: Icons.check,
               borderRadius: 35,
@@ -971,7 +971,7 @@ class UserModuleAccountEditEmailPage extends PageModuleWidget<UserModule> {
           const Divid(),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
-            child: FormItemSubmit(
+            child: FormItemButton(
               "Submit".localize(),
               icon: Icons.check,
               borderRadius: 35,
@@ -1059,7 +1059,7 @@ class UserModuleAccountEditPasswordPage extends PageModuleWidget<UserModule> {
           const Divid(),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
-            child: FormItemSubmit(
+            child: FormItemButton(
               "Submit".localize(),
               icon: Icons.check,
               borderRadius: 35,

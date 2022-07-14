@@ -271,8 +271,9 @@ class EmailLoginAndRegisterModuleLandingPage
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   for (final menu in module.menu)
-                                    FormItemSubmit(
+                                    FormItemButton(
                                       menu.name.localize(),
+                                      borderWidth: 1.6,
                                       borderRadius: 35,
                                       color: buttonColor,
                                       borderColor: buttonColor,
@@ -530,9 +531,10 @@ class EmailLoginAndRegisterModuleLoginPage
                     ),
                   ),
                   const Space.height(16),
-                  FormItemSubmit(
+                  FormItemButton(
                     "Login".localize(),
                     borderRadius: 35,
+                    borderWidth: 1.6,
                     color: buttonColor,
                     backgroundColor: buttonBackgroundColor,
                     borderColor: buttonColor,
@@ -828,9 +830,10 @@ class EmailLoginAndRegisterModuleRegisterPage
                   horizontal: module.padding.horizontal / 2.0,
                 ),
                 children: [
-                  FormItemSubmit(
+                  FormItemButton(
                     role.name.localize(),
                     borderRadius: 35,
+                    borderWidth: 1.6,
                     color: buttonColor,
                     backgroundColor: buttonBackgroundColor,
                     borderColor: buttonColor,
@@ -1055,9 +1058,10 @@ class EmailLoginAndRegisterModulePasswordResetPage
                   horizontal: module.padding.horizontal / 2.0,
                 ),
                 children: [
-                  FormItemSubmit(
+                  FormItemButton(
                     "Send mail".localize(),
                     borderRadius: 35,
+                    borderWidth: 1.6,
                     color: buttonColor,
                     backgroundColor: buttonBackgroundColor,
                     borderColor: buttonColor,

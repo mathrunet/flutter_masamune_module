@@ -269,9 +269,10 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
         module.buttonBackgroundColor ?? Colors.transparent;
     switch (adapter.provider) {
       case "mock":
-        return FormItemSubmit(
+        return FormItemButton(
           "SignIn".localize(),
           borderRadius: 35,
+          borderWidth: 1.6,
           color: buttonColor,
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
@@ -304,9 +305,10 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
         if (!Config.isIOS) {
           return const Empty();
         }
-        return FormItemSubmit(
+        return FormItemButton(
           "Apple SignIn".localize(),
           borderRadius: 35,
+          borderWidth: 1.6,
           color: buttonColor,
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
@@ -336,9 +338,10 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
           },
         );
       case "google.com":
-        return FormItemSubmit(
+        return FormItemButton(
           "Google SignIn".localize(),
           borderRadius: 35,
+          borderWidth: 1.6,
           color: buttonColor,
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
@@ -368,9 +371,10 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
           },
         );
       case "facebook.com":
-        return FormItemSubmit(
+        return FormItemButton(
           "Facebook SignIn".localize(),
           borderRadius: 35,
+          borderWidth: 1.6,
           color: buttonColor,
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
@@ -400,9 +404,10 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
           },
         );
       case "twitter.com":
-        return FormItemSubmit(
+        return FormItemButton(
           "Twitter SignIn".localize(),
           borderRadius: 35,
+          borderWidth: 1.6,
           color: buttonColor,
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
@@ -432,10 +437,11 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
           },
         );
       case "anonymous":
-        return FormItemSubmit(
+        return FormItemButton(
           module.anonymousSignInConfig?.name.localize() ??
               "Anonymous SingIn".localize(),
           borderRadius: 35,
+          borderWidth: 1.6,
           color: buttonColor,
           borderColor: buttonColor,
           backgroundColor: buttonBackgroundColor,
