@@ -160,7 +160,7 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
     switch (module.layoutType) {
       case LoginLayoutType.fixed:
         final featureImage =
-            module.featureImage ?? context.app?.imageTheme?.landingFeatureImage;
+            module.featureImage ?? context.theme.image.landingFeatureImage;
         return UIScaffold(
           body: Stack(
             fit: StackFit.expand,
@@ -485,8 +485,8 @@ class _LoginModuleBackgroundImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundImage = module.backgroundImage ??
-        context.app?.imageTheme?.landingBackgroundImage;
+    final backgroundImage =
+        module.backgroundImage ?? context.theme.image.landingBackgroundImage;
     return Stack(
       fit: StackFit.expand,
       children: [

@@ -37,7 +37,7 @@ class ContentFormConfig extends VariableFormConfig<String> {
           prefix: config.required
               ? IconTheme(
                   data: const IconThemeData(size: 16),
-                  child: context.widgetTheme.requiredIcon,
+                  child: context.theme.widget.requiredIcon,
                 )
               : null,
         )
