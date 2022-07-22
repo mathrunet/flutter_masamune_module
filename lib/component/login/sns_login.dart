@@ -17,6 +17,8 @@ class SnsLoginModule extends PageModule {
     this.appBarHeightOnSliverList,
     this.buttonColor,
     this.buttonBackgroundColor,
+    this.userCountFieldPath = "app/status/userCount",
+    this.userLimitationCount,
     this.backgroundImage,
     this.backgroundImageBlur = 5.0,
     this.featureImage,
@@ -136,6 +138,14 @@ class SnsLoginModule extends PageModule {
 
   /// True if [AfterFinishBoot] hook is executed on redirect.
   final bool runAfterFinishBootHooksOnRidirect;
+
+  /// ユーザー制限を行う場合0より大きい値を入力します。
+  ///
+  /// Nullもしくは、0以下の場合は制限を行いません。
+  final int? userLimitationCount;
+
+  /// ユーザーアカウントフィールドのパス
+  final String userCountFieldPath;
 }
 
 class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
@@ -156,6 +166,10 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
     );
 
     final color = module.color ?? context.theme.textColor;
+    final status =
+        module.userLimitationCount != null && module.userLimitationCount! > 0
+            ? ref.watchDocumentModel(module.userCountFieldPath.parentPath())
+            : null;
 
     switch (module.layoutType) {
       case LoginLayoutType.fixed:
@@ -227,21 +241,37 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
                           child: SingleChildScrollView(
                             child: Padding(
                               padding: module.padding,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  if (context.plugin != null)
-                                    for (final adapter
-                                        in context.plugin!.signIns)
-                                      if (adapter.visible)
-                                        _snsButton(
-                                          context,
-                                          ref,
-                                          adapter,
-                                          module,
-                                        ),
+                              child: LoadingBuilder(
+                                futures: [
+                                  status?.loading,
                                 ],
+                                builder: (context) => Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: [
+                                    if (status != null &&
+                                        module.userLimitationCount != null &&
+                                        status.get(
+                                              module.userCountFieldPath.last(),
+                                              -1,
+                                            ) >=
+                                            module.userLimitationCount!)
+                                      Text(
+                                        "Registration is currently unavailable."
+                                            .localize(),
+                                      )
+                                    else if (context.plugin != null)
+                                      for (final adapter
+                                          in context.plugin!.signIns)
+                                        if (adapter.visible)
+                                          _snsButton(
+                                            context,
+                                            ref,
+                                            adapter,
+                                            module,
+                                          ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
