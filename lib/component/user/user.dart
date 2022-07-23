@@ -23,7 +23,7 @@ class UserModule extends PageModule {
     this.guestName = "Guest",
     this.expandedHeight = 160,
     this.additionalInformation = const {},
-    this.enableFeature = false,
+    this.enableFeature = true,
     this.enableFollow = false,
     this.enableBlock = true,
     this.enableReport = true,
@@ -232,6 +232,9 @@ class UserModuleHomePage extends PageModuleWidget<UserModule> {
             : null,
         automaticallyImplyLeading:
             !own || module.automaticallyImplyLeadingOnHome,
+        backgroundColor: context.theme.appBarTheme.backgroundColor ??
+            context.theme.backgroundColor,
+        expandedBackgroundColor: context.theme.primaryColor,
         backgroundImage: image.isNotEmpty
             ? NetworkOrAsset.image(image, ImageSize.large)
             : null,
@@ -469,11 +472,7 @@ class UserModuleEditProfilePage extends PageModuleWidget<UserModule> {
                       decoration: BoxDecoration(
                         color: module.enableFeature
                             ? context.theme.disabledColor
-                            : (context.theme.appBarTheme.backgroundColor ??
-                                (context.theme.colorScheme.brightness ==
-                                        Brightness.dark
-                                    ? context.theme.colorScheme.surface
-                                    : context.theme.colorScheme.primary)),
+                            : context.theme.primaryColor,
                         image: module.enableFeature
                             ? DecorationImage(
                                 image: NetworkOrAsset.image(
