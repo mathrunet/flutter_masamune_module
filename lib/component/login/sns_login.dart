@@ -257,7 +257,7 @@ class SnsLoginModuleLandingPage extends PageModuleWidget<SnsLoginModule> {
                                             ) >=
                                             module.userLimitationCount!)
                                       Text(
-                                        "Registration is currently unavailable."
+                                        "Registration is currently unavailable"
                                             .localize(),
                                       )
                                     else if (context.plugin != null)
